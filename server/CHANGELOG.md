@@ -28,6 +28,18 @@ Mimari kararların gerekçeleri günlükte değil, [`docs/adr/`](docs/adr/) alt�
   sunucuda olduğu, ödülün her zaman jant olduğu, zorlukla arttığı.
 - `npm run openapi` · `npm run postman` · `npm run check:api-docs` — belgenin
   kodla aynı kalmasını CI'da doğrulayan kontroller.
+- `npm run simulate` — denge ölçümü: N maçı baştan sona oynatıp zorluk ve
+  ilerleme kademesi başına kazanma oranını raporlar. Bkz. ADR 0012.
+- Kadro kuralları ve bot ölçeklemesi için 11 birim testi.
+
+### Güvenlik
+
+- **Kadro boyutu artık sunucuda doğrulanıyor.** DTO yalnızca her dizinin en
+  fazla 8 olmasını kontrol ediyordu; toplamı kontrol eden bir şey yoktu.
+  Değiştirilmiş bir istemci 8 araç + 8 destek gönderip 32 kartlık desteyle
+  oynayabilirdi — deste kadronun iki katı ve deste bitince yorgunluk hasarı
+  başlıyor, yani uzun maçlarda neredeyse garanti galibiyet. Kural paylaşılan
+  motorda (`game/loadoutRules.ts`), hata mesajı da oradan geliyor.
 
 ### Düzeltildi
 
@@ -36,6 +48,9 @@ Mimari kararların gerekçeleri günlükte değil, [`docs/adr/`](docs/adr/) alt�
   basit uç, modül sırası yüzünden onu gölgeliyordu — sağlık kontrolü
   veritabanı düşükken bile "ok" derdi. Basit uç kaldırıldı, sürüm ve ayakta
   kalma süresi gerçek kontrolün yanıtına taşındı.
+- **Bot oyuncudan bir kart fazla taşıyordu** (6 araç + 3 pit = 9; oyuncunun
+  bütçesi 8). Deste kadronun iki katı olduğu için bu 18'e 16 kart demekti ve
+  ölçümde yorgunluğu önce oyuncu görüyordu (%33'e %24). Bot artık 5 + 3.
 - Sürüm numarası `npm_package_version`'dan okunuyordu; `node dist/main` ile
   doğrudan başlatılınca (üretimde olacağı gibi) boş gelip sessizce "0.0.0"
   oluyordu. Artık `src/version.ts` üzerinden `package.json`'dan okunuyor.

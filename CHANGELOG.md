@@ -18,6 +18,16 @@ Etiket öneki: `app-v`.
 - Dal, sürüm ve yayın akışı: `develop`/`main` ayrımı, GitHub Actions CI,
   etiketle tetiklenen yayın. Bkz. `docs/gelistirme-akisi.md`.
 
+### Düzeltildi
+
+- **Bot, oyuncudan bir kart fazla taşıyordu.** Kadro bütçesi 8 kart ama botun
+  destesi 6 araç + 3 pit'ten kuruluyordu. Deste kadronun iki katı ve deste
+  bitince yorgunluk hasarı başladığı için bu, uzun maçlarda bota bedava
+  avantaj veriyordu — ölçümde yorgunluğu önce oyuncu görüyordu. Bot artık
+  oyuncuyla aynı bütçeden oynuyor (5 araç + 3 pit).
+- Kadro kuralları (8 kart, en az 3 araç, en fazla 5 pit) paylaşılan motora
+  taşındı; artık sunucu da aynı kuralı dayatıyor.
+
 ## [0.1.0] — 2026-09-14
 
 İlk sürüm — Faz 1 prototipi ve Faz 2 sunucu entegrasyonu.

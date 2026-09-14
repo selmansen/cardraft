@@ -4,6 +4,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { migratingStorage, STORAGE_KEYS } from '@/api/storageKeys';
 import { STARTER_CARD_IDS } from '@/data/cards';
 import { STARTER_SUPPORT_IDS } from '@/data/supportCards';
+import { LOADOUT_TOTAL, MAX_SUPPORT, MIN_VEHICLES } from '@/game/loadoutRules';
 import type { Difficulty } from '@/game/difficulty';
 import type { CardInstance } from '@/types';
 
@@ -18,12 +19,6 @@ import type { CardInstance } from '@/types';
  */
 const STARTING_RIMS = 300;
 const STARTING_COINS = 0;
-// Loadout is now vehicles + Pit Ekibi (support) cards sharing one 8-card
-// budget: at least 3 vehicles (so a deck can always actually attack), at
-// most 5 support cards (so a deck can't be all-utility either).
-const LOADOUT_TOTAL = 8;
-const MIN_VEHICLES = 3;
-const MAX_SUPPORT = 5;
 
 /**
  * A card is "owned" iff it has an entry in `collection`. The starter cards are
@@ -101,7 +96,11 @@ export interface GameState {
 
 export const LOADOUT_MAX = LOADOUT_TOTAL;
 export const LOADOUT_MIN = MIN_VEHICLES;
-export { LOADOUT_TOTAL, MIN_VEHICLES, MAX_SUPPORT, STARTING_RIMS };
+// Kadro kuralları motorda (paylaşılan): sunucu ve bot desteleri de aynı
+// sayıları okuyor. Buradan yeniden dışa aktarılıyorlar ki ekranların import
+// yolu değişmesin — bkz. src/game/loadoutRules.ts.
+export { LOADOUT_TOTAL, MIN_VEHICLES, MAX_SUPPORT };
+export { STARTING_RIMS };
 
 export const useGameStore = create<GameState>()(
   persist(

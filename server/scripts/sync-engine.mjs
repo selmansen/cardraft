@@ -32,6 +32,10 @@ const FILES = [
   ['data/supportCards.ts', 'data/supportCards.ts'],
   ['game/rng.ts', 'game/rng.ts'],
   ['game/battleEngine.ts', 'game/battleEngine.ts'],
+  // Kadro kuralları: sunucu gelen kadroyu bu dosyayla doğruluyor, bot destesi
+  // de boyutunu buradan alıyor. İstemcide kalsaydı sunucunun dayattığı kural
+  // ile arayüzün gösterdiği kural ayrışabilirdi.
+  ['game/loadoutRules.ts', 'game/loadoutRules.ts'],
   ['game/bot.ts', 'game/bot.ts'],
   // Zorluk ayarları ve bot desteleri de buradan geliyor: bunlar bir süre
   // sunucuda elle yazılmış kopya olarak durdu ve ilk denemede uydurma bir

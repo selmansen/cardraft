@@ -1,6 +1,7 @@
 import { CARDS } from '@/data/cards';
 import { SUPPORT_CARDS } from '@/data/supportCards';
 import type { LoadoutEntry } from './battleEngine';
+import { BOT_SUPPORT_COUNT, BOT_VEHICLE_COUNT } from './loadoutRules';
 
 /**
  * A few hand-tuned bot decks with a sensible fuel curve. One is chosen at
@@ -24,6 +25,15 @@ const BOT_DECKS: string[][] = [
 ];
 
 const KNOWN_IDS = new Set(CARDS.map((c) => c.id));
+
+/** Listeyi rastgele elemanlar atarak `size` uzunluğuna indirir. */
+function dropToSize(ids: string[], size: number): string[] {
+  const rest = [...ids];
+  while (rest.length > size) {
+    rest.splice(Math.floor(Math.random() * rest.length), 1);
+  }
+  return rest;
+}
 
 /**
  * Botun destesi, oyuncunun ilerlemesine göre NADİRLİK olarak ölçekleniyor.
@@ -61,22 +71,39 @@ export function makeBotLoadout(battlesWon = 0): LoadoutEntry[] {
   const byId = new Map(CARDS.map((c) => [c.id, c]));
   const allowed = deck.filter((id) => (RARITY_ORDER[byId.get(id)?.rarity ?? 'common'] ?? 0) <= cap);
 
-  // Deste tavanın altında kalıp fazla küçüldüyse, en yakın nadirliklerden
-  // tamamla — bot her zaman dolu bir desteyle oynamalı, yoksa yorgunluk
-  // hasarıyla kendi kendini yenerdi.
-  if (allowed.length >= 4) return allowed.map((cardId) => ({ cardId }));
+  /**
+   * Kadro TAM `BOT_VEHICLE_COUNT` araç olmalı — ne eksik ne fazla.
+   *
+   * Deste boyutu kadronun iki katı ve deste bitince yorgunluk hasarı
+   * başlıyor; ölçümde maçların %20-60'ı oraya kadar gidiyordu. Yani bir kart
+   * fazlası, kimsenin vermediği bir karar yüzünden kazanılan maç demek.
+   * Önceden bot 6 araç taşıyordu (oyuncu 5), üstüne nadirlik filtresi
+   * desteyi bazen 4'e düşürüyordu — sayı hem fazla hem öngörülemezdi.
+   *
+   * Fazlalık RASTGELE atılıyor, baştan ya da sondan değil: destelerin en
+   * nadir kartı listelerin sonunda duruyor, dolayısıyla "ilk N'i al" demek
+   * her destenin efsanevi kartını atmak — yani nadirlik merdiveninin en üst
+   * basamağını sessizce silmek olurdu.
+   */
+  const picked = dropToSize(allowed, BOT_VEHICLE_COUNT);
 
-  const filler = [...CARDS]
-    .filter((c) => (RARITY_ORDER[c.rarity] ?? 0) <= cap && !allowed.includes(c.id))
-    .sort((a, b) => a.cost - b.cost)
-    .slice(0, 6 - allowed.length)
-    .map((c) => c.id);
-  return [...allowed, ...filler].map((cardId) => ({ cardId }));
+  if (picked.length < BOT_VEHICLE_COUNT) {
+    // Nadirlik tavanı desteyi kısalttıysa aynı tavandan en ucuz kartlarla
+    // tamamla: bot her zaman dolu bir kadroyla oynamalı.
+    const filler = [...CARDS]
+      .filter((c) => (RARITY_ORDER[c.rarity] ?? 0) <= cap && !picked.includes(c.id))
+      .sort((a, b) => a.cost - b.cost)
+      .slice(0, BOT_VEHICLE_COUNT - picked.length)
+      .map((c) => c.id);
+    picked.push(...filler);
+  }
+
+  return picked.map((cardId) => ({ cardId }));
 }
 
 /**
- * Three Pit Ekibi cards for the bot, drawn from the same pool the player picks
- * from — the same count a starting player's default loadout has.
+ * Botun Pit Ekibi kartları — oyuncunun varsayılan kadrosuyla aynı sayıda
+ * (`BOT_SUPPORT_COUNT`), aynı havuzdan.
  *
  * The bot went without any of these until now, which quietly made Pit Ekibi a
  * player-only mechanic: you could shield, heal and ambush, it couldn't, and
@@ -86,7 +113,7 @@ export function makeBotLoadout(battlesWon = 0): LoadoutEntry[] {
  * destek kartları varken botun Turbo Şarj çekmesi, oyuncunun karşılığını
  * veremeyeceği bir üstünlük olurdu.
  */
-export function makeBotSupportLoadout(count = 3, battlesWon = 0): string[] {
+export function makeBotSupportLoadout(count = BOT_SUPPORT_COUNT, battlesWon = 0): string[] {
   const maxPower = progressTier(battlesWon) + 1;
   const pool = SUPPORT_CARDS.filter((c) => c.power <= maxPower).map((c) => c.id);
   const picked: string[] = [];

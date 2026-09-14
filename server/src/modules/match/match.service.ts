@@ -11,6 +11,7 @@ import type { OpenMatchDto, SubmitMatchDto } from './dto/match.dto.js';
 import { MatchVerifier, type MatchSetup, type PlayerTurn } from './match-verifier.js';
 import { DIFFICULTY, type Difficulty } from '../../game-engine/game/difficulty.js';
 import { makeBotLoadout, makeBotSupportLoadout } from '../../game-engine/game/botDeck.js';
+import { validateLoadout } from '../../game-engine/game/loadoutRules.js';
 
 /**
  * Zorluk ayarları ve bot desteleri artık istemciyle AYNI dosyadan geliyor
@@ -69,6 +70,23 @@ export class MatchService {
      * Kadro ayrıca DONDURULUP saklanıyor: doğrulama maç açılırkenki kadroyla
      * yapılmak zorunda, oyuncu maç ortasında kadrosunu değiştiremesin.
      */
+    /**
+     * Kadronun BİÇİMİ de doğrulanıyor, sadece sahiplik değil.
+     *
+     * DTO yalnızca her dizinin en fazla 8 olmasını kontrol ediyordu; toplamı
+     * kontrol eden bir şey yoktu. Yani değiştirilmiş bir istemci 8 araç +
+     * 8 destek gönderip 32 kartlık desteyle oynayabilirdi — deste, kadronun
+     * iki katı ve deste bitince yorgunluk hasarı başlıyor, dolayısıyla bu
+     * uzun maçlarda neredeyse garanti galibiyet demekti.
+     *
+     * Kural motordan geliyor (`loadoutRules.ts`), yani arayüzün dayattığı
+     * kuralla sunucunun reddetme sebebi aynı cümle.
+     */
+    const invalid = validateLoadout(dto.vehicleCardIds, dto.supportCardIds);
+    if (invalid) {
+      throw new BadRequestException(invalid);
+    }
+
     const owned = new Set((await this.inventory.list(userId)).map((c) => c.cardId));
     const missing = [...dto.vehicleCardIds, ...dto.supportCardIds].filter((id) => !owned.has(id));
     if (missing.length > 0) {
