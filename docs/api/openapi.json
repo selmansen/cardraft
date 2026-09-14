@@ -1,0 +1,723 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/health": {
+      "get": {
+        "operationId": "HealthController_check",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Sunucunun ve bağımlılıklarının durumu, çalışan sürüm, ayakta kalma süresi.",
+        "tags": [
+          "Sistem"
+        ],
+        "description": "Bilerek `@Public`: bunu çağıran şey bir oyuncu değil — CI, Docker sağlık\nkontrolü ve ileride AWS yük dengeleyici. Token isteyen bir sağlık\nkontrolü, dengeleyicinin sağlıklı sunucuyu ölü sanmasına yol açar.\n\nSızdırdığı tek ek bilgi sürüm ve ayakta kalma süresi; saldırgana işe\nyarar bir şey vermiyor, operasyona ise \"canlıda hangi sürüm var\" ve\n\"sessizce yeniden mi başladı\" sorularının cevabını veriyor."
+      }
+    },
+    "/api/devices": {
+      "post": {
+        "operationId": "DevicesController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDeviceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Cihazı kaydeder/günceller ve varsa push jetonunu bağlar.",
+        "tags": [
+          "Cihaz"
+        ],
+        "description": "POST ama \"upsert\": istemci uygulama her açılışında burayı çağırabilsin,\ndaha önce kaydolup kaydolmadığını takip etmek zorunda kalmasın. Sunucu\ntarafında idempotent olduğu için tekrarlanan çağrı zararsız."
+      },
+      "get": {
+        "operationId": "DevicesController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Hesaba bağlı cihazlar.",
+        "tags": [
+          "Cihaz"
+        ],
+        "description": "Son görülme zamanı burada tutuluyor; 24 saattir girmeyene gönderilen\nhatırlatma bildirimi bu veriye dayanıyor."
+      }
+    },
+    "/api/devices/{id}": {
+      "delete": {
+        "operationId": "DevicesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Cihaz kaydını ve ona bağlı push jetonunu siler.",
+        "tags": [
+          "Cihaz"
+        ]
+      }
+    },
+    "/api/auth/guest": {
+      "post": {
+        "operationId": "AuthController_guest",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuestLoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Misafir oturumu açar; oyuncu hiçbir şey yazmadan oynamaya başlayabilsin diye.",
+        "tags": [
+          "Kimlik"
+        ],
+        "description": "`installationId` gönderilmezse sunucu üretip yanıtta geri verir — istemci\nsaklayıp sonraki açılışlarda gönderir ve aynı hesaba döner. Üretimin\nsunucuda olmasının sebebi bu alanın fiilen giriş anahtarı olması: tahmin\nedilemez olmak zorunda, React Native tarafında ise güvenilir rastgelelik yok."
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "operationId": "AuthController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Sıfırdan e-postalı hesap açar.",
+        "tags": [
+          "Kimlik"
+        ],
+        "description": "Misafirken ilerleme kaydetmiş bir oyuncu için YANLIŞ uç: burası yeni ve boş\nbir hesap yaratır. O durumda `POST /auth/link` kullanılmalı."
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "summary": "E-postalı hesapla giriş.",
+        "tags": [
+          "Kimlik"
+        ]
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Süresi dolan access token'ın yerine yenisini verir.",
+        "tags": [
+          "Kimlik"
+        ],
+        "description": "Refresh token rotasyonlu: her yenilemede eskisi geçersizleşir. Çalınan bir\ntoken'ın süresiz kullanılmasını engelleyen şey bu."
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "summary": "Refresh token'ı iptal eder.",
+        "tags": [
+          "Kimlik"
+        ]
+      }
+    },
+    "/api/auth/link": {
+      "post": {
+        "operationId": "AuthController_link",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkAccountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Misafir → gerçek hesap. Kimlik doğrulaması ŞART (public değil).",
+        "tags": [
+          "Kimlik"
+        ]
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "operationId": "AuthController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Oturumdaki kullanıcı. Token'ın hâlâ geçerli olduğunu sınamanın en hızlı yolu.",
+        "tags": [
+          "Kimlik"
+        ]
+      }
+    },
+    "/api/economy/wallet": {
+      "get": {
+        "operationId": "EconomyController_balances",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Tüm bakiyeler. İstemcinin gösterdiği rakamın doğruluk kaynağı burası.",
+        "tags": [
+          "Ekonomi"
+        ]
+      }
+    },
+    "/api/economy/ledger": {
+      "get": {
+        "operationId": "EconomyController_history",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Bakiyeyi oluşturan hareketlerin dökümü: kayıt bonusu, maç ödülü, harcama.",
+        "tags": [
+          "Ekonomi"
+        ],
+        "description": "Bakiye tek başına saklanmıyor, her değişim deftere yazılıyor — \"jantım neden\nazaldı\" sorusunun cevabı ancak böyle verilebiliyor."
+      }
+    },
+    "/api/inventory": {
+      "get": {
+        "operationId": "InventoryController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Oyuncunun koleksiyonu. Kadro kurarken istemcinin dayandığı liste.",
+        "tags": [
+          "Envanter"
+        ]
+      }
+    },
+    "/api/inventory/unlock": {
+      "post": {
+        "operationId": "InventoryController_unlock",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnlockCardDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Kart açma. İstemci FİYAT göndermiyor — sadece hangi kart ve hangi keseden. Fiyata sunucu karar veriyor (card-catalog.ts).",
+        "tags": [
+          "Envanter"
+        ]
+      }
+    },
+    "/api/matches": {
+      "post": {
+        "operationId": "MatchController_open",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OpenMatchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Maç oturumu açar; tohum ve bot kurulumu sunucudan gelir.",
+        "tags": [
+          "Maç"
+        ]
+      }
+    },
+    "/api/matches/{id}/submit": {
+      "post": {
+        "operationId": "MatchController_submit",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitMatchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Maçı sonuçlandırır. Gövdede \"kazandım\" bilgisi YOK — sadece hamleler. Kazananı sunucu, maçı yeniden oynatarak buluyor.",
+        "tags": [
+          "Maç"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "CarDraft API",
+    "description": "Araç temalı koleksiyon kart oyununun sunucu API'si.\n\n**Başlarken:** `POST /auth/guest` ile misafir oturumu aç, dönen\n`accessToken`'ı yukarıdaki **Authorize** düğmesine yapıştır.\n\nUç noktalar varsayılan olarak **kapalıdır**: guard global, açmak için\naçıkça `@Public()` yazmak gerekir. Kilit simgesi olmayan uçlar kimlik\ndoğrulaması istemez.\n\nKararların gerekçeleri `server/docs/adr/` altında.",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "Sistem",
+      "description": "Kimlik doğrulaması istemeyen uçlar"
+    },
+    {
+      "name": "Kimlik",
+      "description": "Misafir giriş, kayıt, token yenileme"
+    },
+    {
+      "name": "Ekonomi",
+      "description": "Cüzdan ve işlem defteri"
+    },
+    {
+      "name": "Envanter",
+      "description": "Koleksiyon ve kart açma"
+    },
+    {
+      "name": "Maç",
+      "description": "Maç oturumu ve sunucu tarafı doğrulama"
+    },
+    {
+      "name": "Cihaz",
+      "description": "Cihaz kaydı ve push jetonları"
+    }
+  ],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "access-token": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "RegisterDeviceDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "GuestLoginDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "RegisterDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "RefreshDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "minLength": 20
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "LinkAccountDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 200
+          },
+          "displayName": {
+            "type": "string",
+            "maxLength": 40
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "UnlockCardDto": {
+        "type": "object",
+        "properties": {
+          "cardId": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 64
+          },
+          "currency": {
+            "type": "string",
+            "description": "Hangi keseden ödeneceği. Zorunlu — varsayılan vermek tehlikeli olurdu:\nistemcinin niyetini tahmin edip yanlış para birimini harcamak,\nkullanıcının geri alamayacağı bir hata.",
+            "enum": [
+              "COIN",
+              "RIM"
+            ]
+          }
+        },
+        "required": [
+          "cardId",
+          "currency"
+        ]
+      },
+      "OpenMatchDto": {
+        "type": "object",
+        "properties": {
+          "difficulty": {
+            "type": "string",
+            "enum": [
+              "easy",
+              "normal",
+              "hard"
+            ]
+          },
+          "vehicleCardIds": {
+            "description": "Oyuncunun bu maç için seçtiği araçlar. Seçim istemcinin, ama her\n kimliğin gerçekten sahip olunan bir karta karşılık geldiği sunucuda\n doğrulanıyor (MatchService.open).",
+            "maxItems": 8,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "supportCardIds": {
+            "maxItems": 8,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "difficulty",
+          "vehicleCardIds",
+          "supportCardIds"
+        ]
+      },
+      "PlayerActionDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "PLAY",
+              "PLAY_SUPPORT",
+              "ATTACK"
+            ]
+          },
+          "handIndex": {
+            "type": "number",
+            "minimum": 0
+          },
+          "scrapUid": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "targetUid": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "attackerUid": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "target": {
+            "type": "string",
+            "maxLength": 64
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "PlayerTurnDto": {
+        "type": "object",
+        "properties": {
+          "actions": {
+            "maxItems": 30,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlayerActionDto"
+            }
+          }
+        },
+        "required": [
+          "actions"
+        ]
+      },
+      "SubmitMatchDto": {
+        "type": "object",
+        "properties": {
+          "turns": {
+            "maxItems": 60,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlayerTurnDto"
+            }
+          }
+        },
+        "required": [
+          "turns"
+        ]
+      }
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser, Public } from '../../common/decorators/auth.decorators.js';
 import { UsersService } from '../users/users.service.js';
@@ -20,6 +21,7 @@ import { TokenService } from './token.service.js';
  * yarın bir WebSocket ya da kuyruk işçisinden çağırmak gerekirse servis
  * olduğu gibi kullanılabiliyor; HTTP'ye bağımlı olsaydı kopyalamak gerekirdi.
  */
+@ApiTags('Kimlik')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -28,6 +30,14 @@ export class AuthController {
     private readonly users: UsersService,
   ) {}
 
+  /**
+   * Misafir oturumu açar; oyuncu hiçbir şey yazmadan oynamaya başlayabilsin diye.
+   *
+   * `installationId` gönderilmezse sunucu üretip yanıtta geri verir — istemci
+   * saklayıp sonraki açılışlarda gönderir ve aynı hesaba döner. Üretimin
+   * sunucuda olmasının sebebi bu alanın fiilen giriş anahtarı olması: tahmin
+   * edilemez olmak zorunda, React Native tarafında ise güvenilir rastgelelik yok.
+   */
   @Public()
   @Post('guest')
   @HttpCode(HttpStatus.OK)
@@ -35,12 +45,19 @@ export class AuthController {
     return this.auth.loginAsGuest(dto);
   }
 
+  /**
+   * Sıfırdan e-postalı hesap açar.
+   *
+   * Misafirken ilerleme kaydetmiş bir oyuncu için YANLIŞ uç: burası yeni ve boş
+   * bir hesap yaratır. O durumda `POST /auth/link` kullanılmalı.
+   */
   @Public()
   @Post('register')
   register(@Body() dto: RegisterDto): Promise<AuthTokensDto> {
     return this.auth.register(dto);
   }
 
+  /** E-postalı hesapla giriş. */
   @Public()
   @Post('login')
   // Varsayılan 201 yerine 200: yeni bir kaynak yaratılmıyor, oturum açılıyor.
@@ -49,6 +66,12 @@ export class AuthController {
     return this.auth.login(dto);
   }
 
+  /**
+   * Süresi dolan access token'ın yerine yenisini verir.
+   *
+   * Refresh token rotasyonlu: her yenilemede eskisi geçersizleşir. Çalınan bir
+   * token'ın süresiz kullanılmasını engelleyen şey bu.
+   */
   @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
@@ -56,6 +79,7 @@ export class AuthController {
     return this.tokens.rotate(dto.refreshToken);
   }
 
+  /** Refresh token'ı iptal eder. */
   @Public()
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -66,6 +90,7 @@ export class AuthController {
   }
 
   /** Misafir → gerçek hesap. Kimlik doğrulaması ŞART (public değil). */
+  @ApiBearerAuth('access-token')
   @Post('link')
   @HttpCode(HttpStatus.OK)
   link(
@@ -75,6 +100,8 @@ export class AuthController {
     return this.auth.linkGuestToAccount(user.sub, dto);
   }
 
+  /** Oturumdaki kullanıcı. Token'ın hâlâ geçerli olduğunu sınamanın en hızlı yolu. */
+  @ApiBearerAuth('access-token')
   @Get('me')
   me(@CurrentUser() user: AccessTokenPayload) {
     return this.users.findById(user.sub);

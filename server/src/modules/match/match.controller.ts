@@ -1,10 +1,13 @@
 import { Body, Controller, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/auth.decorators.js';
 import type { AccessTokenPayload } from '../auth/token.service.js';
 import { OpenMatchDto, SubmitMatchDto } from './dto/match.dto.js';
 import { MatchService } from './match.service.js';
 
+@ApiTags('Maç')
+@ApiBearerAuth('access-token')
 @Controller('matches')
 export class MatchController {
   constructor(private readonly matches: MatchService) {}

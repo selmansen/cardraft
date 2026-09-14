@@ -1,23 +1,76 @@
 # CarDraft
 
-Araç temalı, sıra tabanlı koleksiyon kart savaş oyunu. React Native (Expo)
-istemci + NestJS sunucu.
+Araç temalı, sıra tabanlı koleksiyon kart oyunu. React Native (Expo) istemci +
+NestJS sunucu.
 
-> **Durum:** geliştirme aşamasında. Faz 1 (tek oyunculu prototip) ve Faz 2
-> (sunucu, ekonomi, envanter) çalışıyor; Faz 3 (gerçek zamanlı PvP) planlı.
+İki oyuncunun (şimdilik oyuncu ile bot) birer **garajı** var. Garajın canı
+biterse maç biter. Arada, sahaya sürdüğün araçlar ve onları güçlendiren pit
+ekibin duruyor.
+
+> **Durum:** geliştirme aşamasında, henüz yayında değil.
+> Faz 1 ve Faz 2 çalışıyor, Faz 3 planlı — ayrıntısı aşağıda.
 
 ---
 
-## Ne var
+## Oyun
 
-**Oyun** — Hearthstone tarzı sıra tabanlı savaş: yakıt ekonomisi, sürükle-bırak
-saldırı, siper/kalkan mekanikleri. 35 araç kartı (7 kategori) ve 11 "Pit Ekibi"
-destek kartı. Bota karşı iki zorluk seviyesi.
+**Tur akışı.** Her turda **yakıt** kazanırsın ve yakıt harcayarak elindeki
+araçları sahaya sürersin. Sahadaki araçlar rakibin araçlarına ya da doğrudan
+garajına saldırır. Araçlar sahaya çıktıkları tur saldıramaz — bir tur ısınmaları
+gerekir. Saldırı, aracı hedefin üstüne **sürükleyerek** yapılır.
 
-**Sunucu** — Oyuncunun ilerlemesiyle ilgili her şey sunucuda: cüzdan,
-koleksiyon, istatistikler. Maç sonucu istemciye sorulmuyor — sunucu maçı
-gönderilen hamlelerle **yeniden oynatıp** kazananı kendi buluyor, ödül o
-sonuca yazılıyor.
+**Araç kartları.** Üç sayı taşır: **Güç** (vurduğu hasar), **Dayanıklılık**
+(dayandığı hasar) ve **Hız**. Hız savunmadan kaçınmayı sağlıyor: saldıran araç
+hedefinden yeterince hızlıysa karşı hasarı hiç yemiyor — yani hızlı bir araç,
+kendinden güçlü bir hedefe zarar görmeden vurabilir. 35 araç var, 7 kategoriye
+ayrılmış — Spor, Arazi, Klasik, Gelecek, Hizmet, Canavar, İş Makinesi — ve her
+kategorinin kendi oynanış kimliği var: spor arabalar hızlı ama kırılgan, iş
+makineleri yavaş ama siper kurup arkasındakini korur.
+
+**Pit Ekibi.** 11 destek kartı. Sahada yer kaplamaz, yakıt istemez, oynandığı
+anda etkisini verip biter: tamir, geçici güç takviyesi, ek saldırı hakkı.
+
+**Kadro.** Maça girmeden önce koleksiyonundan **8 kart** seçersin: en az 3'ü
+araç olmak zorunda, en fazla 5'i pit kartı olabilir. Deste kurmanın tamamı bu
+ekranda oluyor ve asıl tercih burada — aldığın her pit kartı, sahaya
+süremeyeceğin bir araç demek.
+
+**İlerleme.** Maç kazandıkça **jant** kazanır, jantla yeni kart açarsın.
+**Coin** ise gerçek parayla alınır ve aynı kartları daha hızlı açmaya yarar.
+Kart **seviyesi yok** — hiçbir kart parayla güçlendirilemez, para yalnızca
+koleksiyonu büyütme hızını değiştirir. Bu bilinçli bir sınır: ödeyen oyuncunun
+daha güçlü kartları değil, daha çok seçeneği olur.
+
+Başlangıçta 6 araç ve 3 pit kartı açık geliyor; gerisi oynayarak açılıyor.
+
+---
+
+## Durum ve hedef
+
+| Faz | Kapsam | Durum |
+|---|---|---|
+| **Faz 1** | Tek oyunculu prototip: savaş motoru, kart havuzu, arayüz, bota karşı iki zorluk | ✅ Çalışıyor |
+| **Faz 2** | Sunucu: hesap, cüzdan, envanter, sunucuda maç doğrulama, bildirim altyapısı | ✅ Çalışıyor |
+| **Faz 3** | Gerçek zamanlı PvP, eşleştirme, lig/ranked, mağaza ekranı | ⏳ Planlı |
+
+**Sıradaki işler**
+
+- Kart havuzunu 35'ten **50 araca** çıkarmak (MVP hedefi).
+- Bot ölçeklemesi: oyuncu ilerledikçe botun destesi de güçlensin.
+- Mağaza ekranı ve kart paketleri.
+- Kadronun sunucuda tutulması (şu an yalnızca cihazda).
+
+**Yayın hedefi:** 50 araç kartı, mağaza ve ranked hazır olduğunda ilk mağaza
+sürümü. Tarih taahhüdü yok.
+
+**Sabit kısıtlar** — tasarımın başından beri geçerli, değişmeyecek:
+
+- **Gerçek araç markası ya da logosu kullanılmıyor.** Tüm araçlar kurgusal.
+- **Serbest metin sohbet yok.** PvP geldiğinde iletişim hazır mesaj ve
+  emojiyle sınırlı kalacak; hem çocuk güvenliği hem mağaza onayı için.
+- **Güç satılmıyor.** Gerçek para koleksiyonu hızlandırır, kartı güçlendirmez.
+
+---
 
 ## Teknolojiler
 
@@ -41,13 +94,18 @@ sonuca yazılıyor.
 │   ├── src/game-engine/ istemciden senkronlanan motor kopyası (üretilen)
 │   ├── prisma/schema/   domain'e göre bölünmüş şema
 │   └── docs/adr/        mimari karar kayıtları
-└── docs/                tasarım sistemi, yol dokümanı, geliştirme akışı
+└── docs/                tasarım sistemi, API belgesi, geliştirme akışı
 ```
 
+**Oyuncunun ilerlemesiyle ilgili her şey sunucuda:** cüzdan, koleksiyon,
+istatistikler. Maçın sonucu istemciye de sorulmuyor — istemci yalnızca
+yaptığı hamleleri gönderiyor, sunucu maçı **yeniden oynatıp** kazananı kendi
+buluyor ve ödülü o sonuca yazıyor.
+
 **Savaş motoru tek bir yerde yazılı.** `src/game/` altındaki saf motor,
-`server/scripts/sync-engine.mjs` ile sunucuya kopyalanıyor. Sunucunun maçı
-bağımsız olarak yeniden oynatabilmesi, iki tarafın **aynı** kodu çalıştırmasına
-dayanıyor; elle senkron tutulan iki kopya bunu ilk sapmada bozardı.
+`server/scripts/sync-engine.mjs` ile sunucuya kopyalanıyor. Yeniden oynatmanın
+doğru sonucu vermesi iki tarafın **aynı** kodu çalıştırmasına dayanıyor; elle
+senkron tutulan iki kopya bunu ilk sapmada bozardı.
 
 ## Kurulum
 
@@ -64,7 +122,7 @@ cp .env.example .env
 docker compose up -d
 npx prisma migrate deploy
 
-# 3. Sunucu (http://localhost:3000/api)
+# 3. Sunucu (http://localhost:3000/api · belge: /api/docs)
 npm run start:dev
 
 # 4. İstemci — ayrı terminalde, kök dizinde
@@ -88,12 +146,19 @@ npm run build            # nest build (motoru da senkronlar)
 npm test                 # birim testleri
 npm run test:e2e         # e2e (çalışan Postgres + Redis ister)
 npm run db:studio        # Prisma Studio
+npm run openapi          # docs/api/openapi.json'ı koddan yeniden üret
+```
+
+```bash
+npm run postman          # Postman koleksiyonunu üret (kök dizinde)
+npm run check:api-docs   # şema ile koleksiyon aynı uçları kapsıyor mu
 ```
 
 ## Belgeler
 
 | | |
 |---|---|
+| [API belgesi](docs/api/) | Swagger arayüzü, OpenAPI şeması, Postman koleksiyonu |
 | [Geliştirme akışı](docs/gelistirme-akisi.md) | Dallar, sürümleme, yayın, CI |
 | [Mimari karar kayıtları](server/docs/adr/) | Her önemli kararın gerekçesi |
 | [Yol dokümanı](docs/cardraft-yol-dokumani.md) | Oyun tasarımı ve faz planı |

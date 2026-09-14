@@ -1,10 +1,13 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/auth.decorators.js';
 import type { AccessTokenPayload } from '../auth/token.service.js';
 import { UnlockCardDto } from './dto/inventory.dto.js';
 import { InventoryService } from './inventory.service.js';
 
+@ApiTags('Envanter')
+@ApiBearerAuth('access-token')
 @Controller('inventory')
 export class InventoryController {
   constructor(private readonly inventory: InventoryService) {}
