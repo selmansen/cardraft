@@ -1,0 +1,22 @@
+// Sadece bağlantı ve üretici ayarları burada durur; tablolar domain başına
+// ayrı dosyalarda (auth.prisma, device.prisma, ...). Prisma 6.7'den beri
+// "schema klasörü" resmî olarak destekleniyor, preview bayrağı gerekmiyor —
+// tek dev şema dosyası, proje büyüdükçe kimsenin okuyamadığı bir dosyaya
+// dönüşüyor ve merge çakışmalarının kaynağı oluyor.
+// Prisma 7'nin yeni üreticisi: eski "prisma-client-js" node_modules içine
+// CJS bir paket yazıyordu ve bu proje ESM ("type": "module", nodenext) olduğu
+// için import edilemiyordu. "prisma-client" ESM-öncelikli ve çıktıyı bizim
+// belirlediğimiz klasöre koyuyor — üretilen kod artık node_modules'ta saklı
+// bir yan etki değil, projenin görünür bir parçası.
+generator client {
+  provider = "prisma-client"
+  output   = "../../src/generated/prisma"
+}
+
+// Prisma 7'den itibaren bağlantı URL'si burada DEĞİL: migration için
+// prisma.config.ts'te, çalışma zamanı için PrismaClient'a verilen driver
+// adapter'da tanımlanıyor. Ayrım mantıklı — şema "veri neye benziyor"u
+// anlatır, bağlantı bilgisi ortama göre değişen bir yapılandırmadır.
+datasource db {
+  provider = "postgresql"
+}

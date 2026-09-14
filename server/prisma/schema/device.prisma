@@ -1,0 +1,54 @@
+/// Cihaz alanı: hangi kullanıcının hangi cihazdan girdiği ve o cihaza push
+/// bildirimi göndermek için gereken FCM kaydı.
+enum DevicePlatform {
+  IOS
+  ANDROID
+}
+
+/// Bir kullanıcının bir kurulumu. `installationId` uygulamanın o cihazdaki
+/// kurulumu başına üretilen kimlik (donanım kimliği DEĞİL — iOS zaten kalıcı
+/// donanım kimliği vermiyor, vermeye çalışmak da mağaza politikası açısından
+/// riskli). Uygulama silinip kurulduğunda yeni kurulum sayılır, bu doğru
+/// davranıştır: bildirim hedefi de zaten sıfırlanmış olur.
+model Device {
+  id             String         @id @default(uuid()) @db.Uuid
+  userId         String         @db.Uuid
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platform       DevicePlatform
+  installationId String
+  appVersion     String?
+  lastSeenAt     DateTime       @default(now())
+  /// Son hatırlatma bildirimi ne zaman gitti. Olmadan, hareketsiz kullanıcıya
+  /// saatlik tarama her çalıştığında yeniden bildirim giderdi.
+  lastReminderAt DateTime?
+  createdAt      DateTime       @default(now())
+
+  pushTokens PushToken[]
+
+  /// Aynı kurulum aynı kullanıcı için tek satır olmalı — cihaz kaydı upsert
+  /// ile çalışıyor, bu bileşik anahtar o upsert'in dayanağı.
+  @@unique([userId, installationId])
+  @@index([userId])
+  @@map("devices")
+}
+
+/// FCM token'ı cihazdan AYRI tablo.
+///
+/// Gerekçe: token cihazın kimliği değil, cihazın o anki adresi. Firebase onu
+/// kendi kurallarıyla yeniliyor (uygulama güncellemesi, veri temizliği, uzun
+/// süre kullanılmama). Cihaz satırının içinde tek alan olsaydı her yenilemede
+/// eski adres kaybolur, "bu token artık geçersiz" bilgisini (revokedAt)
+/// tutacak yer kalmazdı — oysa FCM geçersiz token'ı gönderim anında bildiriyor
+/// ve o bilgiyi işaretleyebilmek gerekiyor.
+model PushToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  deviceId  String    @db.Uuid
+  device    Device    @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  fcmToken  String    @unique
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([deviceId])
+  @@map("push_tokens")
+}

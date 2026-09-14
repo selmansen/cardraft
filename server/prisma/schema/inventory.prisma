@@ -1,0 +1,55 @@
+/// Hangi kartın hangi havuzdan geldiği.
+///
+/// Araç ve Pit Ekibi kartları ayrı havuzlar: fiyatlandırmaları farklı
+/// (araç nadirliğe göre, destek güç seviyesine göre — bkz. ADR 0009) ve
+/// kadro kuralları farklı (en az 3 araç, en fazla 5 destek). Tek tabloda
+/// tutup türü kolonla ayırmak, iki ayrı tablo tutmaktan iyi: sorguların
+/// çoğu "bu kullanıcının sahip olduğu her şey" şeklinde.
+enum CardKind {
+  VEHICLE
+  SUPPORT
+}
+
+/// Kartın oyuncunun eline nasıl geçtiği. Sadece bilgi amaçlı değil:
+/// "paketten çıkan kart" ile "doğrudan satın alınan kart" ayrımı ileride
+/// istatistik ve destek talepleri için gerekecek.
+enum AcquisitionSource {
+  STARTER
+  PURCHASE
+  PACK
+  REWARD
+}
+
+/// Oyuncunun sahip olduğu bir kart.
+///
+/// NEDEN SUNUCUDA: koleksiyon, kadronun ne olabileceğini belirliyor; kadro da
+/// maçın kurulumunu. Cihazdaki bir listeye güvenmek, oyuncunun sahip olmadığı
+/// destansı kartlarla maça çıkması demekti. Faz 2'nin bir ara döneminde kadro
+/// istemciden alınıyordu (bkz. OpenMatchDto) — bu tablo o borcu kapatıyor.
+///
+/// Seviye/yükseltme alanı YOK: sistem kaldırıldı (ADR 0009), kartlar sabit
+/// güçte. `count` da yok — tekrar çıkan kart jant iadesine dönüşüyor,
+/// envanterde ikinci bir satır oluşturmuyor.
+model OwnedCard {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Katalogdaki kart kimliği ("vipera-gt"). Yabancı anahtar DEĞİL: katalog
+  /// veritabanında değil kodda (senkronlanan motorda) duruyor, çünkü kart
+  /// tanımları oyunun kurallarının parçası ve maç doğrulamasının aynı
+  /// tanımları görmesi şart.
+  cardId String
+  kind   CardKind
+
+  source     AcquisitionSource @default(PURCHASE)
+  acquiredAt DateTime          @default(now())
+
+  /// Aynı kartın iki kez yazılması veritabanı seviyesinde imkânsız.
+  /// Uygulama katmanında "önce var mı diye bak, sonra ekle" yeterli değil:
+  /// iki eşzamanlı istek ikisi de "yok" görüp ikisi de ekleyebilirdi ve
+  /// oyuncu aynı kart için iki kez ödeme yapardı.
+  @@unique([userId, cardId])
+  @@index([userId, kind])
+  @@map("owned_cards")
+}

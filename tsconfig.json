@@ -1,0 +1,14 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx"],
+  // Backend'in kendi tsconfig'i var (server/tsconfig.json): farklı modül
+  // sistemi, farklı hedef, dekoratör desteği. Buradan da taranırsa React
+  // Native kurallarıyla derlenmeye çalışılıp anlamsız hatalar üretiyor.
+  "exclude": ["node_modules", "server"]
+}

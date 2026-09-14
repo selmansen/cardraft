@@ -1,0 +1,39 @@
+# Yerel geliştirme servisleri.
+#
+# Şu an Postgres ve Redis Homebrew ile kurulu ve çalışıyor; bu dosya Docker'a
+# geçmek istendiğinde hazır dursun diye yazıldı. Farkı: sürümler burada sabit,
+# yani başka bir makinede (ya da CI'da) birebir aynı ortam ayağa kalkıyor —
+# brew ile kurulan sürüm makineden makineye değişebiliyor.
+#
+# Kullanmak için: brew servislerini durdur (brew services stop postgresql@16 redis),
+# sonra `docker compose up -d`.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: cardraft
+      POSTGRES_PASSWORD: cardraft
+      POSTGRES_DB: cardraft
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U cardraft']
+      interval: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
+  redis-data:

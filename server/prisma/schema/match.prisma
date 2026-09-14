@@ -1,0 +1,55 @@
+/// Maç alanı: sunucunun açtığı ve sonucunu KENDİSİNİN hesapladığı oturumlar.
+
+enum MatchStatus {
+  /// Sunucu tohumu verdi, oyuncu oynuyor.
+  OPEN
+  /// Hamleler geldi, sunucu yeniden oynattı, sonuç kesinleşti.
+  SETTLED
+  /// Hamleler sunucunun motorunda geçerli bir maç üretmedi.
+  REJECTED
+}
+
+/// Bir maç oturumu.
+///
+/// Bu tablonun varlık sebebi tek cümleyle: **maçın sonucunu istemci
+/// söylemesin.** Oyuncu "kazandım" dediğinde sunucu ona inanmıyor; oturumu
+/// açarken verdiği tohumla maçı baştan kendi oynatıyor, oyuncunun gönderdiği
+/// hamleleri uyguluyor ve kazananı kendi hesabıyla buluyor.
+///
+/// Bot kadrosu da burada saklanıyor: doğrulama sırasında aynı botun aynı
+/// kartlarla oynaması gerekiyor, yoksa maç yeniden üretilemez.
+model MatchSession {
+  id     String      @id @default(uuid()) @db.Uuid
+  userId String      @db.Uuid
+  status MatchStatus @default(OPEN)
+
+  /// Maçın rastgeleliğinin tohumu. Deste karılışı, botun hedef seçimleri ve
+  /// "hata yapma" kararları hep bundan türüyor — aynı tohum + aynı hamleler
+  /// her zaman aynı maçı veriyor.
+  seed String
+
+  /// Maç kurulumu. Doğrulama, oturum açılırkenki koşulların birebir aynısıyla
+  /// yapılmak zorunda; bu yüzden kadrolar ve zorluk ayarları dondurularak
+  /// saklanıyor. Sonradan oyuncu kadrosunu değiştirse bile bu maç, açıldığı
+  /// andaki kadroyla doğrulanıyor.
+  playerLoadout        Json
+  playerSupportLoadout Json
+  botLoadout           Json
+  botSupportLoadout    Json
+  difficulty           String
+
+  /// Sunucunun hesapladığı sonuç (istemcinin iddiası değil).
+  won         Boolean?
+  turns       Int?
+  /// İstemcinin gönderdiği hamle sayısı — anormallik incelemesi için.
+  actionCount Int?
+  /// Reddedildiyse sebebi (log/inceleme için).
+  rejectReason String?
+
+  createdAt DateTime  @default(now())
+  settledAt DateTime?
+
+  @@index([userId, createdAt])
+  @@index([status])
+  @@map("match_sessions")
+}

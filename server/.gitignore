@@ -1,0 +1,20 @@
+# Bağımlılıklar ve derleme çıktısı
+node_modules/
+dist/
+build/
+
+# Sırlar — .env ASLA repoya girmez, .env.example girer (şablon olarak).
+.env
+.env.*
+!.env.example
+
+# Test/araç çıktıları
+coverage/
+*.log
+.DS_Store
+
+# Prisma üretilen istemci — repoda tutulmuyor, postinstall ile üretiliyor.
+src/generated/
+
+# Motor kopyası — src/gameden üretiliyor (npm run sync:engine)
+src/game-engine/

@@ -1,0 +1,13 @@
+{
+  // Use the TypeScript installed in the project (5.3.x) instead of the version
+  // bundled with VS Code, so the editor matches `npm run typecheck` and the build.
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+
+  "editor.formatOnSave": true,
+  "files.eol": "\n",
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.expo": true
+  }
+}

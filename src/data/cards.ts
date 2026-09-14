@@ -1,0 +1,635 @@
+import type { Card, CardPrice, Rarity, VehicleClass } from '@/types';
+
+/**
+ * Faz 1 card pool — 7 categories × 5 fictional vehicles = 35 cards.
+ * No real brands/logos. Emojis are placeholder art.
+ *
+ * Altı kart başlangıçta açık (STARTER_IDS), kalanı nadirliğine göre jant ya da
+ * coin ile açılıyor. İlerleme = koleksiyonu büyütmek (yükseltme yok).
+ */
+
+/**
+ * Nadirliğe göre kart fiyatları — LoL'ün "mavi öz / RP" oranı (~6.5:1).
+ *
+ * Tempo hesabı: bir maç galibiyeti 120 jant. Destansı bir kart 3600 jant, yani
+ * ~30 maç — Selman'ın istediği "28 maçta bir destansı" hedefiyle örtüşüyor.
+ * Yeni oyuncunun 300 jantı ilk nadir kartı 2-3 maçta açmaya yetiyor, böylece
+ * ilerleme daha ilk oturumda hissediliyor ama efsanevi kartlar gerçek bir
+ * hedef olarak kalıyor.
+ *
+ * Başlangıçta açık kartlar bu tablonun dışında: onlar STARTER_CARD_IDS.
+ */
+const PRICE_BY_RARITY: Record<Rarity, CardPrice> = {
+  common: { rim: 300, coin: 50 },
+  rare: { rim: 600, coin: 100 },
+  epic: { rim: 1800, coin: 280 },
+  legendary: { rim: 3600, coin: 550 },
+};
+
+/**
+ * Başlangıçta açık gelen 6 araç.
+ *
+ * Faz 1'de 21 kart (tüm sıradan + nadirler) açıktı; bu fazla cömertti ve
+ * ilerlemeyi anlamsızlaştırıyordu. Altı kart, kadronun araç tarafını (en az 3,
+ * varsayılan 5) rahatça kurmaya yetiyor ama koleksiyonun büyük kısmı hedef
+ * olarak duruyor. Seçim kategorilere yayıldı ki yeni oyuncu farklı oynanış
+ * tarzlarını baştan görebilsin.
+ */
+const STARTER_IDS = new Set([
+  'sandstorm-buggy',
+  'falconi-turbo',
+  'vipera-gt',
+  'boulder-baron',
+  'nitro-nomad',
+  'rescue-rig',
+]);
+
+/** Bir kartın fiyatı: başlangıç kartıysa bedava, değilse nadirlik tablosu. */
+function priceFor(id: string, rarity: Rarity): CardPrice {
+  return STARTER_IDS.has(id) ? { rim: 0, coin: 0 } : PRICE_BY_RARITY[rarity];
+}
+
+export const CARDS: Card[] = [
+  // ─────────────────────────── Spor Araba ───────────────────────────
+  // hız · düşük HP · patlama hasarı (RUSH / NITRO)
+  {
+    id: 'falconi-turbo',
+    name: 'Falconi Turbo',
+    class: 'sports',
+    rarity: 'common',
+    emoji: '🚗',
+    color: '#FF8A3D',
+    cost: 2,
+    attack: 3,
+    health: 2,
+    speed: 8,
+    abilities: [{ kind: 'RUSH' }],
+    flavor: 'Kırmızı ışıkta bile sabırsız.',
+    price: priceFor('falconi-turbo', 'common'),
+  },
+  {
+    id: 'vipera-gt',
+    name: 'Vipera GT',
+    class: 'sports',
+    rarity: 'common',
+    emoji: '🏎️',
+    color: '#FF4D4D',
+    cost: 3,
+    attack: 4,
+    health: 2,
+    speed: 9,
+    abilities: [{ kind: 'NITRO', value: 2 }],
+    flavor: 'Gaz pedalı yere yapışık gelir.',
+    price: priceFor('vipera-gt', 'common'),
+  },
+  {
+    id: 'nocturne-coupe',
+    name: 'Nocturne Coupe',
+    class: 'sports',
+    rarity: 'rare',
+    emoji: '🚙',
+    color: '#9B6BFF',
+    cost: 4,
+    attack: 4,
+    health: 3,
+    speed: 8,
+    abilities: [{ kind: 'RUSH' }],
+    flavor: 'Gece yarısı en hızlı sürülür.',
+    price: priceFor('nocturne-coupe', 'rare'),
+  },
+  {
+    id: 'silverstreak-s9',
+    name: 'Silverstreak S9',
+    class: 'sports',
+    rarity: 'epic',
+    emoji: '🏎️',
+    color: '#C7D0E0',
+    cost: 5,
+    attack: 5,
+    health: 4,
+    speed: 9,
+    abilities: [{ kind: 'NITRO', value: 3 }],
+    flavor: 'Bir gümüş çizgi, sonra sessizlik.',
+    price: priceFor('silverstreak-s9', 'epic'),
+  },
+  {
+    id: 'apex-meridian',
+    name: 'Apex Meridian',
+    class: 'sports',
+    rarity: 'legendary',
+    emoji: '🏁',
+    color: '#FFC53D',
+    cost: 7,
+    attack: 6,
+    health: 6,
+    speed: 9,
+    abilities: [{ kind: 'NITRO', value: 3 }, { kind: 'CONVOY', value: 1 }],
+    flavor: 'Pistin sahibi geldi.',
+    price: priceFor('apex-meridian', 'legendary'),
+  },
+
+  // ─────────────────────────── Arazi / Off-Road ───────────────────────────
+  // yüksek hız → misilleme kaçışı · mobilite
+  {
+    id: 'sandstorm-buggy',
+    name: 'Sandstorm Buggy',
+    class: 'offroad',
+    rarity: 'common',
+    emoji: '🚙',
+    color: '#E3B23C',
+    cost: 1,
+    attack: 2,
+    health: 1,
+    speed: 9,
+    abilities: [{ kind: 'RUSH' }],
+    flavor: 'Kum tanesi kadar hafif, rüzgâr kadar hızlı.',
+    price: priceFor('sandstorm-buggy', 'common'),
+  },
+  {
+    id: 'trailblazer-4x4',
+    name: 'Trailblazer 4x4',
+    class: 'offroad',
+    rarity: 'common',
+    emoji: '🚙',
+    color: '#7CB342',
+    cost: 3,
+    attack: 3,
+    health: 3,
+    speed: 7,
+    abilities: [{ kind: 'NITRO', value: 1 }],
+    flavor: 'Yol yoksa, yol yapar.',
+    price: priceFor('trailblazer-4x4', 'common'),
+  },
+  {
+    id: 'nitro-nomad',
+    name: 'Nitro Nomad',
+    class: 'offroad',
+    rarity: 'rare',
+    emoji: '🚙',
+    color: '#A3E635',
+    cost: 4,
+    attack: 4,
+    health: 4,
+    speed: 7,
+    abilities: [{ kind: 'NITRO', value: 2 }],
+    flavor: 'Yol biterse patika, patika biterse gaz.',
+    price: priceFor('nitro-nomad', 'rare'),
+  },
+  {
+    id: 'dust-devil',
+    name: 'Dust Devil',
+    class: 'offroad',
+    rarity: 'epic',
+    emoji: '🛻',
+    color: '#C2954D',
+    cost: 5,
+    attack: 4,
+    health: 4,
+    speed: 9,
+    abilities: [{ kind: 'RUSH' }, { kind: 'NITRO', value: 1 }],
+    flavor: 'Toz bulutunu görürsün, arabayı göremezsin.',
+    price: priceFor('dust-devil', 'epic'),
+  },
+  {
+    id: 'summit-king',
+    name: 'Summit King',
+    class: 'offroad',
+    rarity: 'legendary',
+    emoji: '🛻',
+    color: '#8D9440',
+    cost: 7,
+    attack: 5,
+    health: 6,
+    speed: 8,
+    abilities: [{ kind: 'NITRO', value: 2 }, { kind: 'TWIN' }],
+    flavor: 'Zirvede park yeri onun adına.',
+    price: priceFor('summit-king', 'legendary'),
+  },
+
+  // ─────────────────────────── Klasik Araba ───────────────────────────
+  // takım aurası (CONVOY) · sağlam · yavaş · yıpratma (WEAR)
+  {
+    id: 'chrome-cruiser',
+    name: 'Chrome Cruiser',
+    class: 'classic',
+    rarity: 'common',
+    emoji: '🚗',
+    color: '#6FB3B8',
+    cost: 2,
+    attack: 2,
+    health: 3,
+    speed: 4,
+    abilities: [],
+    flavor: 'Kaportası ayna gibi, motoru saat gibi.',
+    price: priceFor('chrome-cruiser', 'common'),
+  },
+  {
+    id: 'bonnet-58',
+    name: "Bonnet '58",
+    class: 'classic',
+    rarity: 'common',
+    emoji: '🚙',
+    color: '#B5654D',
+    cost: 3,
+    attack: 2,
+    health: 4,
+    speed: 3,
+    abilities: [{ kind: 'CONVOY', value: 1 }],
+    flavor: 'Amcanın garajından çıktı, hâlâ çalışıyor.',
+    price: priceFor('bonnet-58', 'common'),
+  },
+  {
+    id: 'velvet-roadster',
+    name: 'Velvet Roadster',
+    class: 'classic',
+    rarity: 'rare',
+    emoji: '🏎️',
+    color: '#8E5DA8',
+    cost: 4,
+    attack: 3,
+    health: 4,
+    speed: 4,
+    abilities: [{ kind: 'CONVOY', value: 1 }, { kind: 'WEAR', value: 1 }],
+    flavor: 'Üstü açık, stili kapalı gişe.',
+    price: priceFor('velvet-roadster', 'rare'),
+  },
+  {
+    id: 'grand-marquis',
+    name: 'Grand Marquis',
+    class: 'classic',
+    rarity: 'epic',
+    emoji: '🚗',
+    color: '#C9A24B',
+    cost: 5,
+    attack: 3,
+    health: 6,
+    speed: 2,
+    abilities: [{ kind: 'CONVOY', value: 2 }],
+    flavor: 'Koltukları kanepe, kaputu piyano.',
+    price: priceFor('grand-marquis', 'epic'),
+  },
+  {
+    id: 'the-heirloom',
+    name: 'The Heirloom',
+    class: 'classic',
+    rarity: 'legendary',
+    emoji: '🚗',
+    color: '#D4AF37',
+    cost: 7,
+    attack: 5,
+    health: 6,
+    speed: 3,
+    abilities: [{ kind: 'CONVOY', value: 2 }, { kind: 'WEAR', value: 2 }],
+    flavor: 'Dededen toruna, hiç pas tutmadı.',
+    price: priceFor('the-heirloom', 'legendary'),
+  },
+
+  // ─────────────────────────── Gelecek / Elektrikli ───────────────────────────
+  // sürekli yıpratma (WEAR) · garaja enerji boşalımı (BACKFIRE)
+  {
+    id: 'volt-scout',
+    name: 'Volt Scout',
+    class: 'future',
+    rarity: 'common',
+    emoji: '⚡',
+    color: '#4FD1E0',
+    cost: 2,
+    attack: 2,
+    health: 2,
+    speed: 8,
+    abilities: [{ kind: 'RUSH' }],
+    flavor: 'Fişi çek, gerisini merak etme.',
+    price: priceFor('volt-scout', 'common'),
+  },
+  {
+    id: 'ion-coupe',
+    name: 'Ion Coupe',
+    class: 'future',
+    rarity: 'common',
+    emoji: '🚗',
+    color: '#5C9DF5',
+    cost: 3,
+    attack: 2,
+    health: 3,
+    speed: 6,
+    abilities: [{ kind: 'WEAR', value: 1 }],
+    flavor: 'Görünmeden yaklaşır, sessizce yıpratır.',
+    price: priceFor('ion-coupe', 'common'),
+  },
+  {
+    id: 'zephyr-volt',
+    name: 'Zephyr Volt',
+    class: 'future',
+    rarity: 'rare',
+    emoji: '⚡',
+    color: '#35D6FF',
+    cost: 4,
+    attack: 3,
+    health: 4,
+    speed: 10,
+    abilities: [{ kind: 'RUSH' }, { kind: 'BACKFIRE', value: 1 }],
+    flavor: 'Sessiz gelir, şimşek gibi vurur.',
+    price: priceFor('zephyr-volt', 'rare'),
+  },
+  {
+    id: 'pulse-gt',
+    name: 'Pulse GT',
+    class: 'future',
+    rarity: 'epic',
+    emoji: '⚡',
+    color: '#7C6FF0',
+    cost: 5,
+    attack: 4,
+    health: 5,
+    speed: 8,
+    abilities: [{ kind: 'WEAR', value: 1 }, { kind: 'BACKFIRE', value: 2 }],
+    flavor: 'Sessiz. Ta ki değene kadar.',
+    price: priceFor('pulse-gt', 'epic'),
+  },
+  {
+    id: 'singularity',
+    name: 'Singularity',
+    class: 'future',
+    rarity: 'legendary',
+    emoji: '🏎️',
+    color: '#A15CF5',
+    cost: 8,
+    attack: 6,
+    health: 7,
+    speed: 9,
+    abilities: [{ kind: 'WEAR', value: 2 }, { kind: 'BACKFIRE', value: 2 }],
+    flavor: 'Yarının prototipi, bugün pistte.',
+    price: priceFor('singularity', 'legendary'),
+  },
+
+  // ─────────────────────────── Hizmet & Acil Durum ───────────────────────────
+  // hızlı iki müdahale (TWIN) · siper (BLOCKER) · destek
+  {
+    id: 'rescue-rig',
+    name: 'Rescue Rig',
+    class: 'utility',
+    rarity: 'common',
+    emoji: '🚐',
+    color: '#4CC2FF',
+    cost: 2,
+    attack: 2,
+    health: 3,
+    speed: 4,
+    abilities: [{ kind: 'TWIN' }],
+    flavor: 'Herkesin kötü gününde aradığı numara.',
+    price: priceFor('rescue-rig', 'common'),
+  },
+  {
+    id: 'cobalt-cargo',
+    name: 'Cobalt Cargo',
+    class: 'utility',
+    rarity: 'common',
+    emoji: '🚐',
+    color: '#6366F1',
+    cost: 3,
+    attack: 2,
+    health: 5,
+    speed: 3,
+    abilities: [{ kind: 'BLOCKER' }],
+    flavor: 'İçinde ne var? Kimse bilmiyor.',
+    price: priceFor('cobalt-cargo', 'common'),
+  },
+  {
+    id: 'blaze-response',
+    name: 'Blaze Response',
+    class: 'utility',
+    rarity: 'rare',
+    emoji: '🚒',
+    color: '#F8564D',
+    cost: 4,
+    attack: 2,
+    health: 5,
+    speed: 4,
+    abilities: [{ kind: 'TWIN' }],
+    flavor: 'Alarmı duyunca gaza basar.',
+    price: priceFor('blaze-response', 'rare'),
+  },
+  {
+    id: 'convoy-captain',
+    name: 'Convoy Captain',
+    class: 'utility',
+    rarity: 'epic',
+    emoji: '🚛',
+    color: '#FBBF24',
+    cost: 5,
+    attack: 3,
+    health: 6,
+    speed: 3,
+    abilities: [{ kind: 'CONVOY', value: 2 }],
+    flavor: "Telsizden tek kelime: 'Takip edin.'",
+    price: priceFor('convoy-captain', 'epic'),
+  },
+  {
+    id: 'guardian-hauler',
+    name: 'Guardian Hauler',
+    class: 'utility',
+    rarity: 'legendary',
+    emoji: '🚛',
+    color: '#34D399',
+    cost: 7,
+    attack: 5,
+    health: 8,
+    speed: 2,
+    abilities: [{ kind: 'BLOCKER' }, { kind: 'TWIN' }],
+    flavor: 'Kapıları kapandığında, arkası en güvenli yer.',
+    price: priceFor('guardian-hauler', 'legendary'),
+  },
+
+  // ─────────────────────────── Canavar Kamyon ───────────────────────────
+  // yüksek HP · ezme (RAM) · yavaş
+  {
+    id: 'mudslinger-max',
+    name: 'Mudslinger Max',
+    class: 'monster',
+    rarity: 'common',
+    emoji: '🛻',
+    color: '#9CA35E',
+    cost: 3,
+    attack: 3,
+    health: 4,
+    speed: 3,
+    abilities: [{ kind: 'RAM', value: 1 }],
+    flavor: 'Çamurdan korkan evde otursun.',
+    price: priceFor('mudslinger-max', 'common'),
+  },
+  {
+    id: 'quake-hauler',
+    name: 'Quake Hauler',
+    class: 'monster',
+    rarity: 'common',
+    emoji: '🚛',
+    color: '#D98A3D',
+    cost: 5,
+    attack: 4,
+    health: 6,
+    speed: 2,
+    abilities: [{ kind: 'RAM', value: 2 }],
+    flavor: 'Geçerken sismograflar oynar.',
+    price: priceFor('quake-hauler', 'common'),
+  },
+  {
+    id: 'tombstone-crusher',
+    name: 'Tombstone Crusher',
+    class: 'monster',
+    rarity: 'rare',
+    emoji: '🚚',
+    color: '#34D399',
+    cost: 6,
+    attack: 6,
+    health: 6,
+    speed: 3,
+    abilities: [{ kind: 'RAM', value: 2 }],
+    flavor: 'Ezip geçmek onun için sabah sporu.',
+    price: priceFor('tombstone-crusher', 'rare'),
+  },
+  {
+    id: 'titan-stomp',
+    name: 'Titan Stomp',
+    class: 'monster',
+    rarity: 'epic',
+    emoji: '🚚',
+    color: '#2F8F5B',
+    cost: 7,
+    attack: 5,
+    health: 8,
+    speed: 2,
+    abilities: [{ kind: 'BLOCKER' }, { kind: 'RAM', value: 2 }],
+    flavor: 'Tek adımı, bir park yeri.',
+    price: priceFor('titan-stomp', 'epic'),
+  },
+  {
+    id: 'iron-mammoth',
+    name: 'Iron Mammoth',
+    class: 'monster',
+    rarity: 'legendary',
+    emoji: '🚛',
+    color: '#8A93A8',
+    cost: 8,
+    attack: 7,
+    health: 9,
+    speed: 2,
+    abilities: [{ kind: 'BLOCKER' }, { kind: 'WEAR', value: 1 }],
+    flavor: 'Yürüdüğü yerde asfalt çatlar.',
+    price: priceFor('iron-mammoth', 'legendary'),
+  },
+
+  // ─────────────────────────── İş Makinesi ───────────────────────────
+  // bariyer (BLOCKER) · yıkım (RAM) · çok yavaş
+  {
+    id: 'site-dozer',
+    name: 'Site Dozer',
+    class: 'construction',
+    rarity: 'common',
+    emoji: '🚜',
+    color: '#F59E0B',
+    cost: 3,
+    attack: 2,
+    health: 5,
+    speed: 2,
+    abilities: [{ kind: 'BLOCKER' }],
+    flavor: 'İtemeyeceği duvar yok.',
+    price: priceFor('site-dozer', 'common'),
+  },
+  {
+    id: 'boulder-baron',
+    name: 'Boulder Baron',
+    class: 'construction',
+    rarity: 'common',
+    emoji: '🛻',
+    color: '#B98A5E',
+    cost: 4,
+    attack: 3,
+    health: 6,
+    speed: 2,
+    abilities: [{ kind: 'BLOCKER' }],
+    flavor: 'Önünde durmak, kayaya çarpmak gibidir.',
+    price: priceFor('boulder-baron', 'common'),
+  },
+  {
+    id: 'crane-titan',
+    name: 'Crane Titan',
+    class: 'construction',
+    rarity: 'rare',
+    emoji: '🏗️',
+    color: '#EAB308',
+    cost: 5,
+    attack: 3,
+    health: 7,
+    speed: 2,
+    abilities: [{ kind: 'BLOCKER' }, { kind: 'WEAR', value: 1 }],
+    flavor: 'Yukarı bakma, korkarsın.',
+    price: priceFor('crane-titan', 'rare'),
+  },
+  {
+    id: 'wrecking-warden',
+    name: 'Wrecking Warden',
+    class: 'construction',
+    rarity: 'epic',
+    emoji: '🚧',
+    color: '#FB923C',
+    cost: 6,
+    attack: 4,
+    health: 7,
+    speed: 2,
+    abilities: [{ kind: 'BLOCKER' }, { kind: 'RAM', value: 3 }],
+    flavor: 'Şantiyenin patronu geldi, herkes kenara.',
+    price: priceFor('wrecking-warden', 'epic'),
+  },
+  {
+    id: 'demolition-rex',
+    name: 'Demolition Rex',
+    class: 'construction',
+    rarity: 'legendary',
+    emoji: '🚜',
+    color: '#EA580C',
+    cost: 8,
+    attack: 6,
+    health: 9,
+    speed: 2,
+    abilities: [{ kind: 'BLOCKER' }, { kind: 'RAM', value: 3 }, { kind: 'WEAR', value: 1 }],
+    flavor: 'Kepçesi bir kamyonu kaşık gibi kaldırır.',
+    price: priceFor('demolition-rex', 'legendary'),
+  },
+];
+
+// ---------------------------------------------------------------------------
+
+export const CLASS_LABEL: Record<VehicleClass, string> = {
+  sports: 'Spor Araba',
+  offroad: 'Arazi / Off-Road',
+  classic: 'Klasik Araba',
+  future: 'Gelecek / Elektrikli',
+  utility: 'Hizmet & Acil Durum',
+  monster: 'Canavar Kamyon',
+  construction: 'İş Makinesi',
+};
+
+const CARD_BY_ID: Record<string, Card> = Object.fromEntries(
+  CARDS.map((c) => [c.id, c]),
+);
+
+export function getCard(id: string): Card {
+  const card = CARD_BY_ID[id];
+  if (!card) throw new Error(`Unknown card id: ${id}`);
+  return card;
+}
+
+export function cardsOfClass(cls: VehicleClass): Card[] {
+  return CARDS.filter((c) => c.class === cls);
+}
+
+/** Card ids that the player owns from the very first launch. */
+export const STARTER_CARD_IDS: string[] = CARDS.filter((c) => c.price.rim === 0).map((c) => c.id);
+
+// Kart seviyesi / yükseltme sistemi kaldırıldı (2026-09-13).
+//
+// Sebep ekonomik: yükseltme stat artışı veriyordu, yani coin'le (gerçek para)
+// yükseltmeye izin verildiği anda doğrudan güç satılmış olurdu. Yeni model
+// LoL'ünki: para sadece kart AÇMAYI hızlandırıyor, gücü değiştirmiyor.
+// Kartlar artık sabit güçte — statlar doğrudan CARDS içinde.
+

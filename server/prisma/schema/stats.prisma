@@ -1,0 +1,29 @@
+/// Oyuncu istatistikleri alanı.
+
+/// Bir oyuncunun maç geçmişinin özeti.
+///
+/// NEDEN SUNUCUDA:
+/// Bu sayılar sadece "gösterilecek bir rakam" değil, oyunun kendisini
+/// etkiliyor — bot destesinin seviyesi galibiyet sayısına göre ölçekleniyor ve
+/// yakında lig/rütbe de buraya dayanacak. Cihazda tutulsaydı oyuncu
+/// "0 galibiyet" yazıp en zayıf botla oynayarak ödül toplayabilirdi.
+///
+/// Sayaçlar maç DOĞRULANDIKTAN sonra, sunucunun kendi hesapladığı sonuca göre
+/// artıyor (MatchService.submit) — istemcinin bildirdiği bir şeye göre değil.
+model UserStats {
+  userId String @id @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  battlesPlayed Int @default(0)
+  battlesWon    Int @default(0)
+  /// Üst üste galibiyet — görev/ödül mekanikleri için ileride gerekecek.
+  winStreak     Int @default(0)
+  /// Şimdiye kadarki en uzun seri; sıfırlanmıyor.
+  bestWinStreak Int @default(0)
+
+  lastBattleAt DateTime?
+  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime  @default(now())
+
+  @@map("user_stats")
+}

@@ -1,0 +1,55 @@
+/// Kimlik alanı: kullanıcı hesabı ve oturum (refresh token) tabloları.
+///
+/// Misafir kullanıcı da burada normal bir User satırıdır — ayrı bir "guest"
+/// tablosu YOK. Sebebi Faz 2'nin şartı: misafirin gerçek hesaba geçişi veri
+/// kaybetmeden olmalı. Aynı satırda kalıp sadece email/passwordHash dolduğunda
+/// bu "yükseltme" tek bir UPDATE oluyor; ayrı tablolar olsaydı tüm ilerlemeyi
+/// (koleksiyon, coin, istatistik) satır satır taşımak gerekirdi.
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  /// Misafirken null; hesap yükseltmesinde dolar. Benzersiz ama opsiyonel:
+  /// Postgres'te birden fazla NULL aynı unique indekste sorun çıkarmaz.
+  email        String? @unique
+  /// argon2id hash. Asla dışarı sızmaması gereken tek alan — DTO katmanında
+  /// @Exclude ile korunuyor, sorguda select edilmiyor.
+  passwordHash String?
+  /// true olduğu sürece hesap sadece cihaza bağlı; email/şifre atandığında false.
+  isGuest      Boolean @default(true)
+  displayName  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  refreshTokens RefreshToken[]
+  devices       Device[]
+  wallets       Wallet[]
+  stats         UserStats?
+  ownedCards    OwnedCard[]
+
+  @@map("users")
+}
+
+/// Refresh token'ın KENDİSİ değil, hash'i saklanır.
+///
+/// Gerekçe: veritabanı sızarsa düz metin token'lar doğrudan oturum devralmaya
+/// yarar — şifreleri hash'leyip token'ları düz tutmak tutarsız olurdu. Ayrıca
+/// satır bazlı iptal (revokedAt) ve rotasyon burada mümkün: her yenilemede
+/// eski satır iptal edilip yenisi yazılır, böylece çalınmış bir token ikinci
+/// kez kullanıldığında tespit edilebilir.
+model RefreshToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// SHA-256(token) — argon2 değil, çünkü bu değer yüksek entropili rastgele
+  /// bir dize (şifre gibi tahmin edilebilir değil) ve her istekte doğrulanıyor.
+  tokenHash String   @unique
+  /// Hangi cihazdan alındığı: "diğer cihazlardan çıkış yap" için gerekli.
+  deviceId  String?  @db.Uuid
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}

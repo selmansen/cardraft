@@ -1,0 +1,103 @@
+/// Ekonomi alanı: cüzdan ve işlem defteri.
+
+/// Para birimleri — League of Legends'ın "mavi öz / RP" modeli.
+///
+/// Bir kart iki yoldan da alınabiliyor: uzun uzun oynayarak (RIM) ya da para
+/// ödeyerek (COIN). Bu, ödeme yapmayan oyuncuya "her şeye ulaşabilirsin, sadece
+/// daha uzun sürer" diyen model; ödeme yapan zamanı satın alıyor, güç değil.
+/// Eşleştirme de lig içinde kalacağı için (yol haritası §8.2) para tek başına
+/// galibiyet getirmiyor.
+enum CurrencyCode {
+  /// Gerçek parayla satın alınan. UI'da "coin". Yeni oyuncuda 0.
+  COIN
+  /// Oynayarak kazanılan. UI'da **"jant"** — araç temasının "mavi öz"ü.
+  /// Kod tarafı İngilizce kalsın diye RIM; arayüzde her zaman "jant" yazacak.
+  RIM
+}
+
+// Bir zamanlar burada TOKEN vardı ("atölye/parça" ekonomisi için ayrılmıştı).
+// Kaldırıldı: o fikir Pit Ekibi kartlarına dönüşünce token'ın ne kazanımı ne
+// harcaması kaldı — kullanılmayan bir enum değeri, koda bakan herkeste "bu ne
+// işe yarıyor" sorusu doğuruyor. Gerçekten gerekirse eklemek tek satır;
+// çıkarmak ise (bu migration'da olduğu gibi) tipi yeniden yaratmayı
+// gerektiriyor, yani "dursun zararı yok" aslında ucuz değil.
+
+/// Bakiyenin neden değiştiği. Denetim için şart: "bu coin nereden geldi"
+/// sorusunun cevabı olmadan hile tespiti yapılamaz.
+enum LedgerReason {
+  BATTLE_REWARD
+  DAILY_LOGIN
+  QUEST_REWARD
+  PURCHASE_STORE
+  SPEND_CARD_UNLOCK
+  SPEND_CARD_UPGRADE
+  ADMIN_ADJUSTMENT
+  SIGNUP_BONUS
+}
+
+/// Kullanıcının bir para birimindeki güncel bakiyesi.
+///
+/// Bakiye, defterdeki satırların toplamı olarak HER SEFERİNDE hesaplanabilirdi
+/// (event sourcing). Öyle yapmadık: kullanıcı binlerce işleme ulaştığında her
+/// bakiye okuması bir toplama sorgusu olurdu. Bunun yerine bakiye burada
+/// "önceden hesaplanmış" duruyor, defter ise doğruluğun kaynağı olarak
+/// kalıyor — ikisi aynı transaction'da güncellendiği için ayrışamazlar ve
+/// gerektiğinde defterden yeniden hesaplanıp karşılaştırılabilirler.
+model Wallet {
+  id       String       @id @default(uuid()) @db.Uuid
+  userId   String       @db.Uuid
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currency CurrencyCode
+  /// Tam sayı: para birimlerinde ondalık kullanmak (float) yuvarlama
+  /// hatalarıyla bakiye kaybına/kazancına yol açar. Oyun parası zaten bölünmüyor.
+  balance  Int          @default(0)
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  entries LedgerEntry[]
+
+  /// Kullanıcı başına para birimi başına tek cüzdan.
+  @@unique([userId, currency])
+  @@index([userId])
+  @@map("wallets")
+}
+
+/// Değişmez işlem defteri. Satırlar ASLA güncellenmez veya silinmez;
+/// bir hatayı düzeltmenin yolu ters kayıt atmaktır.
+///
+/// Neden defter tutuyoruz da sadece bakiyeyi güncellemiyoruz:
+///  - Denetlenebilirlik: "1200 coin nereden geldi" sorusu cevaplanabilir.
+///  - Hile tespiti: saatte 40 maç ödülü alan hesap defterden görülür.
+///  - Destek: yanlış giden bir işlem geri alınabilir.
+///  - Doğrulama: bakiye bozulursa defterden yeniden hesaplanabilir.
+model LedgerEntry {
+  id       String @id @default(uuid()) @db.Uuid
+  walletId String @db.Uuid
+  wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  /// Pozitif = kazanç, negatif = harcama. Tek alanda tutmak, "tür" alanı
+  /// ekleyip her sorguda işaret hesaplamaktan basit ve toplaması doğrudan.
+  amount Int
+  /// İşlem SONRASI bakiye. Denetimde "bu satırdan sonra bakiye ne olmalıydı"
+  /// sorusunu sorguya gerek kalmadan cevaplar.
+  balanceAfter Int
+  reason       LedgerReason
+  /// Serbest bağlam (hangi maç, hangi kart, hangi mağaza makbuzu).
+  metadata Json?
+
+  /**
+   * Tekrar koruması.
+   *
+   * Ağ koptuğunda istemci aynı isteği yeniden gönderir; kullanıcı da düğmeye
+   * iki kez basar. Bu alan benzersiz olduğu için ikinci kayıt veritabanı
+   * seviyesinde reddedilir — "önce kontrol et sonra yaz" mantığındaki yarış
+   * durumu (iki istek aynı anda kontrol edip ikisi de yazması) mümkün olmaz.
+   */
+  idempotencyKey String? @unique
+
+  createdAt DateTime @default(now())
+
+  @@index([walletId, createdAt])
+  @@map("ledger_entries")
+}

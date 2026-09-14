@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics=""><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&amp;family=Nunito:wght@600;700;900&amp;display=swap" rel="stylesheet"><script src="./image-slot.js"></script><style>body{margin:0;background:#EDE7DA;-webkit-font-smoothing:antialiased}@keyframes cc-pulse{0%,100%{transform:scale(.94)}50%{transform:scale(1.05)}}@keyframes cc-toast{0%{opacity:0;transform:translateY(-6px)}12%{opacity:1;transform:translateY(0)}82%{opacity:1}100%{opacity:0}}@keyframes cc-lunge-right{0%{transform:translateX(0) rotate(0)}40%{transform:translateX(8px) rotate(-2deg)}100%{transform:translateX(0) rotate(0)}}@keyframes cc-lunge-left{0%{transform:translateX(0) rotate(0)}40%{transform:translateX(-8px) rotate(2deg)}100%{transform:translateX(0) rotate(0)}}@keyframes cc-shake-crack{0%{transform:translateX(0)}15%{transform:translateX(-5px)}30%{transform:translateX(5px)}45%{transform:translateX(-3px)}60%{transform:translateX(3px)}100%{transform:translateX(0)}}@keyframes cc-flash{0%{opacity:.6}100%{opacity:0}}@keyframes cc-panel-in{0%{opacity:0;transform:translateY(8px) scale(.96)}100%{opacity:1;transform:translateY(0) scale(1)}}@keyframes cc-banner-sweep{0%{transform:skewX(-6deg) translateX(-130%);opacity:0}18%{transform:skewX(-6deg) translateX(0);opacity:1}78%{transform:skewX(-6deg) translateX(0);opacity:1}100%{transform:skewX(-6deg) translateX(130%);opacity:0}}@keyframes cc-draw-pop{0%{transform:scale(.4) translateY(10px);opacity:0}32%{transform:scale(1.06) translateY(0);opacity:1}62%{transform:scale(1) translateY(0);opacity:1}100%{transform:scale(.22) translateY(230px);opacity:0}}</style></helmet>
+
+<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:16px;padding:40px 20px;font-family:Nunito,system-ui,sans-serif">
+  <div style="display:flex;align-items:center;gap:10px">
+    <span style="font:800 20px 'Baloo 2',cursive;color:#3A7BF0">Car Draft</span>
+    <span style="padding:4px 10px;border-radius:999px;background:#FFF0DC;color:#B35C00;font:700 11px Nunito,sans-serif;letter-spacing:.08em;text-transform:uppercase">Faz 1 · Tıklanabilir Prototip</span>
+  </div>
+
+  
+
+  <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+    <div style="height:100%;display:flex;flex-direction:column;background:#FBF7F0;position:relative;overflow:hidden;padding-top:54px;box-sizing:border-box">
+
+      <div style="flex: 1; overflow: auto; padding: 14px 16px 110px; position: relative" data-screen-label="{{ screenLabel }}" data-comment-anchor="238116543a-div">
+
+        <sc-if value="{{ isMenu }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:16px" data-comment-anchor="1a72572a3b-div">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <span style="font:800 24px 'Baloo 2',cursive;color:#1E2436">Car Draft</span>
+                <span style="font:700 11px Nunito,sans-serif;color:#6B7285">Seviye {{ playerLevel }} · Sürücü</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;padding:7px 12px;background:#FFFFFF;border:1px solid #EBE3D6;border-radius:999px;box-shadow:0 2px 8px rgba(30,36,54,.05)">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="#FF9522" stroke="#B35C00" stroke-width="1" stroke-linejoin="round"><polygon points="7 3 17 3 22 9 12 22 2 9"></polygon><line x1="2" y1="9" x2="22" y2="9" stroke="#B35C00" stroke-width="1"></line><line x1="9" y1="3" x2="12" y2="9" stroke="#B35C00" stroke-width="1"></line><line x1="15" y1="3" x2="12" y2="9" stroke="#B35C00" stroke-width="1"></line></svg>
+                <span style="font:800 14px 'Baloo 2',cursive;color:#1E2436">{{ tokenCount }}</span>
+              </div>
+            </div>
+
+            <button onClick="{{ goDifficulty }}" style="display:flex;align-items:center;justify-content:space-between;padding:20px 22px;background:#3A7BF0;border:0;border-radius:24px;box-shadow:0 4px 0 #1E4FB0;cursor:pointer;text-align:left" style-active="box-shadow:none;transform:translateY(4px)">
+              <span style="display:flex;flex-direction:column;gap:4px">
+                <span style="font:800 19px 'Baloo 2',cursive;color:#FFFFFF">Savaşa Başla</span>
+                <span style="font:600 12px Nunito,sans-serif;color:#DCE9FF">Çok araçlı garaj savaşı</span>
+              </span>
+              <span style="width:38px;height:38px;border-radius:999px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center">
+                <span style="width:0;height:0;border-top:8px solid transparent;border-bottom:8px solid transparent;border-left:11px solid #FFFFFF;margin-left:2px"></span>
+              </span>
+            </button>
+
+            <button onClick="{{ goSquad }}" style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;background:#FFFFFF;border:1px solid #EBE3D6;border-radius:20px;cursor:pointer;text-align:left">
+              <span style="display:flex;flex-direction:column;gap:2px">
+                <span style="font:700 15px Nunito,sans-serif;color:#1E2436">Kadronu Düzenle</span>
+                <span style="font:600 12px Nunito,sans-serif;color:#6B7285">Savaşa çıkacak {{ squadCount }}/5 araç</span>
+              </span>
+              <span style="width:26px;height:26px;border-radius:999px;background:#F3EEE4;display:flex;align-items:center;justify-content:center">
+                <span style="width:7px;height:7px;border-top:2px solid #6B7285;border-right:2px solid #6B7285;transform:rotate(45deg);margin-left:-2px"></span>
+              </span>
+            </button>
+
+            <button onClick="{{ goGallery }}" style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;background:#FFFFFF;border:1px solid #EBE3D6;border-radius:20px;cursor:pointer;text-align:left">
+              <span style="display:flex;flex-direction:column;gap:2px">
+                <span style="font:700 15px Nunito,sans-serif;color:#1E2436" data-comment-anchor="d370c748d9-span">Koleksiyon &amp; Yükseltme</span>
+                <span style="font:600 12px Nunito,sans-serif;color:#6B7285">{{ ownedCount }} araç garajında</span>
+              </span>
+              <span style="width:26px;height:26px;border-radius:999px;background:#F3EEE4;display:flex;align-items:center;justify-content:center">
+                <span style="width:7px;height:7px;border-top:2px solid #6B7285;border-right:2px solid #6B7285;transform:rotate(45deg);margin-left:-2px"></span>
+              </span>
+            </button>
+
+            <button onClick="{{ goHowToPlay }}" style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;background:#FFFFFF;border:1px solid #EBE3D6;border-radius:20px;cursor:pointer;text-align:left">
+              <span style="display:flex;flex-direction:column;gap:2px">
+                <span style="font:700 15px Nunito,sans-serif;color:#1E2436">Nasıl Oynanır?</span>
+                <span style="font:600 12px Nunito,sans-serif;color:#6B7285">Kurallar, yetenekler, ipuçları</span>
+              </span>
+              <span style="width:26px;height:26px;border-radius:999px;background:#F3EEE4;display:flex;align-items:center;justify-content:center">
+                <span style="width:7px;height:7px;border-top:2px solid #6B7285;border-right:2px solid #6B7285;transform:rotate(45deg);margin-left:-2px"></span>
+              </span>
+            </button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isHowToPlay }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <span style="font:800 24px 'Baloo 2',cursive;color:#1E2436">Nasıl Oynanır?</span>
+            <span style="font:600 13px/1.55 Nunito,sans-serif;color:#4A5266">Sıra tabanlı bir kart savaşı. <strong style="color:#1E2436">Amaç:</strong> rakibin garajını (üstteki can barı) 0'a indirmek.</span>
+
+            <span style="font:800 15px 'Baloo 2',cursive;color:#1E2436;margin-top:4px">Karttaki sayılar</span>
+            <div style="display:flex;flex-direction:column;gap:8px;padding:12px;background:#FFFFFF;border:1px solid #EBE3D6;border-radius:16px">
+              <sc-for list="{{ statLegend }}" as="row" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span style="width:14px;height:14px;flex-shrink:0;border-radius:{{ row.radius }};background:{{ row.color }};transform:{{ row.transform }}"></span>
+                  <span style="font:800 12px Nunito,sans-serif;color:#1E2436;width:64px;flex-shrink:0">{{ row.k }}</span>
+                  <span style="font:600 12px/1.4 Nunito,sans-serif;color:#6B7285">{{ row.v }}</span>
+                </div>
+              </sc-for>
+            </div>
+
+            <span style="font:800 15px 'Baloo 2',cursive;color:#1E2436;margin-top:4px">Bir Tur</span>
+            <sc-for list="{{ turnSteps }}" as="step" hint-placeholder-count="4">
+              <div style="display:flex;flex-direction:column;gap:4px;padding:12px;background:#FFFFFF;border:1px solid #EBE3D6;border-radius:16px">
+                <span style="font:800 13px Nunito,sans-serif;color:#B35C00">{{ step.title }}</span>
+                <span style="font:600 12px/1.5 Nunito,sans-serif;color:#4A5266">{{ step.text }}</span>
+              </div>
+            </sc-for>
+
+            <span style="font:800 15px 'Baloo 2',cursive;color:#1E2436;margin-top:4px">Yetenekler</span>
+            <div style="display:flex;flex-direction:column;gap:6px;padding:12px;background:#FFFFFF;border:1px solid #EBE3D6;border-radius:16px">
+              <sc-for list="{{ abilityLines }}" as="line" hint-placeholder-count="8">
+                <span style="font:600 12px/1.5 Nunito,sans-serif;color:#4A5266">• {{ line }}</span>
+              </sc-for>
+            </div>
+
+            <span style="font:800 15px 'Baloo 2',cursive;color:#1E2436;margin-top:4px">İpuçları</span>
+            <div style="display:flex;flex-direction:column;gap:6px;padding:12px;background:#FFFFFF;border:1px solid #EBE3D6;border-radius:16px">
+              <sc-for list="{{ tips }}" as="tip" hint-placeholder-count="4">
+                <span style="font:600 12px/1.5 Nunito,sans-serif;color:#4A5266">• {{ tip }}</span>
+              </sc-for>
+            </div>
+
+            <button onClick="{{ goMenu }}" style="height:52px;background:#FF9522;color:#1E2436;border:0;border-radius:999px;font:900 15px Nunito,sans-serif;box-shadow:0 4px 0 #B35C00;cursor:pointer;margin-top:4px" style-active="box-shadow:none;transform:translateY(4px)">ANLADIM, BAŞLAYALIM</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isDifficulty }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <button onClick="{{ goMenu }}" style="align-self:flex-start;display:flex;align-items:center;gap:6px;border:0;background:transparent;padding:4px 0;cursor:pointer;font:700 13px Nunito,sans-serif;color:#6B7285">
+              <span style="width:8px;height:8px;border-top:2px solid #6B7285;border-left:2px solid #6B7285;transform:rotate(-45deg)"></span> Menü
+            </button>
+            <span style="font:800 22px 'Baloo 2',cursive;color:#1E2436">Zorluğu seç, savaş başlasın.</span>
+            <sc-for list="{{ difficultyOptions }}" as="opt" hint-placeholder-count="3">
+              <button onClick="{{ opt.onClick }}" style="display:flex;flex-direction:column;gap:6px;padding:16px;background:#FFFFFF;border:2px solid {{ opt.border }};border-radius:20px;cursor:pointer;text-align:left">
+                <span style="display:flex;align-items:center;justify-content:space-between">
+                  <span style="font:800 19px 'Baloo 2',cursive;color:#1E2436">{{ opt.label }}</span>
+                  <sc-if value="{{ opt.active }}" hint-placeholder-val="{{ false }}"><span style="font:800 10px Nunito,sans-serif;letter-spacing:.06em;color:{{ opt.ink }}">SON SEÇİLEN</span></sc-if>
+                </span>
+                <span style="font:600 13px/1.5 Nunito,sans-serif;color:#6B7285">{{ opt.blurb }}</span>
+              </button>
+            </sc-for>
+            <span style="text-align:center;font:600 12px/1.5 Nunito,sans-serif;color:#A0A6B5">Zorluğu her savaştan önce değiştirebilirsin. Kadronu düzenlemek için geri dön.</span>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isSquad }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <button onClick="{{ goMenu }}" style="display:flex;align-items:center;gap:6px;border:0;background:transparent;padding:4px 0;cursor:pointer;font:700 13px Nunito,sans-serif;color:#6B7285">
+                <span style="width:8px;height:8px;border-top:2px solid #6B7285;border-left:2px solid #6B7285;transform:rotate(-45deg)"></span> Menü
+              </button>
+              <span style="padding:4px 11px;border-radius:999px;background:#DCE9FF;color:#2E62C8;font:800 12px 'Baloo 2',cursive">{{ squadCount }}/5</span>
+            </div>
+            <span style="font:800 22px 'Baloo 2',cursive;color:#1E2436">Kadronu Düzenle</span>
+            <span style="font:600 12px/1.5 Nunito,sans-serif;color:#6B7285">Savaşa çıkacak araçları seç. Kartlara dokunarak ekle veya çıkar.</span>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <sc-for list="{{ squadPickerCards }}" as="card" hint-placeholder-count="10">
+                <button onClick="{{ card.onToggle }}" style="position:relative;display:flex;flex-direction:column;background:#FFFFFF;border:2px solid {{ card.pickBorder }};border-radius:20px;overflow:hidden;box-shadow:0 4px 12px rgba(30,36,54,.05);cursor:pointer;padding:0;text-align:left;{{ card.pickExtra }}">
+                  <span style="position:relative;height:80px;background:{{ card.artBg }};display:block">
+                    <image-slot id="{{ card.slotId }}" shape="rect" placeholder="araç görseli" src="{{ card.artSrc }}"></image-slot>
+                  </span>
+                  <span style="padding:9px 10px 10px;display:flex;flex-direction:column;gap:4px">
+                    <span style="font:800 13px 'Baloo 2',cursive;color:#1E2436;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ card.name }}</span>
+                    <span style="display:flex;align-items:center;gap:5px"><svg viewBox="0 0 24 24" width="10" height="10" fill="{{ card.border }}" stroke="{{ card.border }}" stroke-width="1" stroke-linejoin="round" style="flex-shrink:0"><polygon points="12 2 22 8.5 18 22 6 22 2 8.5"></polygon></svg><span style="font:700 10px Nunito,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#6B7285">{{ card.rarity }}</span></span>
+                  </span>
+                  <span style="position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:999px;background:{{ card.checkBg }};border:2px solid #FFFFFF;box-shadow:0 2px 5px rgba(30,36,54,.2);display:flex;align-items:center;justify-content:center;z-index:2">
+                    <sc-if value="{{ card.selected }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:5px;border-left:2px solid #FFFFFF;border-bottom:2px solid #FFFFFF;transform:rotate(-45deg) translateY(-1px)"></span></sc-if>
+                  </span>
+                </button>
+              </sc-for>
+            </div>
+            <button onClick="{{ goMenu }}" style="height:52px;background:#3A7BF0;color:#FFFFFF;border:0;border-radius:999px;font:800 15px 'Baloo 2',cursive;box-shadow:0 4px 0 #1E4FB0;cursor:pointer;margin-top:4px" style-active="box-shadow:none;transform:translateY(4px)">KAYDET</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isGallery }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <span style="font:800 22px 'Baloo 2',cursive;color:#1E2436">Kartlarım</span>
+            <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:2px">
+              <sc-for list="{{ filterChips }}" as="chip" hint-placeholder-count="5">
+                <button onClick="{{ chip.onClick }}" style="flex-shrink:0;padding:7px 14px;border-radius:999px;border:1.5px solid {{ chip.borderColor }};background:{{ chip.bg }};color:{{ chip.ink }};font:700 12px Nunito,sans-serif;cursor:pointer;white-space:nowrap">{{ chip.label }}</button>
+              </sc-for>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <sc-for list="{{ filteredCards }}" as="card" hint-placeholder-count="10">
+                <div style="display:flex;flex-direction:column;background:#FFFFFF;border:2px solid {{ card.border }};border-radius:20px;overflow:hidden;box-shadow:0 4px 12px rgba(30,36,54,.05)">
+                  <span style="position:relative;height:88px;background:{{ card.artBg }};display:block">
+                    <image-slot id="{{ card.slotId }}" shape="rect" placeholder="araç görseli" src="{{ card.artSrc }}"></image-slot>
+                    <span style="position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:999px;background:#FFFFFF;color:#1E2436;display:flex;align-items:center;justify-content:center;font:800 10px 'Baloo 2',cursive;box-shadow:0 2px 5px rgba(30,36,54,.14);z-index:2;pointer-events:none">{{ card.level }}</span>
+                  </span>
+                  <button onClick="{{ card.onOpen }}" style="border:0;background:transparent;padding:9px 10px 11px;display:flex;flex-direction:column;gap:6px;cursor:pointer;text-align:left">
+                    <span style="font:800 14px 'Baloo 2',cursive;color:#1E2436;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ card.name }}</span>
+                    <span style="display:flex;align-items:center;gap:5px"><svg viewBox="0 0 24 24" width="10" height="10" fill="{{ card.border }}" stroke="{{ card.border }}" stroke-width="1" stroke-linejoin="round" style="flex-shrink:0"><polygon points="12 2 22 8.5 18 22 6 22 2 8.5"></polygon></svg><span style="font:700 10px Nunito,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#6B7285">{{ card.rarity }}</span></span>
+                    <div style="display:flex;gap:5px">
+                      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 0;background:#F3EEE4;border-radius:8px"><span style="font:700 7px ui-monospace,Menlo,monospace;color:#A0A6B5">GÜÇ</span><span style="font:800 13px 'Baloo 2',cursive;color:#1E2436">{{ card.power }}</span></div>
+                      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 0;background:#F3EEE4;border-radius:8px"><span style="font:700 7px ui-monospace,Menlo,monospace;color:#A0A6B5">HIZ</span><span style="font:800 13px 'Baloo 2',cursive;color:#1E2436">{{ card.speed }}</span></div>
+                      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 0;background:#F3EEE4;border-radius:8px"><span style="font:700 7px ui-monospace,Menlo,monospace;color:#A0A6B5">DAY</span><span style="font:800 13px 'Baloo 2',cursive;color:#1E2436">{{ card.durability }}</span></div>
+                    </div>
+                  </button>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <button onClick="{{ goGallery }}" style="align-self:flex-start;display:flex;align-items:center;gap:6px;border:0;background:transparent;padding:4px 0;cursor:pointer;font:700 13px Nunito,sans-serif;color:#6B7285">
+              <span style="width:8px;height:8px;border-top:2px solid #6B7285;border-left:2px solid #6B7285;transform:rotate(-45deg)"></span> Koleksiyon
+            </button>
+            <div style="position:relative;height:190px;border-radius:24px;background:{{ selectedCard.artBg }};overflow:hidden">
+              
+              <span style="position:absolute;top:12px;right:12px;padding:5px 12px;border-radius:999px;background:#FFFFFF;color:#1E2436;font:800 13px 'Baloo 2',cursive;box-shadow:0 2px 6px rgba(30,36,54,.14);z-index:2;pointer-events:none">Seviye {{ selectedCard.level }} / {{ maxLevel }}</span>
+            <image-slot id="{{ selectedCard.slotId }}" shape="rounded" radius="24" placeholder="araç görseli" src="{{ selectedCard.artSrc }}"></image-slot></div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <span style="font:800 26px 'Baloo 2',cursive;color:#1E2436">{{ selectedCard.name }}</span>
+              <span style="font:600 13px/1.5 Nunito,sans-serif;font-style:italic;color:#6B7285">"{{ selectedCard.flavor }}"</span>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <span style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:{{ selectedCard.pillBg }}">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="{{ selectedCard.border }}" stroke="{{ selectedCard.border }}" stroke-width="1" stroke-linejoin="round" style="flex-shrink:0"><polygon points="12 2 22 8.5 18 22 6 22 2 8.5"></polygon></svg>
+                  <span style="font:800 12px Nunito,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:{{ selectedCard.pillInk }}">{{ selectedCard.rarity }}</span>
+                </span>
+                <span style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:#F3EEE4">
+                  <sc-if value="{{ selectedCard.isTypeSpor }}" hint-placeholder-val="{{ true }}"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#4A5266" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg></sc-if>
+                  <sc-if value="{{ selectedCard.isTypeMonster }}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#4A5266" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg></sc-if>
+                  <sc-if value="{{ selectedCard.isTypeYardimci }}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#4A5266" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg></sc-if>
+                  <span style="font:800 12px Nunito,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#4A5266">{{ selectedCard.type }}</span>
+                </span>
+              </div>
+            </div>
+            <div style="display:flex;gap:7px">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;background:#F3EEE4;border-radius:14px">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#FF9522" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"></path></svg>
+                <span style="display:flex;align-items:baseline;gap:3px"><span style="font:800 18px 'Baloo 2',cursive;color:#1E2436">{{ selectedCard.power }}</span><sc-if value="{{ selectedCard.hasDelta }}" hint-placeholder-val="{{ false }}"><span style="font:800 10px 'Baloo 2',cursive;color:#137A40">{{ selectedCard.deltaPower }}</span></sc-if></span>
+                <span style="font:700 8px Nunito,sans-serif;color:#A0A6B5;letter-spacing:.02em;text-align:center">GÜÇ</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;background:#F3EEE4;border-radius:14px">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#3A7BF0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"></polygon><polygon points="12 4 22 12 12 20 12 4"></polygon></svg>
+                <span style="display:flex;align-items:baseline;gap:3px"><span style="font:800 18px 'Baloo 2',cursive;color:#1E2436">{{ selectedCard.speed }}</span><sc-if value="{{ selectedCard.hasDelta }}" hint-placeholder-val="{{ false }}"><span style="font:800 10px 'Baloo 2',cursive;color:#137A40">{{ selectedCard.deltaSpeed }}</span></sc-if></span>
+                <span style="font:700 8px Nunito,sans-serif;color:#A0A6B5;letter-spacing:.02em;text-align:center">HIZ</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;background:#F3EEE4;border-radius:14px">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#2FBF6B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z"></path></svg>
+                <span style="display:flex;align-items:baseline;gap:3px"><span style="font:800 18px 'Baloo 2',cursive;color:#1E2436">{{ selectedCard.durability }}</span><sc-if value="{{ selectedCard.hasDelta }}" hint-placeholder-val="{{ false }}"><span style="font:800 10px 'Baloo 2',cursive;color:#137A40">{{ selectedCard.deltaDurability }}</span></sc-if></span>
+                <span style="font:700 8px Nunito,sans-serif;color:#A0A6B5;letter-spacing:.02em;text-align:center">DAYANIKLILIK</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;background:#F3EEE4;border-radius:14px">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#2E62C8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 8 5 11.5 5 15a7 7 0 0 0 14 0c0-3.5-3-7-7-13z"></path></svg>
+                <span style="font:800 18px 'Baloo 2',cursive;color:#1E2436">{{ selectedCard.fuel }}</span>
+                <span style="font:700 8px Nunito,sans-serif;color:#A0A6B5;letter-spacing:.02em;text-align:center">YAKIT</span>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <span style="font:700 11px Nunito,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#A0A6B5;margin-bottom:6px">Özellikler</span>
+              <div style="display:flex;flex-direction:column;background:#FFFFFF;border:1px solid #EBE3D6;border-radius:16px;overflow:hidden">
+                <sc-for list="{{ selectedCard.abilityInfo }}" as="ab" hint-placeholder-count="2">
+                  <div style="display:flex;gap:10px;align-items:flex-start;padding:12px 14px;{{ ab.divider }}">
+                    <span style="flex-shrink:0;width:7px;height:7px;margin-top:5px;border-radius:999px;background:#FF9522"></span>
+                    <span style="font:600 12px/1.5 Nunito,sans-serif;color:#4A5266"><span style="font:800 12px Nunito,sans-serif;color:#1E2436">{{ ab.label }}: </span>{{ ab.desc }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <button onClick="{{ selectedCard.onUpgrade }}" disabled="{{ selectedCard.upgradeDisabled }}" style="position:relative;height:52px;padding:0 20px;display:flex;align-items:center;background:#3A7BF0;color:#FFFFFF;border:0;border-radius:999px;font:800 14px 'Baloo 2',cursive;box-shadow:0 4px 0 #1E4FB0;cursor:pointer" style-active="box-shadow:none;transform:translateY(4px)">
+              <span style="position:absolute;left:0;right:0;text-align:center">{{ selectedCard.upgradeMainText }}</span>
+              <sc-if value="{{ selectedCard.hasCost }}" hint-placeholder-val="{{ true }}">
+                <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.16);padding:4px 10px;border-radius:999px">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="#FF9522" stroke="#B35C00" stroke-width="1" stroke-linejoin="round" style="flex-shrink:0"><polygon points="7 3 17 3 22 9 12 22 2 9"></polygon><line x1="2" y1="9" x2="22" y2="9" stroke="#B35C00" stroke-width="1"></line><line x1="9" y1="3" x2="12" y2="9" stroke="#B35C00" stroke-width="1"></line><line x1="15" y1="3" x2="12" y2="9" stroke="#B35C00" stroke-width="1"></line></svg>
+                  <span style="font:800 13px 'Baloo 2',cursive">{{ selectedCard.upgradeCost }}</span>
+                </span>
+              </sc-if>
+            </button>
+            <button onClick="{{ selectedCard.onAddToSquad }}" style="height:52px;background:#FFFFFF;color:#2E62C8;border:2px solid #DCE9FF;border-radius:999px;font:800 15px 'Baloo 2',cursive;cursor:pointer" style-hover="border-color:#3A7BF0">+ KADROYA EKLE</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isBattle }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:8px;position:relative">
+
+            <sc-if value="{{ dimOverlayVisible }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;top:-14px;left:-16px;right:-16px;bottom:-14px;background:rgba(20,20,30,.28);z-index:25;pointer-events:none;border-radius:16px"></div>
+            </sc-if>
+
+            <div style="position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px">
+              <button onClick="{{ forfeitBattle }}" style="display:flex;align-items:center;gap:5px;border:0;background:transparent;padding:2px 0;cursor:pointer;flex-shrink:0;position:relative;z-index:1">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#C22C29" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                <span style="font:700 13px Nunito,sans-serif;color:#C22C29;white-space:nowrap">Bitir</span>
+              </button>
+              <span style="position:absolute;left:0;right:0;text-align:center;pointer-events:none"><span style="padding:4px 11px;border-radius:999px;background:#FFF0DC;color:#B35C00;font:700 11px Nunito,sans-serif;white-space:nowrap">TUR {{ battleTurn }} · {{ turnStatus }}</span></span>
+              <button onClick="{{ toggleChat }}" style="width:30px;height:30px;border-radius:999px;border:0;background:#2FBF6B;box-shadow:0 3px 8px rgba(47,191,107,.35);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;position:relative;z-index:1">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+              </button>
+            </div>
+
+            <div style="position:relative;border-radius:22px;overflow:hidden;background:#F3EEDF;padding:10px 8px 8px;display:flex;flex-direction:column;gap:8px">
+              <div style="position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;border-radius:22px">
+                <span style="position:absolute;left:50%;top:-208px;width:640px;height:300px;margin-left:-320px;border-radius:50%;background:radial-gradient(ellipse at 50% 72%,rgba(240,74,71,.42) 0%,rgba(255,149,34,.24) 45%,transparent 72%)"></span>
+                <span style="position:absolute;left:50%;top:-202px;width:600px;height:270px;margin-left:-300px;border-radius:50%;border:2px solid rgba(255,255,255,.4)"></span>
+                <span style="position:absolute;left:50%;bottom:-208px;width:640px;height:300px;margin-left:-320px;border-radius:50%;background:radial-gradient(ellipse at 50% 28%,rgba(58,123,240,.42) 0%,rgba(92,151,255,.22) 45%,transparent 72%)"></span>
+                <span style="position:absolute;left:50%;bottom:-202px;width:600px;height:270px;margin-left:-300px;border-radius:50%;border:2px solid rgba(255,255,255,.4)"></span>
+                <span style="position:absolute;left:0;right:0;top:50%;height:80px;margin-top:-40px;background:radial-gradient(ellipse at 50% 50%,rgba(30,36,54,.08),transparent 70%)"></span>
+              </div>
+
+              <sc-if value="{{ turnBannerVisible }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);z-index:40;pointer-events:none;overflow:hidden;padding:0 4px">
+                  <span style="display:block;padding:11px 0;text-align:center;background:{{ turnBannerGradient }};color:#FFFFFF;font:800 15px 'Baloo 2',cursive;letter-spacing:.02em;border-radius:10px;box-shadow:0 8px 18px rgba(30,36,54,.28);transform:skewX(-6deg);animation:cc-banner-sweep 1s cubic-bezier(.22,.85,.25,1) forwards">{{ turnBannerLabel }}</span>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ drawAnimVisible }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;left:50%;top:44%;margin-left:-58px;margin-top:-78px;z-index:42;pointer-events:none;animation:cc-draw-pop .95s cubic-bezier(.22,.9,.3,1) forwards">
+                  <div style="width:116px;height:156px;background:#FFFFFF;border:3px solid #3A7BF0;border-radius:16px;overflow:hidden;position:relative;box-shadow:0 14px 30px rgba(30,36,54,.35)">
+                    <span style="position:absolute;inset:0;background:{{ drawAnimCard.artBg }}"><image-slot id="draw-anim-art" shape="rect" placeholder="araç" src="{{ drawAnimCard.artSrc }}"></image-slot></span>
+                    <span style="position:absolute;top:0;left:0;right:0;padding:6px 8px;background:linear-gradient(180deg,rgba(0,0,0,.55),transparent)"><span style="font:800 12px 'Baloo 2',cursive;color:#FFFFFF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">{{ drawAnimCard.name }}</span></span>
+                    <span style="position:absolute;bottom:6px;left:6px;right:6px;padding:4px 0;border-radius:999px;background:#3A7BF0;color:#FFFFFF;font:800 10px Nunito,sans-serif;text-align:center">Yeni Kart!</span>
+                  </div>
+                </div>
+              </sc-if>
+
+              <button onClick="{{ onTapBotGarage }}" style="border:1.5px solid {{ botGarageBorder }};background:#FFFFFF;border-radius:14px;padding:9px 12px;cursor:pointer;text-align:left;position:relative;z-index:26">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                <span style="display:flex;align-items:center;gap:6px">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#6B7285" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V10l9-7 9 7v11"></path><path d="M3 10h18"></path><rect x="7" y="13" width="4" height="8"></rect><rect x="13" y="13" width="4" height="4"></rect></svg>
+                  <span style="font:700 11px Nunito,sans-serif;letter-spacing:.06em;color:#6B7285">RAKİP GARAJI</span>
+                </span>
+                <span style="font:800 12px 'Baloo 2',cursive;color:#1E2436">{{ botGarageHp }} HP</span>
+              </div>
+              <div style="height:6px;background:#F3EEE4;border-radius:999px;overflow:hidden;margin-top:6px"><span style="display:block;height:100%;border-radius:999px;background:{{ botGarageColor }};width:{{ botGaragePct }}"></span></div>
+            </button>
+
+            <div style="display:flex;align-items:center;gap:6px;position:relative;z-index:26;padding:10px 0 4px">
+              <div style="flex-shrink:0;width:52px">
+                <div style="position:relative;width:52px;height:70px">
+                  <sc-for list="{{ botDiscardStack }}" as="dc" hint-placeholder-count="2">
+                    <span style="position:absolute;left:0;top:0;width:52px;height:70px;border-radius:11px;overflow:hidden;background:{{ dc.artBg }};transform:rotate({{ dc.rot }}deg);box-shadow:0 2px 5px rgba(30,36,54,.22);border:2px solid #FFFFFF">
+                      <image-slot id="{{ dc.slotId }}" shape="rect" placeholder="araç" src="{{ dc.artSrc }}"></image-slot>
+                      <span style="position:absolute;inset:0;background:rgba(30,36,54,.5)"></span>
+                    </span>
+                  </sc-for>
+                  <sc-if value="{{ botDiscardEmpty }}" hint-placeholder-val="{{ true }}">
+                    <span style="position:absolute;inset:0;border-radius:11px;border:2px dashed #D8D2C4"></span>
+                  </sc-if>
+                  <sc-if value="{{ botDiscardCount }}" hint-placeholder-val="{{ false }}">
+                    <span style="position:absolute;top:-7px;right:-7px;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:#F04A47;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font:800 10px 'Baloo 2',cursive;box-shadow:0 2px 4px rgba(0,0,0,.25);z-index:2">{{ botDiscardCount }}</span>
+                  </sc-if>
+                </div>
+              </div>
+              <div style="flex:1;min-width:0;display:flex;flex-wrap:wrap;justify-content:center;gap:10px">
+                <sc-for list="{{ botVehicles }}" as="card" hint-placeholder-count="3">
+                  <button onClick="{{ card.onTap }}" style="flex-shrink:0;width:86px;height:114px;display:block;background:#FFFFFF;border:2px solid {{ card.border }};border-radius:14px;overflow:hidden;cursor:pointer;padding:0;position:relative;{{ card.extraCss }}">
+                    <sc-if value="{{ card.hitFlash }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;inset:0;background:#F04A47;z-index:2;animation:cc-flash .45s ease"></span></sc-if>
+                    <span style="position:absolute;inset:0;background:{{ card.artBg }};z-index:0"><image-slot id="{{ card.slotId }}" shape="rect" placeholder="araç" src="{{ card.artSrc }}"></image-slot></span>
+                    <span style="position:absolute;top:0;left:0;right:0;padding:4px 6px;background:linear-gradient(180deg,rgba(0,0,0,.5),transparent);z-index:1"><span style="font:800 9px 'Baloo 2',cursive;color:#FFFFFF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">{{ card.name }}</span></span>
+                    <span style="position:absolute;bottom:5px;left:5px;width:25px;height:25px;border-radius:999px;background:#FF9522;color:#1E2436;display:flex;align-items:center;justify-content:center;font:800 12px 'Baloo 2',cursive;box-shadow:0 2px 4px rgba(0,0,0,.25);z-index:2">{{ card.power }}</span>
+                    <span style="position:absolute;bottom:5px;right:5px;width:25px;height:25px;border-radius:999px;background:{{ card.hpColor }};color:#FFFFFF;display:flex;align-items:center;justify-content:center;font:800 12px 'Baloo 2',cursive;box-shadow:0 2px 4px rgba(0,0,0,.25);z-index:2">{{ card.hpNow }}</span>
+                  </button>
+                </sc-for>
+              </div>
+              <div style="flex-shrink:0;width:52px"></div>
+            </div>
+
+            <span style="text-align:center;font:700 10px Nunito,sans-serif;letter-spacing:.06em;color:#A0A6B5;position:relative;z-index:26">{{ hintText }}</span>
+
+            <div style="display:flex;align-items:center;gap:6px;position:relative;z-index:26;padding:6px 0 12px">
+              <div style="flex-shrink:0;width:52px">
+                <div style="position:relative;width:52px;height:70px">
+                  <span style="position:absolute;left:4px;top:4px;width:52px;height:70px;border-radius:11px;background:linear-gradient(160deg,#2557C7,#1E4494);transform:rotate(-5deg);box-shadow:0 2px 4px rgba(30,36,54,.2)"></span>
+                  <span style="position:absolute;left:2px;top:2px;width:52px;height:70px;border-radius:11px;background:linear-gradient(160deg,#3A7BF0,#2557C7);transform:rotate(3deg);box-shadow:0 2px 4px rgba(30,36,54,.2)"></span>
+                  <span style="position:absolute;left:0;top:0;width:52px;height:70px;border-radius:11px;background:linear-gradient(160deg,#5C97FF,#3A7BF0);box-shadow:0 3px 6px rgba(30,36,54,.25);display:flex;align-items:center;justify-content:center">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".85"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="2.4"></circle><line x1="12" y1="3" x2="12" y2="7.5"></line><line x1="12" y1="16.5" x2="12" y2="21"></line><line x1="3" y1="12" x2="7.5" y2="12"></line><line x1="16.5" y1="12" x2="21" y2="12"></line></svg>
+                  </span>
+                  <sc-if value="{{ playerDeckEmpty }}" hint-placeholder-val="{{ false }}">
+                    <span style="position:absolute;inset:0;border-radius:11px;border:2px dashed #B7C7EA"></span>
+                  </sc-if>
+                  <span style="position:absolute;top:-7px;right:-7px;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:#FF9522;color:#1E2436;display:flex;align-items:center;justify-content:center;font:800 10px 'Baloo 2',cursive;box-shadow:0 2px 4px rgba(0,0,0,.25);z-index:2">{{ playerDeckCount }}</span>
+                </div>
+              </div>
+              <div style="flex:1;min-width:0;display:flex;flex-wrap:wrap;justify-content:center;gap:10px">
+                <sc-for list="{{ playerVehicles }}" as="card" hint-placeholder-count="5">
+                  <button onClick="{{ card.onTap }}" style="flex-shrink:0;width:86px;height:114px;display:block;background:#FFFFFF;border:2px solid {{ card.border }};border-radius:14px;overflow:hidden;cursor:pointer;padding:0;position:relative;{{ card.extraCss }}">
+                    <sc-if value="{{ card.hitFlash }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;inset:0;background:#F04A47;z-index:2;animation:cc-flash .45s ease"></span></sc-if>
+                    <span style="position:absolute;inset:0;background:{{ card.artBg }};z-index:0"><image-slot id="{{ card.slotId }}" shape="rect" placeholder="araç" src="{{ card.artSrc }}"></image-slot></span>
+                    <span style="position:absolute;top:0;left:0;right:0;padding:4px 6px;background:linear-gradient(180deg,rgba(0,0,0,.5),transparent);z-index:1"><span style="font:800 9px 'Baloo 2',cursive;color:#FFFFFF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">{{ card.name }}</span></span>
+                    <span style="position:absolute;bottom:5px;left:5px;width:25px;height:25px;border-radius:999px;background:#FF9522;color:#1E2436;display:flex;align-items:center;justify-content:center;font:800 12px 'Baloo 2',cursive;box-shadow:0 2px 4px rgba(0,0,0,.25);z-index:2">{{ card.power }}</span>
+                    <span style="position:absolute;bottom:5px;right:5px;width:25px;height:25px;border-radius:999px;background:{{ card.hpColor }};color:#FFFFFF;display:flex;align-items:center;justify-content:center;font:800 12px 'Baloo 2',cursive;box-shadow:0 2px 4px rgba(0,0,0,.25);z-index:2">{{ card.hpNow }}</span>
+                  </button>
+                </sc-for>
+              </div>
+              <div style="flex-shrink:0;width:52px">
+                <div style="position:relative;width:52px;height:70px">
+                  <sc-for list="{{ playerDiscardStack }}" as="dc" hint-placeholder-count="2">
+                    <span style="position:absolute;left:0;top:0;width:52px;height:70px;border-radius:11px;overflow:hidden;background:{{ dc.artBg }};transform:rotate({{ dc.rot }}deg);box-shadow:0 2px 5px rgba(30,36,54,.22);border:2px solid #FFFFFF">
+                      <image-slot id="{{ dc.slotId }}" shape="rect" placeholder="araç" src="{{ dc.artSrc }}"></image-slot>
+                      <span style="position:absolute;inset:0;background:rgba(30,36,54,.5)"></span>
+                    </span>
+                  </sc-for>
+                  <sc-if value="{{ playerDiscardEmpty }}" hint-placeholder-val="{{ true }}">
+                    <span style="position:absolute;inset:0;border-radius:11px;border:2px dashed #D8D2C4"></span>
+                  </sc-if>
+                  <sc-if value="{{ playerDiscardCount }}" hint-placeholder-val="{{ false }}">
+                    <span style="position:absolute;top:-7px;right:-7px;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:#F04A47;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font:800 10px 'Baloo 2',cursive;box-shadow:0 2px 4px rgba(0,0,0,.25);z-index:2">{{ playerDiscardCount }}</span>
+                  </sc-if>
+                </div>
+              </div>
+            </div>
+
+            <button onClick="{{ onTapPlayerGarage }}" style="border:1.5px solid #3A7BF055;background:#FFFFFF;border-radius:14px;padding:9px 12px;cursor:default;text-align:left;position:relative;z-index:26">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                <span style="display:flex;align-items:center;gap:6px">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#3A7BF0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V10l9-7 9 7v11"></path><path d="M3 10h18"></path><rect x="7" y="13" width="4" height="8"></rect><rect x="13" y="13" width="4" height="4"></rect></svg>
+                  <span style="font:700 11px Nunito,sans-serif;letter-spacing:.06em;color:#3A7BF0">GARAJIN</span>
+                </span>
+                <span style="font:800 12px 'Baloo 2',cursive;color:#1E2436">{{ playerGarageHp }} HP</span>
+              </div>
+              <div style="height:6px;background:#F3EEE4;border-radius:999px;overflow:hidden;margin-top:6px"><span style="display:block;height:100%;border-radius:999px;background:{{ playerGarageColor }};width:{{ playerGaragePct }}"></span></div>
+            </button>
+            </div>
+
+            <sc-if value="{{ battleOver }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:14px;border-radius:18px;background:#FFFFFF;border:2px solid #EBE3D6;display:flex;flex-direction:column;align-items:center;gap:10px;position:relative;z-index:26">
+                <span style="font:800 20px 'Baloo 2',cursive;color:{{ resultColor }}">{{ resultText }}</span>
+                <button onClick="{{ playAgain }}" style="height:44px;padding:0 22px;background:#3A7BF0;color:#FFFFFF;border:0;border-radius:999px;font:700 14px Nunito,sans-serif;cursor:pointer">Tekrar Oyna</button>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ battleNotOver }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ endTurn }}" disabled="{{ endTurnDisabled }}" style="height:50px;background:#FF9522;color:#1E2436;border:0;border-radius:999px;font:900 15px Nunito,sans-serif;letter-spacing:.02em;box-shadow:0 4px 0 #B35C00;cursor:pointer;position:relative;z-index:26" style-active="box-shadow:none;transform:translateY(4px)">TURU BİTİR</button>
+            </sc-if>
+
+          </div>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ toastVisible }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:58px;left:50%;transform:translateX(-50%);padding:8px 16px;background:#1E2436;color:#FFFFFF;border-radius:999px;font:700 12px Nunito,sans-serif;z-index:40;animation:cc-toast 1.6s ease forwards;white-space:nowrap;max-width:80%;overflow:hidden;text-overflow:ellipsis">{{ toastText }}</div>
+      </sc-if>
+
+      <sc-if value="{{ isBattle }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ chatOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;top:46px;right:16px;width:220px;padding:10px;background:#FFFFFF;border-radius:20px;box-shadow:0 14px 30px rgba(30,36,54,.2);z-index:35;display:grid;grid-template-columns:1fr 1fr;gap:7px;animation:cc-panel-in .18s ease">
+            <sc-for list="{{ quickMessages }}" as="msg" hint-placeholder-count="8">
+              <button onClick="{{ msg.onClick }}" style="padding:8px 8px;border-radius:12px;background:#F3EEE4;border:0;color:#1E2436;font:700 11px Nunito,sans-serif;cursor:pointer">{{ msg.label }}</button>
+            </sc-for>
+          </div>
+        </sc-if>
+        
+      </sc-if>
+
+      <sc-if value="{{ isBattle }}" hint-placeholder-val="{{ false }}">
+        <div style="position: absolute; bottom: 0; left: 0; right: 0; border-radius: 22px 22px 0 0; box-shadow: 0 -8px 22px rgba(30,36,54,.14); z-index: 30; padding: 6px 0 6px; background-color:#EDE7DA; width: 407px; height: 163px; transform:{{ sheetTransform }}; transition: transform .22s ease">
+          <div onPointerDown="{{ startSheetDrag }}" style="display:flex;justify-content:center;padding:4px 0;cursor:grab;touch-action:none">
+            <span style="width:36px;height:4px;border-radius:999px;background:#C9CDD8"></span>
+          </div>
+          <span style="display:block;margin:6px 0 2px 16px;font:700 10px Nunito,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#A0A6B5">Elindeki Kartlar</span><div style="display: flex; justify-content: center; align-items: flex-end; overflow: visible; padding: 6px 4px 2px; min-height: 96px; width: 396px;">
+            <sc-for list="{{ handCards }}" as="card" hint-placeholder-count="7">
+              <button onPointerDown="{{ card.onPointerDown }}" style="flex-shrink:0;width:66px;height:92px;display:block;background:#FFFFFF;border:2px solid {{ card.borderNow }};border-radius:12px;overflow:hidden;cursor:grab;padding:0;position:relative;margin-left:{{ card.overlap }};transform-origin:bottom center;touch-action:none;{{ card.transition }}{{ card.raisedCss }}">
+                <span style="position:absolute;inset:0;background:{{ card.artBg }};z-index:0"><image-slot id="{{ card.slotId }}" shape="rect" placeholder="araç" src="{{ card.artSrc }}"></image-slot></span>
+                <span style="position:absolute;top:0;left:0;right:0;padding:3px 4px;background:linear-gradient(180deg,rgba(0,0,0,.5),transparent);z-index:1"><span style="font:800 7px 'Baloo 2',cursive;color:#FFFFFF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">{{ card.name }}</span></span>
+                <span style="position:absolute;top:4px;left:4px;width:16px;height:16px;border-radius:999px;background:{{ card.pillBg }};color:{{ card.pillInk }};display:flex;align-items:center;justify-content:center;font:800 8px 'Baloo 2',cursive;z-index:2">{{ card.level }}</span>
+                <span style="position:absolute;bottom:3px;left:3px;width:19px;height:19px;border-radius:999px;background:#FF9522;color:#1E2436;display:flex;align-items:center;justify-content:center;font:800 9px 'Baloo 2',cursive;box-shadow:0 2px 4px rgba(0,0,0,.25);z-index:2">{{ card.power }}</span>
+                <span style="position:absolute;bottom:3px;right:3px;width:19px;height:19px;border-radius:999px;background:#2FBF6B;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font:800 9px 'Baloo 2',cursive;box-shadow:0 2px 4px rgba(0,0,0,.25);z-index:2">{{ card.durability }}</span>
+                <sc-if value="{{ card.willPlay }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-20px;left:0;right:0;text-align:center;font:800 9px Nunito,sans-serif;color:#3A7BF0;white-space:nowrap">BIRAK, SAHAYA SÜR</span></sc-if>
+              </button>
+            </sc-for>
+            <sc-if value="{{ handEmpty }}" hint-placeholder-val="{{ false }}"><span style="font:600 12px Nunito,sans-serif;color:#A0A6B5;padding:14px 0">El boş</span></sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isNotBattle }}" hint-placeholder-val="{{ true }}">
+      <div style="position:absolute;bottom:16px;left:16px;right:16px;display:flex;gap:6px;padding:8px;background:#FFFFFF;border-radius:999px;box-shadow:0 10px 28px rgba(30,36,54,.16);z-index:30">
+        <button onClick="{{ goMenu }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 0;border:0;border-radius:999px;background:{{ navMenuBg }};cursor:pointer">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="{{ navMenuColor }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          <span style="font:700 10px Nunito,sans-serif;color:{{ navMenuColor }}">Menü</span>
+        </button>
+        <button onClick="{{ goSquad }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 0;border:0;border-radius:999px;background:{{ navDuzenleBg }};cursor:pointer">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="{{ navDuzenleColor }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+          <span style="font:700 10px Nunito,sans-serif;color:{{ navDuzenleColor }}">Düzenle</span>
+        </button>
+        <button onClick="{{ goGallery }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 0;border:0;border-radius:999px;background:{{ navKoleksiyonBg }};cursor:pointer">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="{{ navKoleksiyonColor }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          <span style="font:700 10px Nunito,sans-serif;color:{{ navKoleksiyonColor }}">Koleksiyon</span>
+        </button>
+      </div>
+      </sc-if>
+    </div>
+  </x-import><span style="max-width:402px;text-align:center;font:600 12px/1.5 Nunito,sans-serif;color:#8A8578">Araç görselleri yerleşti — üzerine kendi görselini sürükleyip değiştirebilirsin. Kadronu Düzenle'den savaşa çıkacak araçları seç, Savaşa Başla'da zorluk seç. Kart detayında yükseltme, özellikler ve kadroya ekleme gerçek oyun verisiyle uyumlu.</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;initialScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;menu&quot;,&quot;squad&quot;,&quot;howtoplay&quot;,&quot;difficulty&quot;,&quot;gallery&quot;,&quot;detail&quot;,&quot;battle&quot;],&quot;default&quot;:&quot;menu&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Prototip&quot;}}">
+const RARITY_STYLE = {
+  Common: { border: '#E3E6EC', artBg: '#EFF1F5', pillBg: '#EFF1F5', pillInk: '#4A5266' },
+  Rare: { border: '#3A7BF0', artBg: '#DCE9FF', pillBg: '#DCE9FF', pillInk: '#2E62C8' },
+  Epic: { border: '#A15CF5', artBg: '#F3E9FF', pillBg: '#F3E9FF', pillInk: '#7B32D6' },
+  Legendary: { border: '#FF9522', artBg: '#FFF0DC', pillBg: '#FFF0DC', pillInk: '#B35C00' }
+};
+// Stat/isim/nadirlik cardraft/src/data/cards.ts ile eşleşiyor (GÜÇ/HIZ/DAY görsel amaçlı ölçeklendi);
+// yakıt (fuel=cost), özellikler ve flavor gerçek veriden birebir.
+const MAX_LEVEL = 3;
+const UPGRADE_COST = { 2: 120, 3: 300 };
+const CARDS = [
+  { id: 'c1', name: 'Sandstorm Buggy', rarity: 'Common', type: 'Yardımcı', power: 40, speed: 88, durability: 25, level: 1, fuel: 1, abilityChips: ['Atılım'], flavor: 'Kum tanesi kadar hafif, rüzgâr kadar hızlı.', artSrc: './assets/cars/c1.png' },
+  { id: 'c2', name: 'Falconi Turbo', rarity: 'Common', type: 'Spor', power: 46, speed: 82, durability: 32, level: 1, fuel: 2, abilityChips: ['Atılım'], flavor: 'Kırmızı ışıkta bile sabırsız.', artSrc: './assets/cars/c2.png' },
+  { id: 'c3', name: 'Vipera GT', rarity: 'Rare', type: 'Spor', power: 58, speed: 90, durability: 38, level: 1, fuel: 3, abilityChips: ['Nitro 2'], flavor: 'Gaz pedalı yere yapışık gelir.', artSrc: './assets/cars/c3.png' },
+  { id: 'c4', name: 'Nocturne Coupe', rarity: 'Rare', type: 'Spor', power: 62, speed: 85, durability: 42, level: 1, fuel: 4, abilityChips: ['Atılım'], flavor: 'Gece yarısı en hızlı sürülür.', artSrc: './assets/cars/c4.png' },
+  { id: 'c5', name: 'Zephyr Volt', rarity: 'Epic', type: 'Spor', power: 68, speed: 96, durability: 48, level: 1, fuel: 4, abilityChips: ['Atılım', 'Egzoz Patlaması 1'], flavor: 'Sessiz gelir, şimşek gibi vurur.', artSrc: './assets/cars/c5.png' },
+  { id: 'c6', name: 'Silverstreak S9', rarity: 'Epic', type: 'Spor', power: 74, speed: 92, durability: 50, level: 1, fuel: 5, abilityChips: ['Nitro 3'], flavor: 'Bir gümüş çizgi, sonra sessizlik.', artSrc: './assets/cars/c6.png' },
+  { id: 'c7', name: 'Convoy Captain', rarity: 'Epic', type: 'Yardımcı', power: 66, speed: 45, durability: 68, level: 1, fuel: 5, abilityChips: ['Konvoy 2'], flavor: "Telsizden tek kelime: 'Takip edin.'", artSrc: './assets/cars/c7.png' },
+  { id: 'c8', name: 'Wrecking Warden', rarity: 'Legendary', type: 'Yardımcı', power: 82, speed: 28, durability: 88, level: 1, fuel: 6, abilityChips: ['Siper', 'Çarpma 3'], flavor: 'Şantiyenin patronu geldi, herkes kenara.', artSrc: './assets/cars/c8.png' },
+  { id: 'c9', name: 'Iron Mammoth', rarity: 'Legendary', type: 'Monster', power: 90, speed: 32, durability: 92, level: 1, fuel: 8, abilityChips: ['Siper', 'Zırh 1'], flavor: 'Yürüdüğü yerde asfalt çatlar.', artSrc: './assets/cars/c9.png' },
+  { id: 'c10', name: 'Apex Meridian', rarity: 'Legendary', type: 'Spor', power: 88, speed: 98, durability: 66, level: 1, fuel: 7, abilityChips: ['Nitro 3', 'Konvoy 1'], flavor: 'Pistin sahibi geldi.', artSrc: './assets/cars/c10.png' }
+];
+const BOT_CARDS = [
+  { id: 'bot1', name: 'Boulder Baron', rarity: 'Rare', type: 'Monster', power: 60, speed: 30, durability: 70, level: 1, artSrc: './assets/cars/bot1.png' },
+  { id: 'bot2', name: 'Quake Hauler', rarity: 'Rare', type: 'Monster', power: 68, speed: 26, durability: 66, level: 1, artSrc: './assets/cars/bot2.png' },
+  { id: 'bot3', name: 'Mudslinger Max', rarity: 'Common', type: 'Monster', power: 48, speed: 42, durability: 50, level: 1, artSrc: './assets/cars/bot3.png' }
+];
+const ALL_CARDS = [...CARDS, ...BOT_CARDS];
+const FILTERS = ['Tümü', 'Common', 'Rare', 'Epic', 'Legendary'];
+const SCREEN_LABELS = { menu: 'Ana Menü', squad: 'Kadro', gallery: 'Koleksiyon', detail: 'Kart Detayı', battle: 'Bot Savaşı' };
+// cardraft/src/constants/messages.ts QUICK_MESSAGES'ten (serbest metin yok kuralı).
+const QUICK_MESSAGES = ['İyi şanslar! 🤝', 'İyi oyundu! 👏', 'Vay canına! 😮', 'Yakındı! 😅', 'Hızlısın! 💨', 'Sıra sende! 👉', 'Tebrikler! 🏆', 'Rövanş? 🔁'];
+// Aşağıdaki 4 blok cardraft/app/how-to-play.tsx ve src/game/abilities.ts'ten birebir.
+const STAT_LEGEND = [
+  { k: 'YAKIT', v: 'Oynamak için gereken yakıt', color: '#2E62C8', radius: '3px', transform: 'none' },
+  { k: 'GÜÇ', v: 'Vuruşta verdiği hasar', color: '#FF9522', radius: '0', transform: 'rotate(45deg)' },
+  { k: 'DAY', v: 'Canı — 0 olunca parçalanır', color: '#2FBF6B', radius: '4px', transform: 'none' },
+  { k: 'HIZ', v: 'Yüksekse karşılık hasarından kaçar', color: '#3A7BF0', radius: '999px', transform: 'none' }
+];
+const TURN_STEPS = [
+  { title: '1 · Çek & Yakıt al', text: 'Her turun başında 1 kart çekersin ve yakıtın 1 artar (1→2→3… en fazla 10). Yakıt, kart oynamak için harcadığın puandır.' },
+  { title: '2 · Araç sür', text: 'Elindeki araç kartlarını yakıtla sahaya sürersin. Kartın sol üstündeki sarı sayı = yakıt maliyeti. Sahada en fazla 5 araç durabilir.' },
+  { title: '3 · Saldır', text: 'Önce kendi aracına dokun (turuncu çerçeveli = saldırabilir), sonra hedefe dokun: rakip bir araç ya da rakip garaj. Yeni sürdüğün araç o tur saldıramaz (Nitro/Atılım hariç).' },
+  { title: '4 · Turu bitir', text: '"Turu Bitir"e bas, rakip oynar, sonra sıra sana döner.' }
+];
+const ABILITY_LINES = [
+  'Atılım — sahaya çıktığı tur saldırabilir.',
+  'Nitro — girişte +2 güç ve hemen saldırır (bonus sıradaki turunda geçer).',
+  'Zırh — aldığı her hasar 1 azalır.',
+  'Çarpma — girişte rastgele bir düşman araca 2 hasar.',
+  'Siper — düşman önce siper araçlara saldırmak zorunda; garaja vuramaz.',
+  'Tamir — girişte garajını 3 HP onarır.',
+  'Egzoz Patlaması — girişte rakip garaja 2 hasar.',
+  'Konvoy — yaşadığı sürece diğer araçların +1 güç.'
+];
+const TIPS = [
+  'Araç araca vurunca ikisi de hasar alır. Aracın rakibinkinden çok hızlıysa (hız farkı 3+) karşılık yemez.',
+  'Rakipte "Siper" varsa önce onu kırmalısın — siper dururken garaja vuramazsın.',
+  'Zayıf araçlarını rakibin güçlü araçlarını temizlemek için "takas" et; garajı sona sakla.',
+  'Zorlanıyorsan Ana Menü → Zorluk: Kolay. Bot daha az acımasız oynar.'
+];
+// Zorluk blurb'ları ve garaj canları src/game/difficulty.ts'ten birebir.
+const PLAYER_GARAGE_HP = 30;
+const DIFFICULTIES = [
+  { key: 'Kolay', botGarageHp: 20, blurb: 'Bot garajı 20 (seninki 30). Bot sık hata yapar. Öğrenmek için.' },
+  { key: 'Normal', botGarageHp: 28, blurb: 'Bot garajı 28, dengeli açılış. Bot çoğunlukla mantıklı oynar.' },
+  { key: 'Zor', botGarageHp: 34, blurb: 'Bot garajı 34, bot hata yapmaz, yükseltilmiş deste. Meydan okuma.' }
+];
+const ABILITY_DESC = {
+  'Atılım': 'Sahaya çıktığı tur saldırabilir.',
+  'Siper': 'Düşman önce siper araçlara saldırmak zorunda; garaja vuramaz.',
+  'Nitro': (v) => `Girişte +${v} güç ve hemen saldırır (bonus sıradaki turunda geçer).`,
+  'Zırh': (v) => `Aldığı her hasar ${v} azalır.`,
+  'Çarpma': (v) => `Girişte rastgele bir düşman araca ${v} hasar.`,
+  'Tamir': (v) => `Girişte garajını ${v} HP onarır.`,
+  'Egzoz Patlaması': (v) => `Girişte rakip garaja ${v} hasar.`,
+  'Konvoy': (v) => `Yaşadığı sürece diğer araçların +${v} güç.`
+};
+const ABILITY_ICON = {
+  'Atılım': 'zap', 'Nitro': 'trend', 'Zırh': 'shield', 'Çarpma': 'target',
+  'Siper': 'octagon', 'Tamir': 'tool', 'Egzoz Patlaması': 'alert', 'Konvoy': 'link'
+};
+function abilityInfoFor(chip) {
+  const m = chip.match(/^(.+?)\s+(\d+)$/);
+  const label = m ? m[1] : chip;
+  const val = m ? m[2] : null;
+  const entry = ABILITY_DESC[label];
+  const desc = typeof entry === 'function' ? entry(val) : (entry || '');
+  const icon = ABILITY_ICON[label] || 'zap';
+  return {
+    label: chip, desc,
+    isZap: icon === 'zap', isTrend: icon === 'trend', isShield: icon === 'shield', isTarget: icon === 'target',
+    isOctagon: icon === 'octagon', isTool: icon === 'tool', isAlert: icon === 'alert', isLink: icon === 'link'
+  };
+}
+const findCard = (id) => ALL_CARDS.find(c => c.id === id);
+const BOARD_LIMIT = 5;
+const DEFAULT_SQUAD = ['c9', 'c6', 'c4'];
+
+function initialBattle(squadIds, diff) {
+  const playerBoard = squadIds.map((id, i) => {
+    const card = findCard(id);
+    return { uid: 'p' + i, cardId: id, hp: card.durability, maxHp: card.durability, canAttack: true };
+  });
+  const botBoard = BOT_CARDS.map((c, i) => ({ uid: 'b' + i, cardId: c.id, hp: c.durability, maxHp: c.durability }));
+  const nonSquad = CARDS.map(c => c.id).filter(id => !squadIds.includes(id));
+  const hand = nonSquad.slice(0, 3);
+  const deck = nonSquad.slice(3);
+  return {
+    playerBoard, botBoard, hand, deck,
+    playerDiscard: [], botDiscard: [],
+    playerGarageHp: PLAYER_GARAGE_HP, playerGarageMaxHp: PLAYER_GARAGE_HP, botGarageHp: diff.botGarageHp, botGarageMaxHp: diff.botGarageHp,
+    selectedAttackerUid: null, turn: 1, busy: false, over: false, resultWin: false, anim: null,
+    drawAnim: null, turnBanner: { side: 'player', label: 'SENİN SIRAN' }
+  };
+}
+
+class Component extends DCLogic {
+  state = {
+    screen: this.props.initialScreen ?? 'menu',
+    galleryFilter: 'Tümü',
+    selectedCardId: 'c9',
+    upgrades: {},
+    squad: [...DEFAULT_SQUAD],
+    difficulty: 'Normal',
+    battle: initialBattle(DEFAULT_SQUAD, DIFFICULTIES[1]),
+    raisedHandId: null,
+    dragId: null, dragStartY: 0, dragDeltaY: 0,
+    handCollapsed: false, sheetDragging: false, sheetStartY: 0, sheetDeltaY: 0,
+    chatOpen: false,
+    toastText: null
+  };
+
+  styleCard(card, extra) {
+    return { ...card, ...RARITY_STYLE[card.rarity], slotId: 'art-' + card.id, ...extra };
+  }
+
+  goTo = (screen) => this.setState({ screen });
+  goSquad = () => this.setState({ screen: 'squad' });
+  goHowToPlay = () => this.setState({ screen: 'howtoplay' });
+  goDifficulty = () => this.setState({ screen: 'difficulty' });
+  openDetail = (id) => this.setState({ screen: 'detail', selectedCardId: id });
+  setFilter = (f) => this.setState({ galleryFilter: f });
+
+  toggleSquad = (id) => {
+    const squad = this.state.squad;
+    if (squad.includes(id)) {
+      this.setState({ squad: squad.filter(x => x !== id) });
+    } else {
+      if (squad.length >= BOARD_LIMIT) { this.flashToast('Kadro dolu (5/5)'); return; }
+      this.setState({ squad: [...squad, id] });
+    }
+  };
+
+  addToSquad = (id) => {
+    const squad = this.state.squad;
+    if (squad.includes(id)) { this.flashToast('Zaten kadroda'); return; }
+    if (squad.length >= BOARD_LIMIT) { this.flashToast('Kadro dolu (5/5)'); return; }
+    this.setState({ squad: [...squad, id] });
+    this.flashToast('Kadroya eklendi');
+  };
+
+  startBattle = (difficulty) => {
+    const diff = DIFFICULTIES.find(d => d.key === difficulty) || DIFFICULTIES[1];
+    const squad = this.state.squad.length > 0 ? this.state.squad : DEFAULT_SQUAD;
+    this.setState({ screen: 'battle', difficulty, battle: initialBattle(squad, diff) });
+    setTimeout(() => { if (this.state.screen === 'battle') this.setState(s => ({ battle: { ...s.battle, turnBanner: null } })); }, 1300);
+  };
+
+  upgradeCard = (id) => {
+    const up = this.state.upgrades[id] || 0;
+    if (up >= MAX_LEVEL - 1) return;
+    this.setState({ upgrades: { ...this.state.upgrades, [id]: up + 1 } });
+  };
+
+  flashToast = (text) => {
+    this.setState({ toastText: text });
+    setTimeout(() => this.setState({ toastText: null }), 1600);
+  };
+
+  toggleChat = () => this.setState(s => ({ chatOpen: !s.chatOpen }));
+  forfeitBattle = () => this.setState({ screen: 'menu', chatOpen: false });
+  sendTemplate = (text) => { this.setState({ chatOpen: false }); this.flashToast(text); };
+
+  onTapOwn = (uid) => {
+    const b = this.state.battle;
+    if (b.over || b.busy) return;
+    const v = b.playerBoard.find(x => x.uid === uid);
+    if (!v || !v.canAttack || v.hp <= 0) return;
+    this.setState({ battle: { ...b, selectedAttackerUid: b.selectedAttackerUid === uid ? null : uid } });
+  };
+
+  onTapEnemy = (uid) => {
+    const b = this.state.battle;
+    if (b.over || b.busy || !b.selectedAttackerUid) return;
+    this.attackEnemy(uid);
+  };
+
+  onTapBotGarage = () => {
+    const b = this.state.battle;
+    if (b.over || b.busy || !b.selectedAttackerUid) return;
+    if (b.botBoard.length > 0) { this.flashToast('Önce rakip araçları geçmelisin'); return; }
+    this.attackEnemy('garage');
+  };
+
+  attackEnemy = (defTarget) => {
+    const b = this.state.battle;
+    const atkUid = b.selectedAttackerUid;
+    this.setState({ battle: { ...b, busy: true } });
+    this.performAttack('player', 'bot', atkUid, defTarget).then(() => {
+      this.setState(s => ({ battle: { ...s.battle, busy: false } }));
+    });
+  };
+
+  performAttack = (atkSide, defSide, atkUid, defTarget) => new Promise((resolve) => {
+    const b = this.state.battle;
+    this.setState({ battle: { ...b, anim: { atkSide, atkUid, defSide, defUid: defTarget }, selectedAttackerUid: null } });
+    setTimeout(() => {
+      const b2 = this.state.battle;
+      const atkKey = atkSide === 'player' ? 'playerBoard' : 'botBoard';
+      const defKey = defSide === 'player' ? 'playerBoard' : 'botBoard';
+      const atkEntry = b2[atkKey].find(x => x.uid === atkUid);
+      if (!atkEntry) { this.setState({ battle: { ...b2, anim: null } }, resolve); return; }
+      const atkCard = findCard(atkEntry.cardId);
+      const dmg = Math.max(4, Math.round(atkCard.power / 6));
+      let log, playerGarageHp = b2.playerGarageHp, botGarageHp = b2.botGarageHp, newDefBoard = b2[defKey], newPlayerDiscard = b2.playerDiscard, newBotDiscard = b2.botDiscard;
+      if (defTarget === 'garage') {
+        if (defSide === 'bot') { botGarageHp = Math.max(0, botGarageHp - dmg); log = `${atkCard.name} rakip garaja çarptı! -${dmg}`; }
+        else { playerGarageHp = Math.max(0, playerGarageHp - dmg); log = `${atkCard.name} garajına çarptı! -${dmg}`; }
+      } else {
+        const defEntry = b2[defKey].find(x => x.uid === defTarget);
+        const defCard = findCard((defEntry || {}).cardId);
+        const willDie = defEntry && (defEntry.hp - dmg) <= 0;
+        newDefBoard = b2[defKey].map(x => x.uid === defTarget ? { ...x, hp: Math.max(0, x.hp - dmg) } : x).filter(x => x.hp > 0);
+        log = defCard ? `${atkCard.name} ${defCard.name}'a çarptı! -${dmg} can` : `${atkCard.name} çarptı!`;
+        if (willDie && defCard) {
+          if (defSide === 'player') newPlayerDiscard = [...b2.playerDiscard, defCard.id];
+          else newBotDiscard = [...b2.botDiscard, defCard.id];
+        }
+      }
+      let newAtkBoard = b2[atkKey];
+      if (atkSide === 'player') newAtkBoard = b2[atkKey].map(x => x.uid === atkUid ? { ...x, canAttack: false } : x);
+      const over = playerGarageHp <= 0 || botGarageHp <= 0;
+      const resultWin = botGarageHp <= 0;
+      this.setState({
+        battle: { ...b2, [atkKey]: newAtkBoard, [defKey]: newDefBoard, playerGarageHp, botGarageHp, playerDiscard: newPlayerDiscard, botDiscard: newBotDiscard, anim: null, over, resultWin }
+      }, () => { this.flashToast(log); resolve(); });
+    }, 480);
+  });
+
+  endTurn = async () => {
+    const b0 = this.state.battle;
+    if (b0.over || b0.busy) return;
+    this.setState({ battle: { ...b0, busy: true, selectedAttackerUid: null, turnBanner: { side: 'bot', label: 'RAKİBİN SIRASI' } } });
+    await new Promise(r => setTimeout(r, 1000));
+    this.setState(s => ({ battle: { ...s.battle, turnBanner: null } }));
+    const alive = this.state.battle.botBoard.filter(x => x.hp > 0);
+    for (const v of alive) {
+      if (this.state.battle.over) break;
+      const targets = this.state.battle.playerBoard.filter(x => x.hp > 0);
+      const defTarget = targets.length > 0 ? targets[Math.floor(Math.random() * targets.length)].uid : 'garage';
+      await this.performAttack('bot', 'player', v.uid, defTarget);
+      await new Promise(r => setTimeout(r, 200));
+    }
+    if (!this.state.battle.over) {
+      const b1 = this.state.battle;
+      const drewId = b1.deck.length > 0 ? b1.deck[0] : null;
+      const newHand = drewId ? [...b1.hand, drewId] : b1.hand;
+      const newDeck = drewId ? b1.deck.slice(1) : b1.deck;
+      this.setState(s => ({
+        battle: {
+          ...s.battle, hand: newHand, deck: newDeck,
+          playerBoard: s.battle.playerBoard.map(x => ({ ...x, canAttack: true })),
+          turn: s.battle.turn + 1, busy: false,
+          turnBanner: { side: 'player', label: 'SENİN SIRAN' },
+          drawAnim: drewId ? { cardId: drewId } : null
+        }
+      }));
+      setTimeout(() => { if (this.state.screen === 'battle') this.setState(s => ({ battle: { ...s.battle, turnBanner: null } })); }, 1100);
+      if (drewId) setTimeout(() => { if (this.state.screen === 'battle') this.setState(s => ({ battle: { ...s.battle, drawAnim: null } })); }, 950);
+    } else {
+      this.setState(s => ({ battle: { ...s.battle, busy: false } }));
+    }
+  };
+
+  toggleRaiseHand = (id) => this.setState(s => ({ raisedHandId: s.raisedHandId === id ? null : id }));
+
+  componentDidMount() {
+    this._onPointerMove = (e) => {
+      if (this.state.dragId) this.setState({ dragDeltaY: e.clientY - this.state.dragStartY });
+      if (this.state.sheetDragging) this.setState({ sheetDeltaY: e.clientY - this.state.sheetStartY });
+    };
+    this._onPointerUp = () => {
+      const { dragId, dragDeltaY, sheetDragging, sheetDeltaY, handCollapsed } = this.state;
+      if (dragId) {
+        if (dragDeltaY < -50) { this.playCard(dragId); this.setState({ dragId: null, dragDeltaY: 0, raisedHandId: null }); }
+        else if (Math.abs(dragDeltaY) < 8) { this.toggleRaiseHand(dragId); this.setState({ dragId: null, dragDeltaY: 0 }); }
+        else { this.setState({ dragId: null, dragDeltaY: 0 }); }
+      }
+      if (sheetDragging) {
+        let collapsed = handCollapsed;
+        if (sheetDeltaY > 30) collapsed = true;
+        else if (sheetDeltaY < -20) collapsed = false;
+        else collapsed = !handCollapsed;
+        this.setState({ sheetDragging: false, sheetDeltaY: 0, handCollapsed: collapsed });
+      }
+    };
+    window.addEventListener('pointermove', this._onPointerMove);
+    window.addEventListener('pointerup', this._onPointerUp);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('pointermove', this._onPointerMove);
+    window.removeEventListener('pointerup', this._onPointerUp);
+  }
+
+  startDragHand = (id, e) => this.setState({ dragId: id, dragStartY: e.clientY, dragDeltaY: 0 });
+  startSheetDrag = (e) => this.setState({ sheetDragging: true, sheetStartY: e.clientY, sheetDeltaY: 0 });
+
+  playCard = (cardId) => {
+    const b = this.state.battle;
+    if (b.over || b.busy) return;
+    if (b.playerBoard.length >= BOARD_LIMIT) { this.flashToast('Saha dolu (5 araç)'); return; }
+    const card = findCard(cardId);
+    const uid = 'p' + Date.now() + Math.floor(Math.random() * 1000);
+    this.setState({ battle: { ...b, playerBoard: [...b.playerBoard, { uid, cardId, hp: card.durability, maxHp: card.durability, canAttack: true }], hand: b.hand.filter(id => id !== cardId) } });
+  };
+
+  playAgain = () => this.startBattle(this.state.difficulty);
+
+  renderVals() {
+    const s = this.state;
+    const screen = s.screen;
+    const filteredCards = CARDS
+      .filter(c => s.galleryFilter === 'Tümü' || c.rarity === s.galleryFilter)
+      .map(c => this.styleCard(c, { onOpen: () => this.openDetail(c.id) }));
+
+    const filterChips = FILTERS.map(f => ({
+      label: f, onClick: () => this.setFilter(f),
+      bg: s.galleryFilter === f ? '#3A7BF0' : '#FFFFFF', ink: s.galleryFilter === f ? '#FFFFFF' : '#6B7285',
+      borderColor: s.galleryFilter === f ? '#3A7BF0' : '#EBE3D6'
+    }));
+
+    const squadPickerCards = CARDS.map(c => {
+      const selected = s.squad.includes(c.id);
+      return this.styleCard(c, {
+        onToggle: () => this.toggleSquad(c.id), selected,
+        pickBorder: selected ? '#3A7BF0' : '#EBE3D6',
+        pickExtra: selected ? 'box-shadow:0 4px 14px rgba(58,123,240,.22)' : '',
+        checkBg: selected ? '#3A7BF0' : '#C9CDD8'
+      });
+    });
+
+    const selBase = CARDS.find(c => c.id === s.selectedCardId) || CARDS[0];
+    const upCount = s.upgrades[selBase.id] || 0;
+    const currentLevel = 1 + upCount;
+    const nextLevel = currentLevel + 1;
+    const maxed = currentLevel >= MAX_LEVEL;
+    const selectedCard = this.styleCard({ ...selBase, power: selBase.power + upCount * 1, speed: selBase.speed + upCount * 2, durability: selBase.durability + upCount * 5, level: currentLevel }, {
+      onUpgrade: () => this.upgradeCard(selBase.id),
+      onAddToSquad: () => this.addToSquad(selBase.id),
+      upgradeDisabled: maxed,
+      upgradeMainText: maxed ? 'MAKSİMUM SEVİYE' : `SEVİYE ${nextLevel}'E YÜKSELT`,
+      hasCost: !maxed, upgradeCost: UPGRADE_COST[nextLevel] || '',
+      hasDelta: !maxed, deltaPower: '+1', deltaSpeed: '+2', deltaDurability: '+5',
+      abilityInfo: (selBase.abilityChips || []).map((chip, i, arr) => ({ ...abilityInfoFor(chip), divider: i < arr.length - 1 ? 'border-bottom:1px solid #EBE3D6' : '' })),
+      isTypeSpor: selBase.type === 'Spor', isTypeMonster: selBase.type === 'Monster', isTypeYardimci: selBase.type === 'Yardımcı'
+    });
+
+    const b = s.battle;
+    const hpColor = (pct) => pct > 33 ? '#2FBF6B' : '#F04A47';
+    const buildVehicle = (entry, side) => {
+      const card = findCard(entry.cardId);
+      const isSelected = b.selectedAttackerUid === entry.uid;
+      const isAtk = b.anim && b.anim.atkSide === side && b.anim.atkUid === entry.uid;
+      const isDef = b.anim && b.anim.defSide === side && b.anim.defUid === entry.uid;
+      const pct = Math.max(0, Math.round((entry.hp / entry.maxHp) * 100));
+      const isTargetable = side === 'bot' && !!b.selectedAttackerUid;
+      let extraCss = '';
+      if (side === 'player' && entry.canAttack && !isSelected) extraCss += 'box-shadow:0 0 0 3px rgba(58,123,240,.3);';
+      if (isSelected) extraCss += 'box-shadow:0 0 0 3px #3A7BF0,0 10px 16px rgba(58,123,240,.35);transform:translateY(-10px);';
+      else if (side === 'player' && !entry.canAttack) extraCss += 'opacity:.4;';
+      if (isTargetable) extraCss += 'box-shadow:0 0 0 3px rgba(240,74,71,.45);';
+      if (isAtk) extraCss += (side === 'player' ? 'animation:cc-lunge-right .45s ease;' : 'animation:cc-lunge-left .45s ease;');
+      if (isDef) extraCss += 'animation:cc-shake-crack .45s ease;';
+      return this.styleCard(card, {
+        uid: entry.uid, slotId: 'art-' + entry.uid, hpNow: entry.hp, hpColor: hpColor(pct),
+        onTap: side === 'player' ? (() => this.onTapOwn(entry.uid)) : (() => this.onTapEnemy(entry.uid)),
+        extraCss, hitFlash: !!isDef
+      });
+    };
+    const playerVehicles = b.playerBoard.map((e) => buildVehicle(e, 'player'));
+    const botVehicles = b.botBoard.map((e) => buildVehicle(e, 'bot'));
+    const handCount = b.hand.length;
+    const handMid = (handCount - 1) / 2;
+    const handCards = b.hand.map((id, i) => {
+      const raised = s.raisedHandId === id;
+      const dragging = s.dragId === id;
+      const willPlay = dragging && s.dragDeltaY < -50;
+      const off = i - handMid;
+      const rot = Math.round(off * 7);
+      const lift = Math.round(Math.abs(off) * Math.abs(off) * 3);
+      let raisedCss, transition = 'transition:transform .15s ease,box-shadow .15s ease;';
+      if (dragging) {
+        transition = '';
+        raisedCss = `transform:translateY(${Math.min(0, s.dragDeltaY)}px) rotate(0deg) scale(${willPlay ? 1.08 : 1.03});z-index:25;box-shadow:0 12px 20px rgba(30,36,54,.25)`;
+      } else if (raised) {
+        raisedCss = 'transform:translateY(-22px) rotate(0deg) scale(1.06);z-index:20;box-shadow:0 10px 18px rgba(58,123,240,.28)';
+      } else {
+        raisedCss = `transform:translateY(${lift}px) rotate(${rot}deg);z-index:${1 + i}`;
+      }
+      return this.styleCard(findCard(id), {
+        onPointerDown: (e) => this.startDragHand(id, e), slotId: 'art-hand-' + id,
+        overlap: i === 0 ? '0px' : '-32px', willPlay, transition,
+        borderNow: willPlay ? '#3A7BF0' : (raised ? '#3A7BF0' : RARITY_STYLE[findCard(id).rarity].border),
+        raisedCss
+      });
+    });
+    const quickMessages = QUICK_MESSAGES.map(label => ({ label, onClick: () => this.sendTemplate(label) }));
+    const difficultyOptions = DIFFICULTIES.map(d => ({
+      label: d.key, blurb: d.blurb, active: s.difficulty === d.key, onClick: () => this.startBattle(d.key),
+      ink: d.key === 'Kolay' ? '#137A40' : d.key === 'Zor' ? '#C22C29' : '#2E62C8',
+      border: s.difficulty === d.key ? (d.key === 'Kolay' ? '#2FBF6B' : d.key === 'Zor' ? '#F04A47' : '#3A7BF0') : '#EBE3D6'
+    }));
+
+    const botPct = Math.max(0, Math.round((b.botGarageHp / b.botGarageMaxHp) * 100));
+    const playerPct = Math.max(0, Math.round((b.playerGarageHp / b.playerGarageMaxHp) * 100));
+    const botGarageTargetable = !!b.selectedAttackerUid && b.botBoard.length === 0;
+
+    const buildDiscardStack = (ids) => ids.slice(-2).reverse().map((id, i) => {
+      const c = findCard(id);
+      return { slotId: 'discard-' + id + '-' + i, artBg: RARITY_STYLE[c.rarity].artBg, artSrc: c.artSrc, rot: i === 0 ? -6 : 5 };
+    });
+    const playerDiscardStack = buildDiscardStack(b.playerDiscard);
+    const botDiscardStack = buildDiscardStack(b.botDiscard);
+    const drawAnimCard = b.drawAnim ? this.styleCard(findCard(b.drawAnim.cardId)) : null;
+    const turnBannerSide = b.turnBanner ? b.turnBanner.side : null;
+
+    return {
+      screenLabel: SCREEN_LABELS[screen],
+      isMenu: screen === 'menu', isSquad: screen === 'squad', isGallery: screen === 'gallery', isDetail: screen === 'detail', isBattle: screen === 'battle',
+      isHowToPlay: screen === 'howtoplay', isDifficulty: screen === 'difficulty', isNotBattle: screen !== 'battle',
+      playerLevel: 4, tokenCount: 1240, ownedCount: CARDS.length,
+      squadCount: s.squad.length, squadPickerCards,
+      maxLevel: MAX_LEVEL,
+      goMenu: () => this.goTo('menu'), goSquad: this.goSquad, goGallery: () => this.goTo('gallery'), goHowToPlay: this.goHowToPlay, goDifficulty: this.goDifficulty,
+      navMenuBg: screen === 'menu' ? '#DCE9FF' : 'transparent', navMenuColor: screen === 'menu' ? '#2E62C8' : '#A0A6B5',
+      navDuzenleBg: screen === 'squad' ? '#FFF0DC' : 'transparent', navDuzenleColor: screen === 'squad' ? '#B35C00' : '#A0A6B5',
+      navKoleksiyonBg: (screen === 'gallery' || screen === 'detail') ? '#DCE9FF' : 'transparent', navKoleksiyonColor: (screen === 'gallery' || screen === 'detail') ? '#2E62C8' : '#A0A6B5',
+      filterChips, filteredCards, selectedCard,
+      statLegend: STAT_LEGEND, turnSteps: TURN_STEPS, abilityLines: ABILITY_LINES, tips: TIPS,
+      difficultyOptions,
+      battleTurn: b.turn, turnStatus: b.busy ? 'Rakip…' : 'Senin sıran',
+      playerVehicles, botVehicles, handCards, handEmpty: b.hand.length === 0,
+      botGarageHp: b.botGarageHp, botGarageMax: b.botGarageMaxHp, playerGarageHp: b.playerGarageHp, playerGarageMax: b.playerGarageMaxHp,
+      botGaragePct: botPct + '%', playerGaragePct: playerPct + '%',
+      botGarageColor: hpColor(botPct), playerGarageColor: hpColor(playerPct),
+      botGarageBorder: botGarageTargetable ? '#F04A47' : '#C9CDD8',
+      onTapBotGarage: this.onTapBotGarage, onTapPlayerGarage: () => {},
+      hintText: b.selectedAttackerUid ? 'Şimdi rakip aracını (veya boşsa garajını) seç' : 'Saldırmak için önce kendi aracını seç',
+      battleOver: b.over, battleNotOver: !b.over, endTurnDisabled: b.over || b.busy,
+      resultText: b.resultWin ? 'KAZANDIN! 🏆' : 'KAYBETTİN', resultColor: b.resultWin ? '#137A40' : '#C22C29',
+      endTurn: this.endTurn, playAgain: this.playAgain,
+      dimOverlayVisible: b.busy && !!b.anim,
+      turnBannerVisible: !!b.turnBanner,
+      turnBannerLabel: b.turnBanner ? b.turnBanner.label : '',
+      turnBannerGradient: turnBannerSide === 'bot' ? 'linear-gradient(100deg,#F04A47,#FF9522)' : 'linear-gradient(100deg,#3A7BF0,#5C97FF)',
+      drawAnimVisible: !!drawAnimCard,
+      drawAnimCard: drawAnimCard || {},
+      playerDeckCount: b.deck.length,
+      playerDeckEmpty: b.deck.length === 0,
+      playerDiscardStack, botDiscardStack,
+      playerDiscardCount: b.playerDiscard.length, botDiscardCount: b.botDiscard.length,
+      playerDiscardEmpty: b.playerDiscard.length === 0, botDiscardEmpty: b.botDiscard.length === 0,
+      startSheetDrag: this.startSheetDrag,
+      sheetTransform: s.handCollapsed ? 'translateY(147px)' : 'translateY(0)',
+      chatOpen: s.chatOpen, toggleChat: this.toggleChat, forfeitBattle: this.forfeitBattle, quickMessages,
+      toastVisible: !!s.toastText, toastText: s.toastText || ''
+    };
+  }
+}
+</script>
+</body>
+</html>

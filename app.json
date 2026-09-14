@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "CarDraft",
+    "slug": "cardraft",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "cardraft",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#FBF7F0",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.cardraft.app"
+    },
+    "android": {
+      "package": "com.cardraft.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#FBF7F0"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-asset",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Baloo2-Bold.ttf",
+            "./assets/fonts/Baloo2-ExtraBold.ttf",
+            "./assets/fonts/Nunito-SemiBold.ttf",
+            "./assets/fonts/Nunito-Bold.ttf",
+            "./assets/fonts/Nunito-Black.ttf"
+          ]
+        }
+      ],
+      "expo-audio"
+    ]
+  }
+}
