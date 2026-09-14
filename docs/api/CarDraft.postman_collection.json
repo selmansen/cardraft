@@ -47,6 +47,16 @@
       "type": "string"
     },
     {
+      "key": "emailToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "resetToken",
+      "value": "",
+      "type": "string"
+    },
+    {
       "key": "deviceId",
       "value": "",
       "type": "string"
@@ -476,6 +486,271 @@
                   "});",
                   "",
                   "pm.test('200 döndü', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Doğrulama e-postası gönder",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/email/verify/send",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "email",
+                "verify",
+                "send"
+              ]
+            },
+            "description": "Doğrulama e-postasını (yeniden) gönderir.\n\nDoğrulama oyuna girişi **engellemiyor** — oyuncu kaydolur olmaz oynayabiliyor. Tek işlevi şifre sıfırlamayı mümkün kılmak: doğrulanmamış bir adrese sıfırlama bağlantısı göndermek, adresini yanlış yazan (ya da bilerek başkasınınkini yazan) kişinin hesabını o adresin gerçek sahibine vermek olurdu.\n\nGeliştirmede e-posta GÖNDERİLMİYOR, sunucu loguna yazılıyor (`LogMailAdapter`) — bağlantıdaki jetonu oradan kopyalayıp `emailToken` değişkenine yapıştır."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('204 döndü', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E-postayı doğrula",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/email/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "email",
+                "verify"
+              ]
+            },
+            "description": "Bağlantıdaki jetonu doğrular. **Tek kullanımlık**, 24 saat geçerli.\n\nGeçersiz, süresi dolmuş ve zaten kullanılmış jetonlar için AYNI mesaj dönüyor — ayrı mesajlar, elindeki jetonun var olup olmadığını deneyerek öğrenmeye yarardı.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{emailToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Doğrulandı (204) ya da jeton geçersiz/kullanılmış (400)\", () => pm.expect(pm.response.code).to.be.oneOf([204,400]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Şifremi unuttum",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/password/forgot",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "password",
+                "forgot"
+              ]
+            },
+            "description": "Sıfırlama e-postası ister. **Her durumda 204 döner** — hesabın var olup olmadığı söylenmez.\n\nFarklı cevap verilseydi saldırgan adresleri tek tek deneyerek hangilerinin kayıtlı olduğunu öğrenirdi (hesap sayımı). Adres kayıtlı değilse ya da **doğrulanmamışsa** e-posta gönderilmez, ama yanıt yine 204'tür.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('204 döndü', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Şifreyi sıfırla",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/password/reset",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "password",
+                "reset"
+              ]
+            },
+            "description": "Jetonla şifreyi sıfırlar ve **bütün oturumları kapatır**.\n\nOturumların kapatılması isteğe bağlı bir incelik değil: sıfırlamanın en yaygın sebebi \"hesabıma başkası giriyor olabilir\". Açık oturum bırakılsaydı o kişi içeride kalmaya devam ederdi.\n\nJeton 1 saat geçerli (doğrulamanınki 24 saat): bu bağlantı hesabın kendisi, pencere dar olmalı.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{resetToken}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Sıfırlandı (204) ya da jeton geçersiz (400)\", () => pm.expect(pm.response.code).to.be.oneOf([204,400]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Şifre değiştir",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/password/change",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "password",
+                "change"
+              ]
+            },
+            "description": "Oturum açıkken şifre değiştirir. Mevcut şifre şart. Sıfırlamada olduğu gibi bütün oturumlar kapanıyor.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"{{password}}\",\n  \"newPassword\": \"yeni-sifre-1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Değişti (204) ya da mevcut şifre yanlış (400)\", () => pm.expect(pm.response.code).to.be.oneOf([204,400]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Hesabı sil",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/account",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "account"
+              ]
+            },
+            "description": "Hesabı ve bağlı bütün veriyi siler: cüzdan, defter, koleksiyon, maçlar, cihazlar.\n\n**Zorunlu bir uç:** Apple App Store, hesap açmaya izin veren uygulamanın hesabı uygulama içinden silmeye de izin vermesini şart koşuyor (5.1.1(v)). Yani bu bir incelik değil, yayın engeli.\n\nMisafir hesapta şifre yok, o yüzden `password` opsiyonel — şifresi olan hesapta zorunlu.\n\n⚠️ Bu istek gerçekten siler. Koleksiyondaki aktif hesabınla çalıştırma.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Silindi (204) ya da şifre gerekli/yanlış (400)\", () => pm.expect(pm.response.code).to.be.oneOf([204,400]));"
                 ]
               }
             }

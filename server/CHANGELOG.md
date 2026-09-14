@@ -37,6 +37,16 @@ Mimari kararların gerekçeleri günlükte değil, [`docs/adr/`](docs/adr/) alt�
   ilerleme kademesi başına kazanma oranını raporlar. Bkz. ADR 0012.
 - Kadro kuralları ve bot ölçeklemesi için 11 birim testi.
 
+### Eklendi
+
+- **Hesap kurtarma akışları**: e-posta doğrulama, şifre sıfırlama, oturum
+  açıkken şifre değiştirme ve **hesap silme** (Apple App Store'un hesap
+  açmaya izin veren uygulamalardan şart koştuğu uç). Jetonlar hash'li, tek
+  kullanımlık ve süreli; şifre değişince bütün oturumlar kapanıyor.
+  E-posta bir port'un arkasında (`MailPort`) — sağlayıcı seçilmedi, bugün
+  loga yazılıyor. Bkz. ADR 0014.
+- `user_identities` tablosu: Apple/Google ile giriş için şema hazırlığı.
+
 ### Güvenlik
 
 - **Hız sınırlama eklendi.** Daha önce hiç yoktu: `/auth/login` kaba kuvvete

@@ -19,6 +19,15 @@ export const envSchema = z.object({
   REDIS_HOST: z.string().default('localhost'),
   REDIS_PORT: z.coerce.number().int().positive().default(6379),
 
+  /**
+   * E-postadaki doğrulama/sıfırlama bağlantılarının kök adresi.
+   *
+   * Varsayılan uygulamanın derin bağlantı şeması (`app.json`'daki `scheme`):
+   * bağlantıya dokunmak uygulamayı açıyor. Web karşılığı gerektiğinde bir
+   * https adresine çevrilir — o zaman tek değişen bu değer olur.
+   */
+  APP_LINK_BASE_URL: z.string().min(1).default('cardraft://'),
+
   // Üretimde zayıf sır kullanılmasını şemada engelliyoruz: 32 karakter alt
   // sınırı, "secret123" gibi bir değerin sessizce canlıya çıkmasını önler.
   JWT_ACCESS_SECRET: z.string().min(32, 'JWT_ACCESS_SECRET en az 32 karakter olmalı'),

@@ -17,10 +17,20 @@ model User {
   isGuest      Boolean @default(true)
   displayName  String?
 
+  /// E-posta doğrulandığı an. null = doğrulanmamış.
+  ///
+  /// Doğrulama OYUNA GİRİŞİ ENGELLEMİYOR — oyuncu kaydolur olmaz oynayabilir.
+  /// Tek işlevi şifre sıfırlamayı mümkün kılmak: doğrulanmamış bir adrese
+  /// sıfırlama bağlantısı göndermek, adresi yanlış yazan (ya da başkasının
+  /// adresini yazan) kişinin hesabını o adresin sahibine vermek demektir.
+  emailVerifiedAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   refreshTokens RefreshToken[]
+  authTokens    AuthToken[]
+  identities    UserIdentity[]
   devices       Device[]
   wallets       Wallet[]
   stats         UserStats?

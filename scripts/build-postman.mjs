@@ -96,6 +96,8 @@ Ayrıntı: \`docs/api/README.md\`. Kararların gerekçeleri: \`server/docs/adr/\
     { key: 'installationId', value: '', type: 'string' },
     { key: 'matchId', value: '', type: 'string' },
     { key: 'packId', value: 'basic', type: 'string' },
+    { key: 'emailToken', value: '', type: 'string' },
+    { key: 'resetToken', value: '', type: 'string' },
     { key: 'deviceId', value: '', type: 'string' },
     { key: 'email', value: 'oyuncu@example.com', type: 'string' },
     { key: 'password', value: 'cok-gizli-sifre', type: 'string' },
@@ -201,6 +203,78 @@ Yeni satır açılmıyor, **aynı satır** yükseltiliyor: cüzdan, koleksiyon v
 
 Refresh token **rotasyonlu**: her yenilemede eskisi geçersizleşir ve yenisi verilir. Çalınan bir token'ın sınırsız kullanılmasını engelleyen şey bu. Yanıttaki yeni refresh token otomatik olarak değişkene yazılıyor.`,
           test: saveTokens,
+        }),
+        req({
+          name: 'Doğrulama e-postası gönder',
+          method: 'POST',
+          path: '/auth/email/verify/send',
+          status: 204,
+          desc: `Doğrulama e-postasını (yeniden) gönderir.
+
+Doğrulama oyuna girişi **engellemiyor** — oyuncu kaydolur olmaz oynayabiliyor. Tek işlevi şifre sıfırlamayı mümkün kılmak: doğrulanmamış bir adrese sıfırlama bağlantısı göndermek, adresini yanlış yazan (ya da bilerek başkasınınkini yazan) kişinin hesabını o adresin gerçek sahibine vermek olurdu.
+
+Geliştirmede e-posta GÖNDERİLMİYOR, sunucu loguna yazılıyor (\`LogMailAdapter\`) — bağlantıdaki jetonu oradan kopyalayıp \`emailToken\` değişkenine yapıştır.`,
+        }),
+        req({
+          name: 'E-postayı doğrula',
+          method: 'POST',
+          path: '/auth/email/verify',
+          auth: 'none',
+          status: [204, 400],
+          statusLabel: 'Doğrulandı (204) ya da jeton geçersiz/kullanılmış (400)',
+          body: { token: '{{emailToken}}' },
+          desc: `Bağlantıdaki jetonu doğrular. **Tek kullanımlık**, 24 saat geçerli.
+
+Geçersiz, süresi dolmuş ve zaten kullanılmış jetonlar için AYNI mesaj dönüyor — ayrı mesajlar, elindeki jetonun var olup olmadığını deneyerek öğrenmeye yarardı.`,
+        }),
+        req({
+          name: 'Şifremi unuttum',
+          method: 'POST',
+          path: '/auth/password/forgot',
+          auth: 'none',
+          status: 204,
+          body: { email: '{{email}}' },
+          desc: `Sıfırlama e-postası ister. **Her durumda 204 döner** — hesabın var olup olmadığı söylenmez.
+
+Farklı cevap verilseydi saldırgan adresleri tek tek deneyerek hangilerinin kayıtlı olduğunu öğrenirdi (hesap sayımı). Adres kayıtlı değilse ya da **doğrulanmamışsa** e-posta gönderilmez, ama yanıt yine 204'tür.`,
+        }),
+        req({
+          name: 'Şifreyi sıfırla',
+          method: 'POST',
+          path: '/auth/password/reset',
+          auth: 'none',
+          status: [204, 400],
+          statusLabel: 'Sıfırlandı (204) ya da jeton geçersiz (400)',
+          body: { token: '{{resetToken}}', password: '{{password}}' },
+          desc: `Jetonla şifreyi sıfırlar ve **bütün oturumları kapatır**.
+
+Oturumların kapatılması isteğe bağlı bir incelik değil: sıfırlamanın en yaygın sebebi "hesabıma başkası giriyor olabilir". Açık oturum bırakılsaydı o kişi içeride kalmaya devam ederdi.
+
+Jeton 1 saat geçerli (doğrulamanınki 24 saat): bu bağlantı hesabın kendisi, pencere dar olmalı.`,
+        }),
+        req({
+          name: 'Şifre değiştir',
+          method: 'POST',
+          path: '/auth/password/change',
+          status: [204, 400],
+          statusLabel: 'Değişti (204) ya da mevcut şifre yanlış (400)',
+          body: { currentPassword: '{{password}}', newPassword: 'yeni-sifre-1234' },
+          desc: 'Oturum açıkken şifre değiştirir. Mevcut şifre şart. Sıfırlamada olduğu gibi bütün oturumlar kapanıyor.',
+        }),
+        req({
+          name: 'Hesabı sil',
+          method: 'DELETE',
+          path: '/auth/account',
+          status: [204, 400],
+          statusLabel: 'Silindi (204) ya da şifre gerekli/yanlış (400)',
+          body: { password: '{{password}}' },
+          desc: `Hesabı ve bağlı bütün veriyi siler: cüzdan, defter, koleksiyon, maçlar, cihazlar.
+
+**Zorunlu bir uç:** Apple App Store, hesap açmaya izin veren uygulamanın hesabı uygulama içinden silmeye de izin vermesini şart koşuyor (5.1.1(v)). Yani bu bir incelik değil, yayın engeli.
+
+Misafir hesapta şifre yok, o yüzden \`password\` opsiyonel — şifresi olan hesapta zorunlu.
+
+⚠️ Bu istek gerçekten siler. Koleksiyondaki aktif hesabınla çalıştırma.`,
         }),
         req({
           name: 'Çıkış',

@@ -289,6 +289,162 @@
         ]
       }
     },
+    "/api/auth/email/verify/send": {
+      "post": {
+        "operationId": "AuthController_sendVerification",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Kimlik"
+        ]
+      }
+    },
+    "/api/auth/email/verify": {
+      "post": {
+        "operationId": "AuthController_verifyEmail",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "summary": "E-postadaki bağlantıdaki jetonu doğrular. Tek kullanımlık, 24 saat geçerli.",
+        "tags": [
+          "Kimlik"
+        ]
+      }
+    },
+    "/api/auth/password/forgot": {
+      "post": {
+        "operationId": "AuthController_forgotPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "summary": "Şifre sıfırlama e-postası ister.",
+        "tags": [
+          "Kimlik"
+        ],
+        "description": "HER DURUMDA 204 döner — hesabın var olup olmadığı SÖYLENMEZ. Aksi halde\nsaldırgan adresleri tek tek deneyerek hangilerinin kayıtlı olduğunu\nöğrenirdi."
+      }
+    },
+    "/api/auth/password/reset": {
+      "post": {
+        "operationId": "AuthController_resetPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "summary": "Jetonla şifreyi sıfırlar ve bütün oturumları kapatır.",
+        "tags": [
+          "Kimlik"
+        ]
+      }
+    },
+    "/api/auth/password/change": {
+      "post": {
+        "operationId": "AuthController_changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Oturum açıkken şifre değiştirir. Mevcut şifre şart; oturumlar kapanır.",
+        "tags": [
+          "Kimlik"
+        ]
+      }
+    },
+    "/api/auth/account": {
+      "delete": {
+        "operationId": "AuthController_deleteAccount",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteAccountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Hesabı ve bağlı bütün veriyi siler.",
+        "tags": [
+          "Kimlik"
+        ],
+        "description": "Apple App Store, hesap açmaya izin veren uygulamanın silmeye de izin\nvermesini şart koşuyor (5.1.1(v)) — yani bu bir yayın engeli, incelik\ndeğil. Silme gerçek: cüzdan, defter, koleksiyon, maçlar hepsi gidiyor."
+      }
+    },
     "/api/auth/me": {
       "get": {
         "operationId": "AuthController_me",
@@ -664,6 +820,79 @@
           "email",
           "password"
         ]
+      },
+      "TokenDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "ForgotPasswordDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "format": "email"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "ResetPasswordDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 200
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "token",
+          "password"
+        ]
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "newPassword": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ]
+      },
+      "DeleteAccountDto": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string",
+            "description": "Misafir hesapta şifre yok; o yüzden opsiyonel.",
+            "maxLength": 200
+          }
+        }
       },
       "UnlockCardDto": {
         "type": "object",

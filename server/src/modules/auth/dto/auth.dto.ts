@@ -89,3 +89,43 @@ export interface AuthTokensDto {
    */
   installationId?: string;
 }
+
+/** Doğrulama ya da sıfırlama bağlantısındaki jeton. */
+export class TokenDto {
+  @IsString()
+  @MinLength(20)
+  @MaxLength(200)
+  token!: string;
+}
+
+export class ForgotPasswordDto {
+  @IsEmail({}, { message: 'Geçerli bir e-posta adresi gerekli' })
+  @MaxLength(254)
+  email!: string;
+}
+
+export class ResetPasswordDto extends TokenDto {
+  @IsString()
+  @MinLength(8, { message: 'Şifre en az 8 karakter olmalı' })
+  @MaxLength(200)
+  password!: string;
+}
+
+export class ChangePasswordDto {
+  @IsString()
+  @MaxLength(200)
+  currentPassword!: string;
+
+  @IsString()
+  @MinLength(8, { message: 'Şifre en az 8 karakter olmalı' })
+  @MaxLength(200)
+  newPassword!: string;
+}
+
+export class DeleteAccountDto {
+  /** Misafir hesapta şifre yok; o yüzden opsiyonel. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  password?: string;
+}
