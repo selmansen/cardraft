@@ -38,15 +38,6 @@ export class ProviderSignInDto extends DeviceInfoDto {
   @MaxLength(4096)
   idToken!: string;
 
-  /**
-   * Bu sağlayıcı hesabı BAŞKA bir CarDraft hesabına bağlıysa, buradaki
-   * misafir ilerlemesini bırakıp o hesaba geçmeyi onaylar.
-   *
-   * Varsayılan `false` ve bu bilinçli: onaysız geçiş, oyuncunun saatlerini
-   * sessizce silmek olurdu. Sunucu önce 409 dönüyor, istemci uyarıyor.
-   */
-  @IsOptional()
-  force?: boolean;
 }
 
 export class RefreshDto {

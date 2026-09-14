@@ -172,7 +172,9 @@ Kimlik doğrulaması **şart** (public değil): çağıran her zaman oturum açm
 2. **Geri dönmek** — kimlik bu kullanıcıya zaten bağlıysa sadece yeni jeton.
 3. **Hesabı kurtarmak** — kimlik başka bir hesaba bağlıysa o hesaba geçilir. Cihaz değiştiren oyuncunun ilerlemesini geri aldığı durum; asıl amaç bu.
 
-Üçüncü durumda buradaki misafir hesabın ilerlemesi varsa **409** dönüyor: \`force: true\` gelmeden geçiş yok, yoksa oyuncunun saatleri sessizce silinirdi.
+Üçüncü durumda onay sorulmuyor ve sorulması da gerekmiyor: misafir hesapta cüzdan 0 ve koleksiyon yalnızca başlangıç kartları, yani geride bırakılan bir şey yok.
+
+İlk bağlanışta **hoş geldin hediyesi 350 jant** yatıyor — tam bir Temel paket eder.
 
 \`idToken\` geliştirmede sahte doğrulayıcıdan geçiyor (\`sahte:<subject>:<email>\`) — Apple/Google geliştirici hesapları henüz yok. Üretimde bu adapter devre dışı, gerçek JWKS doğrulaması çalışıyor.`,
         }),
@@ -259,13 +261,13 @@ Bakiye tek başına saklanmıyor, her değişim deftere yazılıyor. "Jantım ne
           method: 'POST',
           path: '/inventory/unlock',
           body: { cardId: 'nocturne-coupe', currency: 'RIM' },
-          status: [200, 400, 409],
-          statusLabel: 'Açıldı (200), bakiye yetmedi (400) ya da zaten sahip (409)',
+          status: [200, 400, 403, 409],
+          statusLabel: 'Açıldı (200), misafir (403), bakiye yetmedi (400) ya da zaten sahip (409)',
           desc: `Kart satın alır. İstemci **fiyat göndermiyor** — sadece hangi kart ve hangi keseden. Fiyata sunucu karar veriyor (\`card-catalog.ts\`); aksi halde istemci "bunu 1 janta aldım" diyebilirdi.
 
 Bakiye düşürme ve kartın yazılması **tek transaction**: biri olup diğeri olamaz.
 
-Örnek kart nadir (600 jant), yeni hesabın 300 janti yetmez → **400**. Yetecek bir kart için önce maç kazan. Zaten sahip olunan kart → **409**.`,
+**Misafir kart alamaz** → **403**. Giriş yapıldıktan sonra: örnek kart nadir (600 jant), hoş geldin hediyesi 350 olduğu için yine **400** — yetecek jant için maç kazanmak gerekiyor. Zaten sahip olunan kart → **409**.`,
         }),
       ],
     },
@@ -295,15 +297,15 @@ pm.test('Oranlar 100 ediyor', () => {
           method: 'POST',
           path: '/store/packs/{{packId}}/open',
           body: { requestId: '{{$guid}}' },
-          status: [200, 400],
-          statusLabel: 'Açıldı (200) ya da bakiye yetmedi (400)',
+          status: [200, 400, 403],
+          statusLabel: 'Açıldı (200), misafir (403) ya da bakiye yetmedi (400)',
           desc: `Paket açar: jant düşülür, kart çekilir, kart zaten koleksiyondaysa değerinin **%25'i** geri verilir. Hepsi tek transaction — biri olup diğeri olamaz.
 
 \`requestId\` tekrar korumasıdır ve **zorunludur**. Mobil ağda cevabı kaybolan bir istek tekrar gönderilirse, aynı kimlikle gelen ikinci istek yeni çekiliş yapmaz; ilk açılışın sonucunu döndürür. Olmasaydı oyuncudan iki kez para düşer ve iki kart çekilirdi.
 
 Koleksiyonda \`{{$guid}}\` Postman'in her çalıştırmada yeni ürettiği bir UUID — gerçek istemci de her açılış için yeni bir tane üretir.
 
-Yeni hesabın 300 janti 350'lik pakete yetmez; o yüzden ilk denemede **400** beklenir. Jant için önce maç kazan.
+**Misafir hesap paket açamaz** — koleksiyonun tamamı hesaba bağlı, misafirlik yalnızca deneme. Postman'deki misafir oturumuyla bu istek **403** döner; önce \`Apple / Google ile giriş\`'i çalıştır, hoş geldin hediyesi (350 jant) tam bir pakete yetiyor.
 
 \`packId\` koleksiyon değişkeni: \`basic\` ya da \`rare-plus\`.`,
         }),

@@ -1,6 +1,7 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
+import { AccountRequired } from '../../common/decorators/account-required.decorator.js';
 import { CurrentUser } from '../../common/decorators/auth.decorators.js';
 import type { AccessTokenPayload } from '../auth/token.service.js';
 import { UnlockCardDto } from './dto/inventory.dto.js';
@@ -22,6 +23,7 @@ export class InventoryController {
    * Kart açma. İstemci FİYAT göndermiyor — sadece hangi kart ve hangi
    * keseden. Fiyata sunucu karar veriyor (card-catalog.ts).
    */
+  @AccountRequired()
   @Post('unlock')
   @HttpCode(HttpStatus.OK)
   unlock(@CurrentUser() user: AccessTokenPayload, @Body() dto: UnlockCardDto) {

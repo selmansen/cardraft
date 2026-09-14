@@ -1,5 +1,6 @@
 import { cardCatalog } from './card-catalog.js';
 import { CARDS } from '../../game-engine/data/cards.js';
+import { PACKS } from '../../game-engine/game/packs.js';
 import { battleReward, SIGNUP_BONUS_RIM } from '../economy/reward.rules.js';
 import { CardKind, CurrencyCode, LedgerReason } from '../../generated/prisma/enums.js';
 
@@ -89,15 +90,25 @@ describe('battleReward', () => {
     expect(normal).toBeLessThan(hard);
   });
 
-  it('başlangıç janttı en ucuz kilitli araca tam yetiyor', () => {
-    // İlerlemenin tempo başlangıcı: oyuncu ilk kartını hemen açabilmeli ama
-    // koleksiyonun geri kalanı hedef olarak durmalı. Bu iki sayı birbirine
-    // bağlı — biri değişip diğeri unutulursa yeni oyuncu ya hiçbir şey
-    // açamaz ya da baştan yarım koleksiyona sahip olur.
+  it('hoş geldin hediyesi ilk paketi TAM karşılıyor', () => {
+    /**
+     * Bu iki sayı birbirine bağlı ve bağlı kalmalı.
+     *
+     * Giriş ekranı oyuncuya "paketler aç" diye söz veriyor; giriş yaptıktan
+     * sonra ilk yapabileceği şey o olmalı. Hediye paketin altına düşerse vaat
+     * ile deneyim ayrışır — oyuncu girer, söz verilen şeyi yapamaz ve bunu
+     * kimse fark etmez. Biri değişirse bu test patlar.
+     */
+    const cheapestPack = Math.min(...PACKS.map((p) => p.price.rim));
+    expect(SIGNUP_BONUS_RIM).toBeGreaterThanOrEqual(cheapestPack);
+  });
+
+  it('hoş geldin hediyesi doğrudan alıma da yetiyor', () => {
+    // Paket rastgele; oyuncu istediği kartı seçmek isterse o yol da açık
+    // olmalı. En ucuz kilitli araç bu hediyenin altında kalıyor.
     const cheapestLocked = Math.min(
       ...CARDS.map((card) => cardCatalog.find(card.id)!.price.rim).filter((rim) => rim > 0),
     );
-
-    expect(cheapestLocked).toBe(SIGNUP_BONUS_RIM);
+    expect(cheapestLocked).toBeLessThanOrEqual(SIGNUP_BONUS_RIM);
   });
 });

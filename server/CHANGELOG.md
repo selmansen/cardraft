@@ -47,6 +47,14 @@ Mimari kararların gerekçeleri günlükte değil, [`docs/adr/`](docs/adr/) alt�
   izin veren uygulamalardan şart koştuğu uç. Bağlı hesapta sağlayıcıdan taze
   jeton isteniyor. Bkz. ADR 0015.
 
+### Değiştirildi
+
+- **Misafirlik artık bir deneme, ilerleme değil.** Misafir oyuncunun cüzdanı 0;
+  maç oynayabiliyor ama jant kazanmıyor, paket açamıyor, kart alamıyor
+  (`403`, "giriş yapman gerekiyor"). Hoş geldin hediyesi hesap bağlandığında
+  veriliyor ve 300 → **350 jant** oldu: tam bir Temel paket eder, yani giriş
+  ekranının "paketler aç" vaadi giriş biter bitmez kullanılabilir. Bkz. ADR 0016.
+
 ### Kaldırıldı
 
 - **E-posta + şifre girişi.** Kayıt, giriş, e-posta doğrulama, şifre

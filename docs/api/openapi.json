@@ -164,7 +164,7 @@
         "tags": [
           "Kimlik"
         ],
-        "description": "Kimlik doğrulaması ŞART (public değil): çağıran her zaman oturum açmış\ndurumda, çünkü uygulama açılışta misafir hesap alıyor. Böylece bu tek uç\nüç işi birden yapıyor: misafiri yükseltmek, daha önce bağlanmış hesaba\ndönmek, ve cihaz değiştiren oyuncunun hesabını geri vermek.\n\nSağlayıcı hesabı BAŞKA bir CarDraft hesabına bağlıysa ve buradaki misafir\nhesabın ilerlemesi varsa **409** dönüyor: `force` gelmeden geçiş yok,\nyoksa oyuncunun saatleri sessizce silinirdi."
+        "description": "Kimlik doğrulaması ŞART (public değil): çağıran her zaman oturum açmış\ndurumda, çünkü uygulama açılışta misafir hesap alıyor. Böylece bu tek uç\nüç işi birden yapıyor: misafiri yükseltmek, daha önce bağlanmış hesaba\ndönmek, ve cihaz değiştiren oyuncunun hesabını geri vermek.\n\nOnay diyaloğu YOK: misafir hesapta cüzdan 0 ve koleksiyon yalnızca\nbaşlangıç kartları, yani geride bırakılan bir şey yok. Misafirin hiçbir\nşey biriktirmemesi kararının doğrudan kazancı bu."
       }
     },
     "/api/auth/refresh": {
@@ -604,10 +604,6 @@
             "description": "Sağlayıcının döndürdüğü imzalı kimlik jetonu (JWT).",
             "minLength": 20,
             "maxLength": 4096
-          },
-          "force": {
-            "type": "boolean",
-            "description": "Bu sağlayıcı hesabı BAŞKA bir CarDraft hesabına bağlıysa, buradaki\nmisafir ilerlemesini bırakıp o hesaba geçmeyi onaylar.\n\nVarsayılan `false` ve bu bilinçli: onaysız geçiş, oyuncunun saatlerini\nsessizce silmek olurdu. Sunucu önce 409 dönüyor, istemci uyarıyor."
           },
           "installationId": {
             "type": "string",

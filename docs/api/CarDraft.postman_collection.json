@@ -266,7 +266,7 @@
                 "identity"
               ]
             },
-            "description": "**Tek gerçek giriş yolu.** E-posta + şifre kaldırıldı: sağlayıcı hem kimliği hem e-postayı bizden daha iyi doğruluyor, ve şifre olmayınca sıfırlama, doğrulama, kaba kuvvet ve hesap sayımı yüzeyleri de olmuyor.\n\nKimlik doğrulaması **şart** (public değil): çağıran her zaman oturum açmış durumda, çünkü uygulama açılışta misafir hesap alıyor. Böylece tek uç üç işi birden yapıyor:\n\n1. **Misafiri yükseltmek** — kimlik hiç kayıtlı değilse mevcut hesaba bağlanır, ilerleme olduğu gibi kalır (aynı satırda yükseltme, ADR 0005).\n2. **Geri dönmek** — kimlik bu kullanıcıya zaten bağlıysa sadece yeni jeton.\n3. **Hesabı kurtarmak** — kimlik başka bir hesaba bağlıysa o hesaba geçilir. Cihaz değiştiren oyuncunun ilerlemesini geri aldığı durum; asıl amaç bu.\n\nÜçüncü durumda buradaki misafir hesabın ilerlemesi varsa **409** dönüyor: `force: true` gelmeden geçiş yok, yoksa oyuncunun saatleri sessizce silinirdi.\n\n`idToken` geliştirmede sahte doğrulayıcıdan geçiyor (`sahte:<subject>:<email>`) — Apple/Google geliştirici hesapları henüz yok. Üretimde bu adapter devre dışı, gerçek JWKS doğrulaması çalışıyor.",
+            "description": "**Tek gerçek giriş yolu.** E-posta + şifre kaldırıldı: sağlayıcı hem kimliği hem e-postayı bizden daha iyi doğruluyor, ve şifre olmayınca sıfırlama, doğrulama, kaba kuvvet ve hesap sayımı yüzeyleri de olmuyor.\n\nKimlik doğrulaması **şart** (public değil): çağıran her zaman oturum açmış durumda, çünkü uygulama açılışta misafir hesap alıyor. Böylece tek uç üç işi birden yapıyor:\n\n1. **Misafiri yükseltmek** — kimlik hiç kayıtlı değilse mevcut hesaba bağlanır, ilerleme olduğu gibi kalır (aynı satırda yükseltme, ADR 0005).\n2. **Geri dönmek** — kimlik bu kullanıcıya zaten bağlıysa sadece yeni jeton.\n3. **Hesabı kurtarmak** — kimlik başka bir hesaba bağlıysa o hesaba geçilir. Cihaz değiştiren oyuncunun ilerlemesini geri aldığı durum; asıl amaç bu.\n\nÜçüncü durumda onay sorulmuyor ve sorulması da gerekmiyor: misafir hesapta cüzdan 0 ve koleksiyon yalnızca başlangıç kartları, yani geride bırakılan bir şey yok.\n\nİlk bağlanışta **hoş geldin hediyesi 350 jant** yatıyor — tam bir Temel paket eder.\n\n`idToken` geliştirmede sahte doğrulayıcıdan geçiyor (`sahte:<subject>:<email>`) — Apple/Google geliştirici hesapları henüz yok. Üretimde bu adapter devre dışı, gerçek JWKS doğrulaması çalışıyor.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"provider\": \"APPLE\",\n  \"idToken\": \"sahte:{{$guid}}:oyuncu@example.com\",\n  \"installationId\": \"{{installationId}}\",\n  \"platform\": \"IOS\",\n  \"appVersion\": \"0.1.0\"\n}",
@@ -588,7 +588,7 @@
                 "unlock"
               ]
             },
-            "description": "Kart satın alır. İstemci **fiyat göndermiyor** — sadece hangi kart ve hangi keseden. Fiyata sunucu karar veriyor (`card-catalog.ts`); aksi halde istemci \"bunu 1 janta aldım\" diyebilirdi.\n\nBakiye düşürme ve kartın yazılması **tek transaction**: biri olup diğeri olamaz.\n\nÖrnek kart nadir (600 jant), yeni hesabın 300 janti yetmez → **400**. Yetecek bir kart için önce maç kazan. Zaten sahip olunan kart → **409**.",
+            "description": "Kart satın alır. İstemci **fiyat göndermiyor** — sadece hangi kart ve hangi keseden. Fiyata sunucu karar veriyor (`card-catalog.ts`); aksi halde istemci \"bunu 1 janta aldım\" diyebilirdi.\n\nBakiye düşürme ve kartın yazılması **tek transaction**: biri olup diğeri olamaz.\n\n**Misafir kart alamaz** → **403**. Giriş yapıldıktan sonra: örnek kart nadir (600 jant), hoş geldin hediyesi 350 olduğu için yine **400** — yetecek jant için maç kazanmak gerekiyor. Zaten sahip olunan kart → **409**.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"cardId\": \"nocturne-coupe\",\n  \"currency\": \"RIM\"\n}",
@@ -606,7 +606,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Açıldı (200), bakiye yetmedi (400) ya da zaten sahip (409)\", () => pm.expect(pm.response.code).to.be.oneOf([200,400,409]));"
+                  "pm.test(\"Açıldı (200), misafir (403), bakiye yetmedi (400) ya da zaten sahip (409)\", () => pm.expect(pm.response.code).to.be.oneOf([200,400,403,409]));"
                 ]
               }
             }
@@ -678,7 +678,7 @@
                 "open"
               ]
             },
-            "description": "Paket açar: jant düşülür, kart çekilir, kart zaten koleksiyondaysa değerinin **%25'i** geri verilir. Hepsi tek transaction — biri olup diğeri olamaz.\n\n`requestId` tekrar korumasıdır ve **zorunludur**. Mobil ağda cevabı kaybolan bir istek tekrar gönderilirse, aynı kimlikle gelen ikinci istek yeni çekiliş yapmaz; ilk açılışın sonucunu döndürür. Olmasaydı oyuncudan iki kez para düşer ve iki kart çekilirdi.\n\nKoleksiyonda `{{$guid}}` Postman'in her çalıştırmada yeni ürettiği bir UUID — gerçek istemci de her açılış için yeni bir tane üretir.\n\nYeni hesabın 300 janti 350'lik pakete yetmez; o yüzden ilk denemede **400** beklenir. Jant için önce maç kazan.\n\n`packId` koleksiyon değişkeni: `basic` ya da `rare-plus`.",
+            "description": "Paket açar: jant düşülür, kart çekilir, kart zaten koleksiyondaysa değerinin **%25'i** geri verilir. Hepsi tek transaction — biri olup diğeri olamaz.\n\n`requestId` tekrar korumasıdır ve **zorunludur**. Mobil ağda cevabı kaybolan bir istek tekrar gönderilirse, aynı kimlikle gelen ikinci istek yeni çekiliş yapmaz; ilk açılışın sonucunu döndürür. Olmasaydı oyuncudan iki kez para düşer ve iki kart çekilirdi.\n\nKoleksiyonda `{{$guid}}` Postman'in her çalıştırmada yeni ürettiği bir UUID — gerçek istemci de her açılış için yeni bir tane üretir.\n\n**Misafir hesap paket açamaz** — koleksiyonun tamamı hesaba bağlı, misafirlik yalnızca deneme. Postman'deki misafir oturumuyla bu istek **403** döner; önce `Apple / Google ile giriş`'i çalıştır, hoş geldin hediyesi (350 jant) tam bir pakete yetiyor.\n\n`packId` koleksiyon değişkeni: `basic` ya da `rare-plus`.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"requestId\": \"{{$guid}}\"\n}",
@@ -696,7 +696,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Açıldı (200) ya da bakiye yetmedi (400)\", () => pm.expect(pm.response.code).to.be.oneOf([200,400]));"
+                  "pm.test(\"Açıldı (200), misafir (403) ya da bakiye yetmedi (400)\", () => pm.expect(pm.response.code).to.be.oneOf([200,400,403]));"
                 ]
               }
             }

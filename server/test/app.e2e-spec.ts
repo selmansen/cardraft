@@ -5,7 +5,6 @@ import { App } from 'supertest/types';
 
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/bootstrap.js';
-import { SIGNUP_BONUS_RIM } from '../src/modules/economy/reward.rules.js';
 
 /**
  * Açılış duman testi (smoke test).
@@ -71,7 +70,7 @@ describe('Açılış zinciri (e2e)', () => {
       expect(res.body.installationId).toBeTruthy();
     });
 
-    it('300 jant ve 0 coin ile başlar', async () => {
+    it('cüzdanı boş başlıyor', async () => {
       const res = await request(server)
         .get('/api/economy/wallet')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -80,10 +79,11 @@ describe('Açılış zinciri (e2e)', () => {
       const rim = res.body.find((b: { currency: string }) => b.currency === 'RIM');
       const coin = res.body.find((b: { currency: string }) => b.currency === 'COIN');
 
-      expect(rim.balance).toBe(SIGNUP_BONUS_RIM);
-      // Coin sadece gerçek parayla alınır; yeni hesapta olması modelin
-      // bozulduğu anlamına gelir (ADR 0008).
-      expect(coin.balance).toBe(0);
+      // Misafirlik bir DENEME: oyuncu oynayabiliyor ama hiçbir şey birikmiyor.
+      // Hoş geldin hediyesi hesap bağlandığında veriliyor (bkz. ADR 0016).
+      expect(rim?.balance ?? 0).toBe(0);
+      // Coin sadece gerçek parayla alınır; oyun içinde hiçbir yerden gelmez.
+      expect(coin?.balance ?? 0).toBe(0);
     });
 
     it('başlangıç kartları koleksiyonuna yazılmıştır', async () => {
@@ -102,24 +102,17 @@ describe('Açılış zinciri (e2e)', () => {
       expect(support.length).toBeGreaterThan(0);
     });
 
-    it('parası yetmeyen kart açılamaz', async () => {
-      // Sunucunun fiyatı kendi bildiğinin ve bakiyeyi kontrol ettiğinin
-      // kanıtı. İstemci fiyat göndermiyor, dolayısıyla "ucuza aldım"
-      // diyemiyor; tek savunma sunucunun bu reddi.
+    it('misafir kart açamıyor', async () => {
+      // Bakiyesi zaten 0 olduğu için "yetersiz bakiye" de dönerdi — ama o
+      // mesaj yanlış sebebi söyler ve oyuncuyu jant aramaya iter. 403,
+      // yapması gereken şeyi söylüyor: giriş yap.
       const res = await request(server)
-        .get('/api/inventory')
-        .set('Authorization', `Bearer ${accessToken}`);
-      const owned = new Set(res.body.map((c: { cardId: string }) => c.cardId));
-
-      const expensive = await request(server)
         .post('/api/inventory/unlock')
         .set('Authorization', `Bearer ${accessToken}`)
         .send({ cardId: 'apex-meridian', currency: 'RIM' });
 
-      // 300 jant hiçbir kilitli kartı karşılamıyor: ya "yetersiz bakiye"
-      // (400) ya da kart zaten sahipse "zaten var" (409) beklenir.
-      expect([400, 409]).toContain(expensive.status);
-      expect(owned.has('apex-meridian')).toBe(false);
+      expect(res.status).toBe(403);
+      expect(res.body.message).toContain('giriş yapman');
     });
   });
 });

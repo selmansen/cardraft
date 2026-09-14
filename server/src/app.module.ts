@@ -9,6 +9,7 @@ import { NotificationModule } from './infrastructure/notification/notification.m
 import { PrismaModule } from './infrastructure/prisma/prisma.module.js';
 import { QueueModule } from './infrastructure/queue/queue.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { AccountRequiredGuard } from './common/guards/account-required.guard.js';
 import { RateLimitGuard } from './common/guards/rate-limit.guard.js';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard.js';
 import { DevicesModule } from './modules/devices/devices.module.js';
@@ -61,6 +62,12 @@ import { UsersModule } from './modules/users/users.module.js';
      * NestJS global guard'ları tanımlanma sırasıyla çalıştırıyor.
      */
     { provide: APP_GUARD, useClass: RateLimitGuard },
+    /**
+     * Hesap şartı en sonda: kimlik doğrulandıktan sonra çalışması gerekiyor
+     * (kullanıcıyı `request.user`'dan okuyor) ve hız sınırından sonra olması
+     * da doğru — reddedilecek bir istek için veritabanına gitmeye gerek yok.
+     */
+    { provide: APP_GUARD, useClass: AccountRequiredGuard },
   ],
 })
 export class AppModule {}

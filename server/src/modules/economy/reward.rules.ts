@@ -24,8 +24,20 @@ import { CurrencyCode, LedgerReason } from '../../generated/prisma/enums.js';
  * Sunucu hâlâ otorite; sadece otoritenin okuduğu dosya tek.
  */
 
-/** Yeni oyuncunun cebindeki başlangıç janttı. Coin'i 0 (satın alınmadı). */
-export const SIGNUP_BONUS_RIM = 300;
+/**
+ * Hoş geldin hediyesi — hesap BAĞLANDIĞINDA veriliyor, misafir açılışında değil.
+ *
+ * Misafir oyuncunun cüzdanı 0: misafirlik bir deneme, ilerleme değil. Bu,
+ * "giriş yapmazsan ne kaybedersin" sorusunu da ortadan kaldırıyor — kaybedecek
+ * bir şey birikmiyor, dolayısıyla hesap devralma çakışması diye bir durum da
+ * yok.
+ *
+ * Tutar Temel paketin fiyatına EŞİT (350). Değerlendirme ekranı oyuncuya
+ * "paketler aç" diye söz veriyorsa, giriş yaptıktan sonra ilk yapabileceği şey
+ * o olmalı — vaat ile deneyim aynı anda tutmalı. 300 olsaydı oyuncu girer
+ * girmez pakete 50 jant yetiştiremezdi.
+ */
+export const SIGNUP_BONUS_RIM = 350;
 
 export interface BattleRewardOutcome {
   amount: number;
