@@ -16,6 +16,7 @@ import { supportCardEffectText } from '@/game/supportAbilities';
 import { LOADOUT_TOTAL, MAX_SUPPORT, MIN_VEHICLES, useGameStore } from '@/store/gameStore';
 import { useSessionStore } from '@/store/sessionStore';
 import { useSupportCollection, useVehicleCollection } from '@/store/useCollection';
+import { useWallet } from '@/store/useWallet';
 import type { CurrencyCode } from '@/api/types';
 import { VEHICLE_CLASSES, type Card, type SupportCard, type VehicleClass } from '@/types';
 
@@ -36,9 +37,7 @@ export default function SquadScreen() {
   const toggleSupport = useGameStore((s) => s.toggleSupportLoadout);
   const supportCollection = useSupportCollection();
   const unlockSupport = useSessionStore((s) => s.unlockCard);
-  const rims = useSessionStore((s) => s.rims);
-  const coins = useSessionStore((s) => s.coins);
-  const online = useSessionStore((s) => s.connection) === 'online';
+  const { rims, coins, fromServer: online } = useWallet();
   const [segment, setSegment] = useState<Segment>('vehicles');
   const [filter, setFilter] = useState<Filter>('all');
   // Press-and-hold a vehicle to see its full stats/abilities — a short tap

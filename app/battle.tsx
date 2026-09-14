@@ -932,7 +932,8 @@ export default function BattleScreen() {
     void (async () => {
       const result = await recorder.current.submit(session.current?.matchId ?? null);
       if (result) {
-        setServerReward(battleReward(result.won, difficulty));
+        // Sunucunun yazdığı miktar; istemci yeniden hesaplamıyor.
+        setServerReward(result.reward);
         await refreshWallet();
       } else {
         recordBattle(won, 0);

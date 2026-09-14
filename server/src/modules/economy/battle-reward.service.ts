@@ -27,14 +27,21 @@ export class BattleRewardService {
    * @param difficulty Maç AÇILIRKEN kaydedilen zorluk — istemcinin bitişte
    *   gönderdiği değer değil, yoksa kolay oynayıp zor ödülü istenebilirdi.
    */
+  /**
+   * Ödülü yazar ve NE KADAR yazdığını da döndürür.
+   *
+   * Yalnızca yeni bakiyeyi döndürmek yetmiyordu: çağıran, verilen miktarı
+   * bilmediği için istemciye söyleyemiyor, istemci de ekranda göstereceği
+   * sayıyı kendi hesaplıyordu. İki ayrı hesap, er geç iki ayrı sonuç.
+   */
   async grant(
     userId: string,
     matchId: string,
     won: boolean,
     difficulty: Difficulty,
-  ): Promise<BalanceSnapshot> {
+  ): Promise<{ amount: number; balance: BalanceSnapshot }> {
     const outcome = battleReward(won, difficulty);
-    return this.economy.move({
+    const balance = await this.economy.move({
       userId,
       currency: outcome.currency,
       amount: outcome.amount,
@@ -42,5 +49,6 @@ export class BattleRewardService {
       idempotencyKey: `match:${matchId}`,
       metadata: { matchId, won },
     });
+    return { amount: outcome.amount, balance };
   }
 }

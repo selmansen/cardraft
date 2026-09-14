@@ -39,6 +39,12 @@ Mimari kararların gerekçeleri günlükte değil, [`docs/adr/`](docs/adr/) alt�
 
 ### Güvenlik
 
+- **Hız sınırlama eklendi.** Daha önce hiç yoktu: `/auth/login` kaba kuvvete
+  açıktı (argon2 şifreyi koruyor ama saniyede yüzlerce deneme hem zayıf
+  şifreleri bulur hem sunucuyu boğar). Varsayılan dakikada 120 istek, giriş
+  ve kayıtta 10. Sayaç Redis'te — süreç belleğinde tutulsaydı sunucu iki
+  örneğe çıktığı gün sınır sessizce ikiye katlanırdı.
+
 - **Kadro boyutu artık sunucuda doğrulanıyor.** DTO yalnızca her dizinin en
   fazla 8 olmasını kontrol ediyordu; toplamı kontrol eden bir şey yoktu.
   Değiştirilmiş bir istemci 8 araç + 8 destek gönderip 32 kartlık desteyle
@@ -47,6 +53,11 @@ Mimari kararların gerekçeleri günlükte değil, [`docs/adr/`](docs/adr/) alt�
   motorda (`game/loadoutRules.ts`), hata mesajı da oradan geliyor.
 
 ### Düzeltildi
+
+- **Maç sonucu artık verilen ödülü de döndürüyor** (`reward`). İstemci
+  gösterdiği rakamı kendi hesaplıyordu; bugün aynı sonucu veriyor ama sunucu
+  bir çarpan eklediğinde oyuncunun gördüğü sayı ile bakiyesine yazılan sayı
+  ayrışırdı.
 
 - **`GET /api/health` iki kez tanımlıymış.** Bağımlılıkları (Postgres, Redis,
   kuyruk) gerçekten yoklayan `HealthController` zaten vardı; CI için eklenen

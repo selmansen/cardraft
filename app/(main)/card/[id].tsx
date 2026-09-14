@@ -14,6 +14,7 @@ import { abilityShort, abilityText } from '@/game/abilities';
 import { LOADOUT_TOTAL, useGameStore } from '@/store/gameStore';
 import { useSessionStore } from '@/store/sessionStore';
 import { useVehicleCollection } from '@/store/useCollection';
+import { useWallet } from '@/store/useWallet';
 import type { CurrencyCode } from '@/api/types';
 import type { Currency } from '@/types';
 
@@ -25,8 +26,7 @@ export default function CardDetail() {
 
   const collection = useVehicleCollection();
   const owned = collection.has(card.id);
-  const rims = useSessionStore((s) => s.rims);
-  const coins = useSessionStore((s) => s.coins);
+  const { rims, coins } = useWallet();
   const online = useSessionStore((s) => s.connection) === 'online';
   const unlock = useSessionStore((s) => s.unlockCard);
   const inLoadout = useGameStore((s) => s.loadout.includes(card.id));
