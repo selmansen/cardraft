@@ -10,6 +10,7 @@
 export type CurrencyCode = 'RIM' | 'COIN';
 export type DifficultyId = 'easy' | 'normal' | 'hard';
 export type DevicePlatform = 'IOS' | 'ANDROID';
+export type IdentityProvider = 'APPLE' | 'GOOGLE';
 
 export interface AuthUser {
   id: string;

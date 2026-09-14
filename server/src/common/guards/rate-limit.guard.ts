@@ -23,10 +23,10 @@ const DEFAULT: RateLimit = { limit: 120, windowSeconds: 60 };
  * örneğe çıkıldığı gün sınır kendiliğinden ikiye katlanır ve kimse fark
  * etmez. Redis zaten kuyruğun altında çalışıyor, sayaç da oraya yazılıyor.
  *
- * NEDEN ÖNEMLİ: sınır olmadan `/auth/login` kaba kuvvete açık — argon2
- * şifreyi koruyor ama saniyede yüzlerce deneme hem zayıf şifreleri bulur hem
- * sunucuyu (argon2 bilerek pahalı) boğar. Paket açma ve maç uçları da para
- * hareketi üretiyor.
+ * NEDEN ÖNEMLİ: şifre kalktıktan sonra kaba kuvvet yüzeyi daraldı ama
+ * bitmedi — sağlayıcı girişi her çağrıda uzak bir JWKS doğrulaması yapıyor,
+ * paket açma ve maç uçları ise para hareketi üretiyor. Sınırsız bir uç,
+ * hesabı olan birinin sunucuyu meşgul etmesine yetiyor.
  *
  * REDIS DÜŞERSE İSTEK GEÇER. Bilinçli: hız sınırlama bir hızlandırma değil
  * koruma katmanı, ama önbellek düştüğünde bütün oyunu kapatmak orantısız bir

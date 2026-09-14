@@ -7,6 +7,8 @@ import { EconomyModule } from '../economy/economy.module.js';
 import { InventoryModule } from '../inventory/inventory.module.js';
 import { UsersModule } from '../users/users.module.js';
 import { AuthController } from './auth.controller.js';
+import { AccountService } from './account.service.js';
+import { IdentityService } from './identity.service.js';
 import { AuthService } from './auth.service.js';
 import { JwtStrategy } from './strategies/jwt.strategy.js';
 import { TokenService } from './token.service.js';
@@ -28,7 +30,7 @@ import { TokenService } from './token.service.js';
     JwtModule.register({}),
   ],
   controllers: [AuthController],
-  providers: [AuthService, TokenService, JwtStrategy],
+  providers: [AuthService, TokenService, JwtStrategy, AccountService, IdentityService],
   exports: [TokenService],
 })
 export class AuthModule {}

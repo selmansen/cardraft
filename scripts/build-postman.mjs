@@ -97,8 +97,6 @@ Ayrıntı: \`docs/api/README.md\`. Kararların gerekçeleri: \`server/docs/adr/\
     { key: 'matchId', value: '', type: 'string' },
     { key: 'packId', value: 'basic', type: 'string' },
     { key: 'deviceId', value: '', type: 'string' },
-    { key: 'email', value: 'oyuncu@example.com', type: 'string' },
-    { key: 'password', value: 'cok-gizli-sifre', type: 'string' },
   ],
   item: [
     {
@@ -159,37 +157,24 @@ Kimliği kaybeden oyuncu hesabına bir daha erişemez — istemcide bu değerin 
           desc: 'Access token\'ın kime ait olduğunu söyler. Token geçerliliğini sınamanın en hızlı yolu.',
         }),
         req({
-          name: 'Kayıt (e-posta ile)',
+          name: 'Apple / Google ile giriş',
           method: 'POST',
-          path: '/auth/register',
-          auth: 'none',
-          status: 201,
-          body: { email: '{{email}}', password: '{{password}}', displayName: 'Test Oyuncu', ...device },
-          desc: `Sıfırdan e-postalı hesap. Misafirken ilerleme kaydettiyse bu **yanlış uç** — o durumda "Misafir hesabı yükselt" kullanılmalı, yoksa oyuncu yeni ve boş bir hesaba düşer.
-
-Şifre alt sınırı 8 karakter; karmaşıklık kuralı (büyük harf/rakam zorunluluğu) bilerek yok — NIST'in güncel önerisi uzunluğu tercih ediyor, karmaşıklık kuralları kullanıcıyı tahmin edilebilir kalıplara itiyor.`,
-          test: saveTokens,
-        }),
-        req({
-          name: 'Giriş',
-          method: 'POST',
-          path: '/auth/login',
-          auth: 'none',
-          body: { email: '{{email}}', password: '{{password}}', ...device },
-          desc: 'E-postalı hesapla giriş. 201 değil **200** döner: yeni bir kaynak yaratılmıyor, oturum açılıyor.',
-          test: saveTokens,
-        }),
-        req({
-          name: 'Misafir hesabı yükselt',
-          method: 'POST',
-          path: '/auth/link',
-          body: { email: '{{email}}', password: '{{password}}', displayName: 'Test Oyuncu' },
+          path: '/auth/identity',
+          body: { provider: 'APPLE', idToken: 'sahte:{{$guid}}:oyuncu@example.com', ...device },
           status: [200, 409],
-          statusLabel: 'Yükseltildi (200) ya da hesap zaten bağlı (409)',
-          desc: `Misafir hesaba e-posta ve şifre bağlar. **Kimlik doğrulaması gerektirir** (public değil) — hangi misafir hesabın yükseltileceği access token'dan biliniyor.
-
-Yeni satır açılmıyor, **aynı satır** yükseltiliyor: cüzdan, koleksiyon ve istatistikler olduğu gibi kalıyor. Bkz. ADR 0005.`,
+          statusLabel: 'Giriş yapıldı (200) ya da hesap başkasına bağlı (409)',
           test: saveTokens,
+          desc: `**Tek gerçek giriş yolu.** E-posta + şifre kaldırıldı: sağlayıcı hem kimliği hem e-postayı bizden daha iyi doğruluyor, ve şifre olmayınca sıfırlama, doğrulama, kaba kuvvet ve hesap sayımı yüzeyleri de olmuyor.
+
+Kimlik doğrulaması **şart** (public değil): çağıran her zaman oturum açmış durumda, çünkü uygulama açılışta misafir hesap alıyor. Böylece tek uç üç işi birden yapıyor:
+
+1. **Misafiri yükseltmek** — kimlik hiç kayıtlı değilse mevcut hesaba bağlanır, ilerleme olduğu gibi kalır (aynı satırda yükseltme, ADR 0005).
+2. **Geri dönmek** — kimlik bu kullanıcıya zaten bağlıysa sadece yeni jeton.
+3. **Hesabı kurtarmak** — kimlik başka bir hesaba bağlıysa o hesaba geçilir. Cihaz değiştiren oyuncunun ilerlemesini geri aldığı durum; asıl amaç bu.
+
+Üçüncü durumda buradaki misafir hesabın ilerlemesi varsa **409** dönüyor: \`force: true\` gelmeden geçiş yok, yoksa oyuncunun saatleri sessizce silinirdi.
+
+\`idToken\` geliştirmede sahte doğrulayıcıdan geçiyor (\`sahte:<subject>:<email>\`) — Apple/Google geliştirici hesapları henüz yok. Üretimde bu adapter devre dışı, gerçek JWKS doğrulaması çalışıyor.`,
         }),
         req({
           name: 'Token yenile',
@@ -201,6 +186,21 @@ Yeni satır açılmıyor, **aynı satır** yükseltiliyor: cüzdan, koleksiyon v
 
 Refresh token **rotasyonlu**: her yenilemede eskisi geçersizleşir ve yenisi verilir. Çalınan bir token'ın sınırsız kullanılmasını engelleyen şey bu. Yanıttaki yeni refresh token otomatik olarak değişkene yazılıyor.`,
           test: saveTokens,
+        }),
+        req({
+          name: 'Hesabı sil',
+          method: 'DELETE',
+          path: '/auth/account',
+          status: [204, 400],
+          statusLabel: 'Silindi (204) ya da şifre gerekli/yanlış (400)',
+          body: { provider: 'APPLE', idToken: 'sahte:{{$guid}}' },
+          desc: `Hesabı ve bağlı bütün veriyi siler: cüzdan, defter, koleksiyon, maçlar, cihazlar.
+
+**Zorunlu bir uç:** Apple App Store, hesap açmaya izin veren uygulamanın hesabı uygulama içinden silmeye de izin vermesini şart koşuyor (5.1.1(v)). Yani bu bir incelik değil, yayın engeli.
+
+Bağlı hesapta sağlayıcıdan **taze bir jeton** isteniyor: silme geri alınamaz ve access token 15 dakika yaşıyor — telefonu kısa süreliğine eline geçiren biri hesabı silememeli. Apple ve Google da kendi silme akışlarında aynısını yapıyor. Misafir hesapta kimlik olmadığı için gövde boş gönderilebilir.
+
+⚠️ Bu istek gerçekten siler. Koleksiyondaki aktif hesabınla çalıştırma.`,
         }),
         req({
           name: 'Çıkış',

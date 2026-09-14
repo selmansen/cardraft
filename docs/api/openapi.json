@@ -129,49 +129,16 @@
         "description": "`installationId` gönderilmezse sunucu üretip yanıtta geri verir — istemci\nsaklayıp sonraki açılışlarda gönderir ve aynı hesaba döner. Üretimin\nsunucuda olmasının sebebi bu alanın fiilen giriş anahtarı olması: tahmin\nedilemez olmak zorunda, React Native tarafında ise güvenilir rastgelelik yok."
       }
     },
-    "/api/auth/register": {
+    "/api/auth/identity": {
       "post": {
-        "operationId": "AuthController_register",
+        "operationId": "AuthController_signInWithProvider",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/RegisterDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Sıfırdan e-postalı hesap açar.",
-        "tags": [
-          "Kimlik"
-        ],
-        "description": "Misafirken ilerleme kaydetmiş bir oyuncu için YANLIŞ uç: burası yeni ve boş\nbir hesap yaratır. O durumda `POST /auth/link` kullanılmalı."
-      }
-    },
-    "/api/auth/login": {
-      "post": {
-        "operationId": "AuthController_login",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginDto"
+                "$ref": "#/components/schemas/ProviderSignInDto"
               }
             }
           }
@@ -188,10 +155,16 @@
             }
           }
         },
-        "summary": "E-postalı hesapla giriş.",
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Apple ya da Google ile giriş — tek gerçek giriş yolu.",
         "tags": [
           "Kimlik"
-        ]
+        ],
+        "description": "Kimlik doğrulaması ŞART (public değil): çağıran her zaman oturum açmış\ndurumda, çünkü uygulama açılışta misafir hesap alıyor. Böylece bu tek uç\nüç işi birden yapıyor: misafiri yükseltmek, daha önce bağlanmış hesaba\ndönmek, ve cihaz değiştiren oyuncunun hesabını geri vermek.\n\nSağlayıcı hesabı BAŞKA bir CarDraft hesabına bağlıysa ve buradaki misafir\nhesabın ilerlemesi varsa **409** dönüyor: `force` gelmeden geçiş yok,\nyoksa oyuncunun saatleri sessizce silinirdi."
       }
     },
     "/api/auth/refresh": {
@@ -252,30 +225,23 @@
         ]
       }
     },
-    "/api/auth/link": {
-      "post": {
-        "operationId": "AuthController_link",
+    "/api/auth/account": {
+      "delete": {
+        "operationId": "AuthController_deleteAccount",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/LinkAccountDto"
+                "$ref": "#/components/schemas/DeleteAccountDto"
               }
             }
           }
         },
         "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
+          "204": {
+            "description": ""
           }
         },
         "security": [
@@ -283,10 +249,11 @@
             "access-token": []
           }
         ],
-        "summary": "Misafir → gerçek hesap. Kimlik doğrulaması ŞART (public değil).",
+        "summary": "Hesabı ve bağlı bütün veriyi siler.",
         "tags": [
           "Kimlik"
-        ]
+        ],
+        "description": "Apple App Store, hesap açmaya izin veren uygulamanın silmeye de izin\nvermesini şart koşuyor (5.1.1(v)) — yayın engeli, incelik değil.\nBağlı hesapta sağlayıcıdan taze jeton isteniyor: silme geri alınamaz ve\naccess token 15 dakika yaşıyor."
       }
     },
     "/api/auth/me": {
@@ -622,13 +589,50 @@
         "type": "object",
         "properties": {}
       },
-      "RegisterDto": {
+      "ProviderSignInDto": {
         "type": "object",
-        "properties": {}
-      },
-      "LoginDto": {
-        "type": "object",
-        "properties": {}
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "APPLE",
+              "GOOGLE"
+            ]
+          },
+          "idToken": {
+            "type": "string",
+            "description": "Sağlayıcının döndürdüğü imzalı kimlik jetonu (JWT).",
+            "minLength": 20,
+            "maxLength": 4096
+          },
+          "force": {
+            "type": "boolean",
+            "description": "Bu sağlayıcı hesabı BAŞKA bir CarDraft hesabına bağlıysa, buradaki\nmisafir ilerlemesini bırakıp o hesaba geçmeyi onaylar.\n\nVarsayılan `false` ve bu bilinçli: onaysız geçiş, oyuncunun saatlerini\nsessizce silmek olurdu. Sunucu önce 409 dönüyor, istemci uyarıyor."
+          },
+          "installationId": {
+            "type": "string",
+            "description": "Uygulamanın o cihazdaki kurulumunu tanımlayan kimlik. İstemci üretir\n(expo-application / kendi ürettiği uuid) ve saklar. Donanım kimliği\nDEĞİL: iOS kalıcı donanım kimliği vermiyor, zorlamak da mağaza\npolitikalarıyla sorun yaratır.",
+            "minLength": 8,
+            "maxLength": 128
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "IOS",
+              "ANDROID"
+            ]
+          },
+          "appVersion": {
+            "type": "string",
+            "maxLength": 32
+          }
+        },
+        "required": [
+          "provider",
+          "idToken",
+          "installationId",
+          "platform"
+        ]
       },
       "RefreshDto": {
         "type": "object",
@@ -642,28 +646,21 @@
           "refreshToken"
         ]
       },
-      "LinkAccountDto": {
+      "DeleteAccountDto": {
         "type": "object",
         "properties": {
-          "email": {
+          "provider": {
             "type": "string",
-            "maxLength": 254,
-            "format": "email"
+            "enum": [
+              "APPLE",
+              "GOOGLE"
+            ]
           },
-          "password": {
+          "idToken": {
             "type": "string",
-            "minLength": 8,
-            "maxLength": 200
-          },
-          "displayName": {
-            "type": "string",
-            "maxLength": 40
+            "maxLength": 4096
           }
-        },
-        "required": [
-          "email",
-          "password"
-        ]
+        }
       },
       "UnlockCardDto": {
         "type": "object",

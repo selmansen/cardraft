@@ -27,3 +27,5 @@ dokümanlar yazılmaz ve okunmaz; bu dosyalar bir sayfayı geçmemeli.
 | [0011](0011-inventory-and-client-integration.md) | Envanterin sunucuya taşınması ve istemci–API entegrasyonu |
 | [0012](0012-bot-scaling-and-loadout-rules.md) | Bot ölçeklemesinin ölçülmesi ve kadro kurallarının sunucuda dayatılması |
 | [0013](0013-store-pack-opening.md) | Paket açma: çekiliş sunucuda, tekrar koruması istemcinin kimliğiyle |
+| [0014](0014-account-recovery-and-deletion.md) | ~~Hesap kurtarma: e-posta doğrulama, şifre sıfırlama~~ → 0015 |
+| [0015](0015-provider-only-auth.md) | Tek giriş yolu: Apple / Google; hesap silme sağlayıcıyla doğrulanıyor |

@@ -1,0 +1,33 @@
+/// Harici kimlik sağlayıcıları (Apple, Google).
+///
+/// TABLO ŞİMDİDEN VAR ama henüz hiçbir sağlayıcı bağlı değil. Sebebi: bir
+/// kullanıcının birden fazla giriş yolu olabilmesi (e-posta + Apple) ilişkisel
+/// olarak "bir kullanıcı, çok kimlik" demek. Bunu sonradan eklemek, User
+/// tablosuna providerId kolonları serpiştirip sonra ayıklamak olurdu.
+///
+/// iOS'ta üçüncü taraf girişi sunan uygulamanın Apple ile Giriş'i de sunması
+/// App Store kuralı; o yüzden Google eklenirse Apple da eklenecek.
+enum IdentityProvider {
+  APPLE
+  GOOGLE
+}
+
+model UserIdentity {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  provider IdentityProvider
+  /// Sağlayıcının verdiği kalıcı kullanıcı kimliği ("sub" iddiası).
+  subject  String
+  /// Sağlayıcının bildirdiği e-posta — Apple gizli röle adresi verebiliyor,
+  /// bu yüzden User.email ile aynı olmak zorunda değil.
+  email    String?
+
+  createdAt DateTime @default(now())
+
+  /// Aynı sağlayıcı hesabı iki kullanıcıya bağlanamaz.
+  @@unique([provider, subject])
+  @@index([userId])
+  @@map("user_identities")
+}

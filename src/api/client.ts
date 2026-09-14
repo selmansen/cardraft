@@ -164,6 +164,8 @@ export const api = {
     request<T>(path, { ...options, method: 'GET' }),
   post: <T>(path: string, body?: unknown, options?: Omit<RequestOptions, 'method' | 'body'>) =>
     request<T>(path, { ...options, method: 'POST', body }),
-  del: <T>(path: string, options?: Omit<RequestOptions, 'method' | 'body'>) =>
-    request<T>(path, { ...options, method: 'DELETE' }),
+  /** DELETE gövde ALABİLİYOR: hesap silme, sağlayıcıdan taze bir doğrulama
+   *  jetonu istiyor ve o jeton sorgu dizesine konamaz (loglara düşer). */
+  del: <T>(path: string, body?: unknown, options?: Omit<RequestOptions, 'method' | 'body'>) =>
+    request<T>(path, { ...options, method: 'DELETE', body }),
 };

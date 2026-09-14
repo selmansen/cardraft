@@ -1,16 +1,17 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser, Public } from '../../common/decorators/auth.decorators.js';
 import { RateLimit } from '../../common/decorators/rate-limit.decorator.js';
 import { UsersService } from '../users/users.service.js';
+import { AccountService } from './account.service.js';
 import { AuthService } from './auth.service.js';
+import { IdentityService } from './identity.service.js';
 import {
+  DeleteAccountDto,
   GuestLoginDto,
-  LinkAccountDto,
-  LoginDto,
+  ProviderSignInDto,
   RefreshDto,
-  RegisterDto,
   type AuthTokensDto,
 } from './dto/auth.dto.js';
 import type { AccessTokenPayload } from './token.service.js';
@@ -20,15 +21,17 @@ import { TokenService } from './token.service.js';
  * Controller katmanı BİLEREK ince: HTTP ayrıntısı (yol, durum kodu, gövde
  * çözme) burada, iş kuralı serviste. Ayrımın pratik faydası — aynı akışı
  * yarın bir WebSocket ya da kuyruk işçisinden çağırmak gerekirse servis
- * olduğu gibi kullanılabiliyor; HTTP'ye bağımlı olsaydı kopyalamak gerekirdi.
+ * olduğu gibi kullanılabiliyor.
  */
 @ApiTags('Kimlik')
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly auth: AuthService,
+    private readonly identity: IdentityService,
     private readonly tokens: TokenService,
     private readonly users: UsersService,
+    private readonly account: AccountService,
   ) {}
 
   /**
@@ -47,32 +50,26 @@ export class AuthController {
   }
 
   /**
-   * Sıfırdan e-postalı hesap açar.
+   * Apple ya da Google ile giriş — tek gerçek giriş yolu.
    *
-   * Misafirken ilerleme kaydetmiş bir oyuncu için YANLIŞ uç: burası yeni ve boş
-   * bir hesap yaratır. O durumda `POST /auth/link` kullanılmalı.
+   * Kimlik doğrulaması ŞART (public değil): çağıran her zaman oturum açmış
+   * durumda, çünkü uygulama açılışta misafir hesap alıyor. Böylece bu tek uç
+   * üç işi birden yapıyor: misafiri yükseltmek, daha önce bağlanmış hesaba
+   * dönmek, ve cihaz değiştiren oyuncunun hesabını geri vermek.
+   *
+   * Sağlayıcı hesabı BAŞKA bir CarDraft hesabına bağlıysa ve buradaki misafir
+   * hesabın ilerlemesi varsa **409** dönüyor: `force` gelmeden geçiş yok,
+   * yoksa oyuncunun saatleri sessizce silinirdi.
    */
-  // Kaba kuvvete karşı sıkı sınır: argon2 şifreyi koruyor ama saniyede
-  // yüzlerce deneme hem zayıf şifreleri bulur hem sunucuyu boğar
-  // (argon2 bilerek pahalı).
-  @RateLimit(10, 60)
-  @Public()
-  @Post('register')
-  register(@Body() dto: RegisterDto): Promise<AuthTokensDto> {
-    return this.auth.register(dto);
-  }
-
-  /** E-postalı hesapla giriş. */
-  // Kaba kuvvete karşı sıkı sınır: argon2 şifreyi koruyor ama saniyede
-  // yüzlerce deneme hem zayıf şifreleri bulur hem sunucuyu boğar
-  // (argon2 bilerek pahalı).
-  @RateLimit(10, 60)
-  @Public()
-  @Post('login')
-  // Varsayılan 201 yerine 200: yeni bir kaynak yaratılmıyor, oturum açılıyor.
+  @RateLimit(20, 60)
+  @ApiBearerAuth('access-token')
+  @Post('identity')
   @HttpCode(HttpStatus.OK)
-  login(@Body() dto: LoginDto): Promise<AuthTokensDto> {
-    return this.auth.login(dto);
+  signInWithProvider(
+    @CurrentUser() user: AccessTokenPayload,
+    @Body() dto: ProviderSignInDto,
+  ): Promise<AuthTokensDto> {
+    return this.identity.signIn(user.sub, dto.provider, dto.idToken, dto, dto.force ?? false);
   }
 
   /**
@@ -98,15 +95,25 @@ export class AuthController {
     await this.tokens.revoke(dto.refreshToken);
   }
 
-  /** Misafir → gerçek hesap. Kimlik doğrulaması ŞART (public değil). */
+  /**
+   * Hesabı ve bağlı bütün veriyi siler.
+   *
+   * Apple App Store, hesap açmaya izin veren uygulamanın silmeye de izin
+   * vermesini şart koşuyor (5.1.1(v)) — yayın engeli, incelik değil.
+   * Bağlı hesapta sağlayıcıdan taze jeton isteniyor: silme geri alınamaz ve
+   * access token 15 dakika yaşıyor.
+   */
   @ApiBearerAuth('access-token')
-  @Post('link')
-  @HttpCode(HttpStatus.OK)
-  link(
+  @Delete('account')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteAccount(
     @CurrentUser() user: AccessTokenPayload,
-    @Body() dto: LinkAccountDto,
-  ): Promise<AuthTokensDto> {
-    return this.auth.linkGuestToAccount(user.sub, dto);
+    @Body() dto: DeleteAccountDto,
+  ): Promise<void> {
+    return this.account.deleteAccount(
+      user.sub,
+      dto.provider && dto.idToken ? { provider: dto.provider, idToken: dto.idToken } : undefined,
+    );
   }
 
   /** Oturumdaki kullanıcı. Token'ın hâlâ geçerli olduğunu sınamanın en hızlı yolu. */

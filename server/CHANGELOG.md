@@ -37,6 +37,24 @@ Mimari kararların gerekçeleri günlükte değil, [`docs/adr/`](docs/adr/) alt�
   ilerleme kademesi başına kazanma oranını raporlar. Bkz. ADR 0012.
 - Kadro kuralları ve bot ölçeklemesi için 11 birim testi.
 
+### Eklendi
+
+- **Apple / Google ile giriş** (`POST /auth/identity`) — tek gerçek giriş yolu.
+  Tek uç üç işi yapıyor: misafiri yükseltme, geri dönüş ve cihaz değiştiren
+  oyuncunun hesabını kurtarma. Kimlik başka bir hesaba bağlıysa ve buradaki
+  misafirin ilerlemesi varsa 409 dönüyor — onaysız geçiş yok.
+- **Hesap silme** (`DELETE /auth/account`): Apple App Store'un hesap açmaya
+  izin veren uygulamalardan şart koştuğu uç. Bağlı hesapta sağlayıcıdan taze
+  jeton isteniyor. Bkz. ADR 0015.
+
+### Kaldırıldı
+
+- **E-posta + şifre girişi.** Kayıt, giriş, e-posta doğrulama, şifre
+  sıfırlama/değiştirme, `MailPort` ve `argon2` bağımlılığı gitti. Kaldırılan
+  kod kazancın küçük kısmı; asıl kazanç birlikte giden sorunlar: şifre
+  saklama sorumluluğu, kaba kuvvet, hesap sayımı, sıfırlama jetonu çalınması
+  ve bir e-posta sağlayıcısı işletme yükü.
+
 ### Güvenlik
 
 - **Hız sınırlama eklendi.** Daha önce hiç yoktu: `/auth/login` kaba kuvvete
