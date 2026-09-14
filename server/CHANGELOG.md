@@ -19,6 +19,8 @@ Mimari kararların gerekçeleri günlükte değil, [`docs/adr/`](docs/adr/) alt�
   dengeleyici bunu kullanacak.
 - Açılış zinciri e2e duman testi: misafir giriş → cüzdan → koleksiyon,
   gerçek Postgres ve Redis ile.
+- API belgesi ve çalıştırılabilir Postman koleksiyonu (`docs/api/`): 18 istek,
+  token'ları kendi yakalayan script'lerle.
 
 ### Değiştirildi
 

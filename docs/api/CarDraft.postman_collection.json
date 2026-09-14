@@ -1,0 +1,899 @@
+{
+  "info": {
+    "_postman_id": "cardraft-api-v1",
+    "name": "CarDraft API",
+    "description": "CarDraft oyun sunucusunun tüm uç noktaları.\n\n**Başlarken:** `Kimlik → Misafir giriş (yeni kurulum)` isteğini çalıştır. Dönen\ntoken'lar otomatik olarak koleksiyon değişkenlerine yazılır ve diğer bütün\nistekler onları kullanır — elle kopyalaman gereken hiçbir şey yok.\n\nSunucunun çalışıyor olması gerekir:\n```\ncd server && docker compose up -d && npm run start:dev\n```\n\nAyrıntı: `docs/api/README.md`. Kararların gerekçeleri: `server/docs/adr/`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "installationId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "matchId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "deviceId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "email",
+      "value": "oyuncu@example.com",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "cok-gizli-sifre",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Sistem",
+      "description": "Kimlik doğrulaması istemeyen uçlar.",
+      "item": [
+        {
+          "name": "Sağlık kontrolü",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Sunucunun ayakta olduğunu, çalışan sürümü ve süreç kaç saniyedir açık olduğunu döner.\n\nBilerek public: bunu çağıran şey bir oyuncu değil, CI ve yük dengeleyici. Token isteyen bir sağlık kontrolü, dengeleyicinin sağlıklı sunucuyu ölü sanmasına yol açardı.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('Sunucu ayakta', () => pm.expect(json.status).to.eql('ok'));",
+                  "pm.test('Sürüm bildiriliyor', () => pm.expect(json.version).to.match(/^\\d+\\.\\d+\\.\\d+/));",
+                  "",
+                  "pm.test('200 döndü', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Kimlik",
+      "description": "Oyuna giriş. Oyuncu hesabını e-posta ile açmak zorunda değil: uygulama ilk açılışta sessizce **misafir** hesabı yaratıyor, ilerleme oraya yazılıyor, oyuncu isterse sonra e-posta bağlıyor (aynı hesap, aynı ilerleme).",
+      "item": [
+        {
+          "name": "Misafir giriş (yeni kurulum)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/guest",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "guest"
+              ]
+            },
+            "description": "**Buradan başla.** Yeni bir misafir hesap açar; dönen token'lar ve `installationId` otomatik olarak koleksiyon değişkenlerine yazılır.\n\n`installationId` gönderilmiyor çünkü onu **sunucu üretiyor**: bu alan misafir hesabın fiili giriş anahtarı, yani tahmin edilemez olmak zorunda. React Native tarafında güvenilir rastgelelik yok (`crypto.getRandomValues` yok, `Math.random` bir kimlik anahtarı için uygun değil), o yüzden üretimi sunucu üstleniyor. Bkz. ADR 0011, Karar 3.\n\nYeni hesap **300 jant** ve başlangıç kartlarıyla geliyor.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"platform\": \"IOS\",\n  \"appVersion\": \"0.1.0\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', json.accessToken);",
+                  "pm.collectionVariables.set('refreshToken', json.refreshToken);",
+                  "if (json.installationId) {",
+                  "  pm.collectionVariables.set('installationId', json.installationId);",
+                  "}",
+                  "pm.test('Oturum açıldı', () => {",
+                  "  pm.expect(json.accessToken, 'accessToken').to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('200 döndü', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Misafir giriş (kayıtlı kurulum)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/guest",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "guest"
+              ]
+            },
+            "description": "Uygulamanın **ikinci ve sonraki** açılışlarında yaptığı çağrı: sakladığı `installationId` ile aynı misafir hesaba geri döner.\n\nKimliği kaybeden oyuncu hesabına bir daha erişemez — istemcide bu değerin depolama göçüyle korunmasının sebebi bu (`src/api/storageKeys.ts`).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"installationId\": \"{{installationId}}\",\n  \"platform\": \"IOS\",\n  \"appVersion\": \"0.1.0\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', json.accessToken);",
+                  "pm.collectionVariables.set('refreshToken', json.refreshToken);",
+                  "if (json.installationId) {",
+                  "  pm.collectionVariables.set('installationId', json.installationId);",
+                  "}",
+                  "pm.test('Oturum açıldı', () => {",
+                  "  pm.expect(json.accessToken, 'accessToken').to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('200 döndü', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ben kimim",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Access token'ın kime ait olduğunu söyler. Token geçerliliğini sınamanın en hızlı yolu."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 döndü', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Kayıt (e-posta ile)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Sıfırdan e-postalı hesap. Misafirken ilerleme kaydettiyse bu **yanlış uç** — o durumda \"Misafir hesabı yükselt\" kullanılmalı, yoksa oyuncu yeni ve boş bir hesaba düşer.\n\nŞifre alt sınırı 8 karakter; karmaşıklık kuralı (büyük harf/rakam zorunluluğu) bilerek yok — NIST'in güncel önerisi uzunluğu tercih ediyor, karmaşıklık kuralları kullanıcıyı tahmin edilebilir kalıplara itiyor.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"displayName\": \"Test Oyuncu\",\n  \"installationId\": \"{{installationId}}\",\n  \"platform\": \"IOS\",\n  \"appVersion\": \"0.1.0\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', json.accessToken);",
+                  "pm.collectionVariables.set('refreshToken', json.refreshToken);",
+                  "if (json.installationId) {",
+                  "  pm.collectionVariables.set('installationId', json.installationId);",
+                  "}",
+                  "pm.test('Oturum açıldı', () => {",
+                  "  pm.expect(json.accessToken, 'accessToken').to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('201 döndü', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Giriş",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "E-postalı hesapla giriş. 201 değil **200** döner: yeni bir kaynak yaratılmıyor, oturum açılıyor.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"installationId\": \"{{installationId}}\",\n  \"platform\": \"IOS\",\n  \"appVersion\": \"0.1.0\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', json.accessToken);",
+                  "pm.collectionVariables.set('refreshToken', json.refreshToken);",
+                  "if (json.installationId) {",
+                  "  pm.collectionVariables.set('installationId', json.installationId);",
+                  "}",
+                  "pm.test('Oturum açıldı', () => {",
+                  "  pm.expect(json.accessToken, 'accessToken').to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('200 döndü', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Misafir hesabı yükselt",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/link",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "link"
+              ]
+            },
+            "description": "Misafir hesaba e-posta ve şifre bağlar. **Kimlik doğrulaması gerektirir** (public değil) — hangi misafir hesabın yükseltileceği access token'dan biliniyor.\n\nYeni satır açılmıyor, **aynı satır** yükseltiliyor: cüzdan, koleksiyon ve istatistikler olduğu gibi kalıyor. Bkz. ADR 0005.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"displayName\": \"Test Oyuncu\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', json.accessToken);",
+                  "pm.collectionVariables.set('refreshToken', json.refreshToken);",
+                  "if (json.installationId) {",
+                  "  pm.collectionVariables.set('installationId', json.installationId);",
+                  "}",
+                  "pm.test('Oturum açıldı', () => {",
+                  "  pm.expect(json.accessToken, 'accessToken').to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test(\"Yükseltildi (200) ya da hesap zaten bağlı (409)\", () => pm.expect(pm.response.code).to.be.oneOf([200,409]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Token yenile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            },
+            "description": "Access token'ın ömrü kısa (15 dk); süresi dolunca refresh token ile yenisi alınıyor.\n\nRefresh token **rotasyonlu**: her yenilemede eskisi geçersizleşir ve yenisi verilir. Çalınan bir token'ın sınırsız kullanılmasını engelleyen şey bu. Yanıttaki yeni refresh token otomatik olarak değişkene yazılıyor.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', json.accessToken);",
+                  "pm.collectionVariables.set('refreshToken', json.refreshToken);",
+                  "if (json.installationId) {",
+                  "  pm.collectionVariables.set('installationId', json.installationId);",
+                  "}",
+                  "pm.test('Oturum açıldı', () => {",
+                  "  pm.expect(json.accessToken, 'accessToken').to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('200 döndü', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Çıkış",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Refresh token'ı iptal eder.\n\nBilerek public: access token'ın süresi dolmuş olsa bile kullanıcı çıkabilmeli. Refresh token'ın kendisi zaten yetki kanıtı.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('204 döndü', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ekonomi",
+      "description": "İki para birimi var: **jant (RIM)** oynayarak kazanılıyor, **coin (COIN)** gerçek parayla alınıyor. Maç ödülü her zaman jant — coin oynayarak asla kazanılmıyor. Bkz. ADR 0008.",
+      "item": [
+        {
+          "name": "Cüzdan",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/economy/wallet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "economy",
+                "wallet"
+              ]
+            },
+            "description": "Tüm bakiyeler. İstemcinin ekranda gösterdiği rakamın doğruluk kaynağı burası — cihazda tutulan sayı yalnızca önbellek."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('Jant bakiyesi var', () => {",
+                  "  pm.expect(json.find((b) => b.currency === 'RIM'), 'RIM').to.exist;",
+                  "});",
+                  "",
+                  "pm.test('200 döndü', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "İşlem defteri",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/economy/ledger?currency=RIM&page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "economy",
+                "ledger"
+              ],
+              "query": [
+                {
+                  "key": "currency",
+                  "value": "RIM"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Bakiyeyi oluşturan hareketlerin dökümü: kayıt bonusu, maç ödülü, kart açma harcaması…\n\nBakiye tek başına saklanmıyor, her değişim deftere yazılıyor. \"Jantım neden azaldı\" sorusunun cevabı ancak böyle verilebiliyor. `limit` üst sınırı 100 — istemcinin `limit=100000` diyerek veritabanını kilitlemesini engelliyor."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 döndü', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Envanter",
+      "description": "Koleksiyon veritabanında, **kart kataloğu kodda**: isim/nadirlik/fiyat senkronlanan motordan okunuyor, veritabanına girmiyor. Bkz. ADR 0011.",
+      "item": [
+        {
+          "name": "Koleksiyon",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/inventory",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "inventory"
+              ]
+            },
+            "description": "Oyuncunun sahip olduğu kartlar. Her kayıt `kind` alanıyla geliyor: `VEHICLE` (araç) ya da `SUPPORT` (Pit Ekibi). Kadro kurarken istemcinin dayandığı liste bu."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 döndü', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Kart aç",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/inventory/unlock",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "inventory",
+                "unlock"
+              ]
+            },
+            "description": "Kart satın alır. İstemci **fiyat göndermiyor** — sadece hangi kart ve hangi keseden. Fiyata sunucu karar veriyor (`card-catalog.ts`); aksi halde istemci \"bunu 1 janta aldım\" diyebilirdi.\n\nBakiye düşürme ve kartın yazılması **tek transaction**: biri olup diğeri olamaz.\n\nÖrnek kart nadir (600 jant), yeni hesabın 300 janti yetmez → **400**. Yetecek bir kart için önce maç kazan. Zaten sahip olunan kart → **409**.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cardId\": \"nocturne-coupe\",\n  \"currency\": \"RIM\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Açıldı (200), bakiye yetmedi (400) ya da zaten sahip (409)\", () => pm.expect(pm.response.code).to.be.oneOf([200,400,409]));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Maç",
+      "description": "Maçın sonucu istemciye **sorulmuyor**. İstemci yalnızca yaptığı hamleleri gönderiyor, sunucu maçı aynı tohum ve aynı motorla yeniden oynatıp kazananı kendi buluyor. Ödül o sonuca yazılıyor. Bkz. ADR 0007.",
+      "item": [
+        {
+          "name": "Maç aç",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/matches",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "matches"
+              ]
+            },
+            "description": "Maç oturumu açar. Yanıtta **tohum (seed)** ve **bot kadrosu** geliyor — ikisini de sunucu belirliyor ki doğrulama sırasında aynı maç kurulabilsin.\n\nKadroyu istemci **seçiyor**, sunucu **doğruluyor**: gönderilen her kimliğin gerçekten sahip olunan bir karta karşılık geldiği kontrol ediliyor. Sahip olunmayan kart → 400.\n\n`difficulty`: `easy` · `normal` · `hard`. Zorluk garaj canını, açılış elini ve botun hata oranını değiştiriyor.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"difficulty\": \"easy\",\n  \"vehicleCardIds\": [\n    \"falconi-turbo\",\n    \"vipera-gt\",\n    \"sandstorm-buggy\",\n    \"nitro-nomad\",\n    \"boulder-baron\"\n  ],\n  \"supportCardIds\": [\n    \"quick-fix\",\n    \"checkpoint\",\n    \"spare-shield\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('matchId', json.matchId);",
+                  "pm.test('Maç açıldı', () => pm.expect(json.matchId, 'matchId').to.be.a('string'));",
+                  "",
+                  "pm.test('201 döndü', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Maçı sonuçlandır",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/matches/{{matchId}}/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "matches",
+                "{{matchId}}",
+                "submit"
+              ]
+            },
+            "description": "Hamleleri gönderir. Gövdede **\"kazandım\" diye bir alan yok** — yalnızca ne yapıldığı.\n\nSunucu maçı yeniden oynatır ve kendi sonucunu üretir. Hamleler tutarsızsa (olmayan kartla oynamak, sırası gelmeden saldırmak) maç `REJECTED` olarak kaydedilir ve ödül yazılmaz. Aynı maç ikinci kez gönderilirse \"zaten sonuçlandı\" döner — ödül iki kez yazılmaz.\n\nYukarıdaki boş `turns` bilerek: hamlesiz gönderim reddedilmeli. Gerçek bir gövde örneği için `docs/api/README.md`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"turns\": [\n    {\n      \"actions\": []\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 döndü', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cihaz",
+      "description": "Bildirim gönderebilmek ve oyuncunun hangi cihazlardan girdiğini görebilmek için.",
+      "item": [
+        {
+          "name": "Cihaz kaydet",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/devices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "devices"
+              ]
+            },
+            "description": "Cihazı kaydeder/günceller ve varsa push jetonunu bağlar.\n\nPOST ama aslında **upsert**: uygulama her açılışta çağırabilsin diye idempotent. Daha önce kaydolup kaydolmadığını istemcinin takip etmesi gerekmiyor.\n\n`fcmToken` opsiyonel — oyuncu bildirim iznini reddetmiş olabilir, cihaz kaydı yine de tutulmalı.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"installationId\": \"{{installationId}}\",\n  \"platform\": \"IOS\",\n  \"appVersion\": \"0.1.0\",\n  \"fcmToken\": \"ornek-fcm-jetonu-en-az-yirmi-karakter\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.collectionVariables.set('deviceId', json.id);",
+                  "",
+                  "pm.test('200 döndü', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cihazlarım",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/devices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "devices"
+              ]
+            },
+            "description": "Hesaba bağlı cihazlar. Son görülme zamanı burada tutuluyor; 24 saattir girmeyene hatırlatma bildirimi bu veriyle gidiyor."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 döndü', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cihaz sil",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/devices/{{deviceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "devices",
+                "{{deviceId}}"
+              ]
+            },
+            "description": "Cihaz kaydını ve push jetonunu siler. Geçersiz biçimli id veritabanına hiç ulaşmıyor (`ParseUUIDPipe`)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('204 döndü', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
