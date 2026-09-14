@@ -18,6 +18,11 @@ Etiket öneki: `app-v`.
 - Dal, sürüm ve yayın akışı: `develop`/`main` ayrımı, GitHub Actions CI,
   etiketle tetiklenen yayın. Bkz. `docs/gelistirme-akisi.md`.
 
+- **Mağaza ekranı.** İki paket, çıkma oranları ve tek dokunuşla açılan oran
+  detayı; bakiye yetmediğinde ne kadar kaldığını gösteren alt sayfa. Paket
+  açma kendi ekranında: kapalı kart, açılış, sonuç (yeni kart ya da %25 jant
+  iadesi). Oranlar istemcide sabit yazılı değil, sunucudan geliyor.
+
 ### Düzeltildi
 
 - **Bot, oyuncudan bir kart fazla taşıyordu.** Kadro bütçesi 8 kart ama botun

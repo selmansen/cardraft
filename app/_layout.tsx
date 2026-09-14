@@ -48,6 +48,11 @@ export default function RootLayout() {
           >
             <Stack.Screen name="(main)" />
             <Stack.Screen name="battle" options={{ gestureEnabled: false }} />
+            {/* Paket açılışı alt gezinmenin dışında: akış başladıktan sonra
+                oyuncunun tek işi kartı görmek. Geri hareketi kapalı — açılış
+                ortasında geri gitmek, parası düşmüş ama sonucu görülmemiş bir
+                paket bırakırdı. */}
+            <Stack.Screen name="pack-opening" options={{ gestureEnabled: false }} />
           </Stack>
         ) : (
           <View style={styles.loading}>
