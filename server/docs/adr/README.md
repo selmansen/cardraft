@@ -25,3 +25,4 @@ dokümanlar yazılmaz ve okunmaz; bu dosyalar bir sayfayı geçmemeli.
 | [0009](0009-card-pricing-and-progression.md) | Kart fiyatlandırması, güç seviyeleri ve ilerleme temposu |
 | [0010](0010-pvp-timing-packs-and-monetisation.md) | PvP tur süresi, paket modeli ve monetizasyonun şekli |
 | [0011](0011-inventory-and-client-integration.md) | Envanterin sunucuya taşınması ve istemci–API entegrasyonu |
+| [0013](0013-store-pack-opening.md) | Paket açma: çekiliş sunucuda, tekrar koruması istemcinin kimliğiyle |
