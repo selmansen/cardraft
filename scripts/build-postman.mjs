@@ -160,7 +160,7 @@ Kimliği kaybeden oyuncu hesabına bir daha erişemez — istemcide bu değerin 
           name: 'Apple / Google ile giriş',
           method: 'POST',
           path: '/auth/identity',
-          body: { provider: 'APPLE', idToken: 'sahte:{{$guid}}:oyuncu@example.com', ...device },
+          body: { provider: 'APPLE', idToken: 'sahte:{{$guid}}:{{$guid}}@example.com', ...device },
           status: [200, 409],
           statusLabel: 'Giriş yapıldı (200) ya da hesap başkasına bağlı (409)',
           test: saveTokens,
@@ -188,21 +188,6 @@ Kimlik doğrulaması **şart** (public değil): çağıran her zaman oturum açm
 
 Refresh token **rotasyonlu**: her yenilemede eskisi geçersizleşir ve yenisi verilir. Çalınan bir token'ın sınırsız kullanılmasını engelleyen şey bu. Yanıttaki yeni refresh token otomatik olarak değişkene yazılıyor.`,
           test: saveTokens,
-        }),
-        req({
-          name: 'Hesabı sil',
-          method: 'DELETE',
-          path: '/auth/account',
-          status: [204, 400],
-          statusLabel: 'Silindi (204) ya da şifre gerekli/yanlış (400)',
-          body: { provider: 'APPLE', idToken: 'sahte:{{$guid}}' },
-          desc: `Hesabı ve bağlı bütün veriyi siler: cüzdan, defter, koleksiyon, maçlar, cihazlar.
-
-**Zorunlu bir uç:** Apple App Store, hesap açmaya izin veren uygulamanın hesabı uygulama içinden silmeye de izin vermesini şart koşuyor (5.1.1(v)). Yani bu bir incelik değil, yayın engeli.
-
-Bağlı hesapta sağlayıcıdan **taze bir jeton** isteniyor: silme geri alınamaz ve access token 15 dakika yaşıyor — telefonu kısa süreliğine eline geçiren biri hesabı silememeli. Apple ve Google da kendi silme akışlarında aynısını yapıyor. Misafir hesapta kimlik olmadığı için gövde boş gönderilebilir.
-
-⚠️ Bu istek gerçekten siler. Koleksiyondaki aktif hesabınla çalıştırma.`,
         }),
         req({
           name: 'Çıkış',
@@ -243,6 +228,22 @@ pm.test('Jant bakiyesi var', () => {
           desc: `Bakiyeyi oluşturan hareketlerin dökümü: kayıt bonusu, maç ödülü, kart açma harcaması…
 
 Bakiye tek başına saklanmıyor, her değişim deftere yazılıyor. "Jantım neden azaldı" sorusunun cevabı ancak böyle verilebiliyor. \`limit\` üst sınırı 100 — istemcinin \`limit=100000\` diyerek veritabanını kilitlemesini engelliyor.`,
+        }),
+      ],
+    },
+    {
+      name: 'İstatistik',
+      description: 'Sayaçlar yalnızca doğrulanmış maç sonucuyla artıyor (ADR 0008), yani bunlar istemcinin bildirdiği bir şey değil.',
+      item: [
+        req({
+          name: 'İstatistiklerim',
+          method: 'GET',
+          path: '/stats/me',
+          desc: `Oynanan maç, galibiyet, güncel seri ve en iyi seri.
+
+Profil ekranı burayı okuyor. Yerel sayaçlar yalnızca çevrimdışı oynanan maçları biliyor; bağlı bir oyuncuya onları göstermek yanlış rakam söylemek olurdu.
+
+Misafir oyuncunun maçları da sayılıyor (ödül almasa bile): bot ölçeklemesi galibiyet sayısını okuyor ve giriş teklifinin ne zaman çıkacağı maç sayacına bağlı.`,
         }),
       ],
     },
@@ -377,6 +378,27 @@ if (json.id) pm.collectionVariables.set('deviceId', json.id);`,
           path: '/devices/{{deviceId}}',
           status: 204,
           desc: 'Cihaz kaydını ve push jetonunu siler. Geçersiz biçimli id veritabanına hiç ulaşmıyor (`ParseUUIDPipe`).',
+        }),
+      ],
+    },
+    {
+      name: 'Tehlikeli',
+      description: 'Geri alınamaz işlemler. Koleksiyonun EN SONUNDA: hesap silme, sildiği hesapla yapılacak sonraki istekleri de bozar.',
+      item: [
+        req({
+          name: 'Hesabı sil',
+          method: 'DELETE',
+          path: '/auth/account',
+          status: [204, 400],
+          statusLabel: 'Silindi (204) ya da şifre gerekli/yanlış (400)',
+          body: { provider: 'APPLE', idToken: 'sahte:{{$guid}}' },
+          desc: `Hesabı ve bağlı bütün veriyi siler: cüzdan, defter, koleksiyon, maçlar, cihazlar.
+
+**Zorunlu bir uç:** Apple App Store, hesap açmaya izin veren uygulamanın hesabı uygulama içinden silmeye de izin vermesini şart koşuyor (5.1.1(v)). Yani bu bir incelik değil, yayın engeli.
+
+Bağlı hesapta sağlayıcıdan **taze bir jeton** isteniyor: silme geri alınamaz ve access token 15 dakika yaşıyor — telefonu kısa süreliğine eline geçiren biri hesabı silememeli. Apple ve Google da kendi silme akışlarında aynısını yapıyor. Misafir hesapta kimlik olmadığı için gövde boş gönderilebilir.
+
+⚠️ Bu istek gerçekten siler. Koleksiyondaki aktif hesabınla çalıştırma.`,
         }),
       ],
     },

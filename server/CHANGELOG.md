@@ -14,6 +14,13 @@ Mimari kararların gerekçeleri günlükte değil, [`docs/adr/`](docs/adr/) alt�
 
 ### Eklendi
 
+- `GET /api/stats/me` — oyuncunun kendi istatistikleri. Profil ekranı burayı
+  okuyor; yerel sayaçlar yalnızca çevrimdışı maçları biliyor ve bağlı bir
+  oyuncuya onları göstermek yanlış rakam söylemek olurdu.
+- `/auth/me` artık hesaba bağlı sağlayıcıları da döndürüyor (`providers`):
+  hesap silme sağlayıcıdan taze jeton istiyor ve istemcinin hangisini
+  çağıracağını bilmesi gerekiyor.
+
 - **Mağaza: paket açma.** `GET /api/store/packs` (fiyatlar ve oranlar) ve
   `POST /api/store/packs/:id/open`. Çekiliş sunucuda, kriptografik üreteçle;
   jant düşme, kart verme ve tekrar kart iadesi tek transaction. Tekrar
@@ -79,6 +86,14 @@ Mimari kararların gerekçeleri günlükte değil, [`docs/adr/`](docs/adr/) alt�
   motorda (`game/loadoutRules.ts`), hata mesajı da oradan geliyor.
 
 ### Düzeltildi
+
+- **Sağlayıcının e-postası başka bir hesapta kayıtlıysa giriş 500 veriyordu.**
+  `users.email` benzersiz ve adres bir başkasının satırındaysa yazma denemesi
+  patlıyor, oyuncu hiç giriş yapamıyordu. Oysa e-posta kimliğin kendisi değil:
+  gerçek kimlik `(provider, subject)` ikilisi ve o benzersizliği
+  `user_identities` sağlıyor. Çakışma artık girişi engellemiyor, yalnızca
+  kullanıcı satırına e-posta yazılmıyor (kimlik satırında saklanmaya devam
+  ediyor).
 
 - **Maç sonucu artık verilen ödülü de döndürüyor** (`reward`). İstemci
   gösterdiği rakamı kendi hesaplıyordu; bugün aynı sonucu veriyor ama sunucu

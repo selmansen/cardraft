@@ -1,123 +1,174 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { usePathname, useRouter } from 'expo-router';
+import { useRouter, usePathname, type Href } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, font, radius, shadow, text } from '@/constants/theme';
+import { useSessionStore } from '@/store/sessionStore';
 
-type Key = 'menu' | 'squad' | 'battle' | 'collection' | 'howto';
-type Href = '/' | '/squad' | '/difficulty' | '/collection' | '/how-to-play';
+/**
+ * Alt gezinme — oyunun ana iskeleti.
+ *
+ * Beş yuva ve ortadaki OYNA düğmesi oyunun kendisi: uygulama orada açılıyor,
+ * yani "ana ekran" ile "oyna" ayrı iki sekme değil. Eskiden bir "Menü"
+ * sekmesi vardı ve içi başka sekmelere giden satırlardan ibaretti — bir ara
+ * katman.
+ *
+ * Sekme listesi ŞİMDİDEN tam: Lig henüz yok ama yeri ayrıldı. Sonradan
+ * eklenirse bütün menü yeniden düzenlenir ve oyuncunun kas hafızası bozulur.
+ */
+type Key = 'garage' | 'store' | 'play' | 'league' | 'profile';
 
-const SIDE_ITEMS: {
+interface Tab {
   key: Key;
   label: string;
   href: Href;
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
-}[] = [
-  { key: 'menu', label: 'Menü', href: '/', icon: 'home' },
-  { key: 'squad', label: 'Düzenle', href: '/squad', icon: 'tune' },
+  /** Bağlı hesap ister mi? Misafirde kilitli görünür. */
+  needsAccount?: boolean;
+  /** Henüz yok — "yakında" olarak duruyor. */
+  soon?: boolean;
+}
+
+const LEFT: Tab[] = [
+  { key: 'garage', label: 'Garaj', href: '/garage', icon: 'garage-variant' },
+  { key: 'store', label: 'Mağaza', href: '/store', icon: 'shopping', needsAccount: true },
 ];
-const SIDE_ITEMS_RIGHT: (typeof SIDE_ITEMS)[number][] = [
-  { key: 'collection', label: 'Koleksiyon', href: '/collection', icon: 'view-grid' },
-  { key: 'howto', label: 'Yardım', href: '/how-to-play', icon: 'help-circle' },
+const RIGHT: Tab[] = [
+  { key: 'league', label: 'Lig', href: '/league', icon: 'trophy-variant', needsAccount: true, soon: true },
+  { key: 'profile', label: 'Profil', href: '/profile', icon: 'account' },
 ];
 
 function activeKey(pathname: string): Key {
-  if (pathname === '/squad') return 'squad';
-  if (pathname === '/difficulty') return 'battle';
-  if (pathname.startsWith('/how-to-play')) return 'howto';
-  if (pathname.startsWith('/collection') || pathname.startsWith('/card')) return 'collection';
-  return 'menu';
+  if (pathname.startsWith('/garage') || pathname.startsWith('/card')) return 'garage';
+  if (pathname.startsWith('/store')) return 'store';
+  if (pathname.startsWith('/league')) return 'league';
+  if (pathname.startsWith('/profile') || pathname.startsWith('/how-to-play')) return 'profile';
+  return 'play';
 }
 
-/** Docked to the very bottom edge, full width — no floating side gap. Two
- *  regular tabs on each side (so the center button lands exactly in the
- *  middle), with "Savaşa Başla" as a raised, unmissable circle in between —
- *  it's the one thing most players want to do most of the time. */
 export function BottomNav() {
   const router = useRouter();
   const pathname = usePathname();
-  const insets = useSafeAreaInsets();
   const active = activeKey(pathname);
+  const isGuest = useSessionStore((s) => s.user?.isGuest ?? true);
 
-  const renderItem = (item: (typeof SIDE_ITEMS)[number]) => {
-    const on = item.key === active;
-    const tint = on ? colors.primaryInk : colors.textFaint;
-    return (
-      <Pressable
-        key={item.key}
-        style={[styles.item, on && styles.itemOn]}
-        onPress={() => {
-          if (!on) router.replace(item.href);
-        }}
-      >
-        <MaterialCommunityIcons name={item.icon} size={19} color={tint} />
-        <Text style={[styles.label, { color: tint }]}>{item.label}</Text>
-      </Pressable>
-    );
-  };
-
-  const battleOn = active === 'battle';
+  function go(tab: Tab) {
+    // Kilitli sekme GİZLENMİYOR, giriş ekranına götürüyor: oyuncu neyi
+    // kaçırdığını görmeli. Gizlemek, olmayan bir oyun gösterirdi.
+    if (tab.needsAccount && isGuest) {
+      router.push('/sign-in');
+      return;
+    }
+    if (active !== tab.key) router.replace(tab.href);
+  }
 
   return (
-    <View style={styles.wrap} pointerEvents="box-none">
-      <View style={[styles.bar, { paddingBottom: insets.bottom + 10 }]}>
-        {SIDE_ITEMS.map(renderItem)}
+    <View style={styles.bar}>
+      {LEFT.map((tab) => (
+        <TabButton key={tab.key} tab={tab} active={active === tab.key} locked={!!tab.needsAccount && isGuest} onPress={() => go(tab)} />
+      ))}
 
-        <Pressable
-          style={styles.battleItem}
-          onPress={() => {
-            if (!battleOn) router.push('/difficulty');
-          }}
-        >
-          <View style={[styles.battleCircle, battleOn && styles.battleCircleOn]}>
-            <MaterialCommunityIcons name="lightning-bolt" size={22} color="#FFFFFF" />
+      <View style={styles.centerGap} />
+
+      {RIGHT.map((tab) => (
+        <TabButton key={tab.key} tab={tab} active={active === tab.key} locked={!!tab.needsAccount && isGuest} onPress={() => go(tab)} />
+      ))}
+
+      {/* Merkez: oyunun kendisi. */}
+      <Pressable
+        style={styles.center}
+        onPress={() => {
+          if (active !== 'play') router.replace('/');
+        }}
+      >
+        <View style={styles.playBase}>
+          <View style={styles.playFace}>
+            <MaterialCommunityIcons name="play" size={26} color="#FFFFFF" />
           </View>
-          <Text style={[styles.label, { color: colors.accentInk }]}>Savaş</Text>
-        </Pressable>
-
-        {SIDE_ITEMS_RIGHT.map(renderItem)}
-      </View>
+        </View>
+        <Text style={[styles.label, active === 'play' ? styles.labelPlayOn : styles.labelOff]}>OYNA</Text>
+      </Pressable>
     </View>
   );
 }
 
+function TabButton({
+  tab,
+  active,
+  locked,
+  onPress,
+}: {
+  tab: Tab;
+  active: boolean;
+  locked: boolean;
+  onPress: () => void;
+}) {
+  const tint = active ? colors.primaryInk : colors.textFaint;
+  return (
+    <Pressable style={[styles.tab, locked && styles.tabLocked]} onPress={onPress}>
+      <MaterialCommunityIcons name={tab.icon} size={20} color={tint} />
+      <Text style={[styles.label, { color: tint }, active && styles.labelOn]} numberOfLines={1}>
+        {tab.label}
+      </Text>
+      {locked && (
+        <View style={styles.lock}>
+          <MaterialCommunityIcons name="lock" size={9} color={colors.textFaint} />
+        </View>
+      )}
+      {!locked && tab.soon && (
+        <View style={styles.soon}>
+          <Text style={styles.soonText}>YAKINDA</Text>
+        </View>
+      )}
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
-  wrap: { position: 'absolute', left: 0, right: 0, bottom: 0 },
   bar: {
+    position: 'relative',
+    height: 78,
+    paddingTop: 10,
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 4,
-    paddingTop: 8,
-    paddingHorizontal: 8,
     backgroundColor: colors.surface,
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
-    ...shadow.raised,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
-  item: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 4,
-    paddingVertical: 8,
+  tab: { flex: 1, alignItems: 'center', gap: 3, position: 'relative' },
+  tabLocked: { opacity: 0.45 },
+  centerGap: { width: 84 },
+  label: {
+    fontFamily: font.bodyBold,
+    fontSize: text.micro.fontSize,
+    lineHeight: text.micro.lineHeight,
+  },
+  labelOn: { fontFamily: font.bodyBlack },
+  labelOff: { color: colors.textFaint },
+  labelPlayOn: { fontFamily: font.bodyBlack, color: colors.primaryInk },
+  lock: { position: 'absolute', top: -2, right: 20 },
+  soon: {
+    position: 'absolute',
+    top: -3,
+    right: 12,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
     borderRadius: radius.pill,
+    backgroundColor: colors.sunken,
   },
-  itemOn: { backgroundColor: colors.primarySoft },
-  label: { fontFamily: font.bodyBold, fontSize: text.caption.fontSize, lineHeight: text.caption.lineHeight },
-  // Same footprint as a regular item so the two flanking it stay flex:1 and
-  // truly symmetric — the circle itself is just visually bigger and louder.
-  battleItem: { flex: 1, alignItems: 'center', gap: 4, paddingVertical: 4 },
-  battleCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    marginTop: -14,
-    backgroundColor: colors.accent,
+  soonText: { fontFamily: font.bodyBlack, fontSize: 8, lineHeight: 12, color: colors.textFaint, letterSpacing: 0.3 },
+  center: { position: 'absolute', left: '50%', top: -16, marginLeft: -31, alignItems: 'center', gap: 3 },
+  playBase: { backgroundColor: colors.primaryDark, borderRadius: radius.pill },
+  playFace: {
+    width: 62,
+    height: 62,
+    marginBottom: 4,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primary,
     borderWidth: 3,
     borderColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
-    ...shadow.raised,
+    ...shadow.card,
   },
-  battleCircleOn: { backgroundColor: colors.accentDark },
 });

@@ -70,6 +70,14 @@ export interface GameState {
   difficulty: Difficulty;
   /** Has the player seen the "How to play" screen at least once? */
   howToPlaySeen: boolean;
+  /**
+   * Oyuncu maç sonu giriş teklifine "misafir olarak devam et" dedi mi?
+   *
+   * Bir kez dedi mi teklif bir daha çıkmıyor. Aynı soruyu her maçta sormak,
+   * cevabı hayır olan oyuncuyu oyundan kovmanın yolu; giriş yolları zaten
+   * başka yerlerde (kilitli sekmeler, Oyna şeridi, profil) açık duruyor.
+   */
+  guestOfferDismissed: boolean;
   /** Master switch for music + all sound effects. */
   soundOn: boolean;
   /** When there's truly no legal move left, end the turn automatically
@@ -82,6 +90,7 @@ export interface GameState {
   setDifficulty: (d: Difficulty) => void;
   markHowToPlaySeen: () => void;
   toggleSound: () => void;
+  dismissGuestOffer: () => void;
   toggleAutoEndTurn: () => void;
   isOwned: (cardId: string) => boolean;
   isSupportOwned: (cardId: string) => boolean;
@@ -115,6 +124,7 @@ export const useGameStore = create<GameState>()(
       battlesWon: 0,
       difficulty: 'easy',
       howToPlaySeen: false,
+      guestOfferDismissed: false,
       soundOn: true,
       autoEndTurn: true,
       hydrated: false,
@@ -123,6 +133,7 @@ export const useGameStore = create<GameState>()(
       setDifficulty: (d) => set({ difficulty: d }),
       markHowToPlaySeen: () => set({ howToPlaySeen: true }),
       toggleSound: () => set((s) => ({ soundOn: !s.soundOn })),
+      dismissGuestOffer: () => set({ guestOfferDismissed: true }),
       toggleAutoEndTurn: () => set((s) => ({ autoEndTurn: !s.autoEndTurn })),
 
       isOwned: (cardId) => get().collection[cardId] != null,
@@ -206,6 +217,7 @@ export const useGameStore = create<GameState>()(
         battlesWon: s.battlesWon,
         difficulty: s.difficulty,
         howToPlaySeen: s.howToPlaySeen,
+        guestOfferDismissed: s.guestOfferDismissed,
         soundOn: s.soundOn,
         autoEndTurn: s.autoEndTurn,
       }),

@@ -106,7 +106,7 @@ export default function StoreScreen() {
         onClose={() => setShortFor(null)}
         onBattle={() => {
           setShortFor(null);
-          router.push('/difficulty');
+          router.replace('/');
         }}
       />
     </SafeAreaView>

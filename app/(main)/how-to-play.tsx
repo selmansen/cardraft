@@ -44,10 +44,16 @@ export default function HowToPlay() {
   const router = useRouter();
   const markSeen = useGameStore((s) => s.markHowToPlaySeen);
 
-  // replace('/') rather than back(): on first launch the menu auto-opens this
-  // screen, so back() could land on another copy of it further down the stack
-  // — which read as "the button only works the second time". Replacing always
-  // lands on the menu in one tap, whatever the stack looks like.
+  /**
+   * `replace` kullanılıyor, `back()` değil: ilk açılışta bu ekran Oyna
+   * ekranından otomatik açılıyor ve `back()` yığında aşağıda kalmış başka bir
+   * kopyaya düşebiliyordu — "düğme ancak ikinci basışta çalışıyor" gibi
+   * okunuyordu. `replace` yığın nasıl olursa olsun tek dokunuşta çıkarıyor.
+   *
+   * Hedef OYNA ekranı, Profil değil: öğreticiyi ilk kez gören oyuncu
+   * ayarlar sayfasına değil oyuna düşmeli. Profil'den gelen oyuncu da
+   * oradan tek dokunuşla geri dönebiliyor.
+   */
   const done = () => {
     markSeen();
     router.replace('/');
@@ -61,7 +67,7 @@ export default function HowToPlay() {
       <ScrollView contentContainerStyle={styles.content}>
         <Pressable style={styles.back} onPress={leave}>
           <MaterialCommunityIcons name="chevron-left" size={16} color={colors.textMuted} />
-          <Text style={styles.backText}>Menü</Text>
+          <Text style={styles.backText}>Oyna</Text>
         </Pressable>
 
         <Text style={styles.h1}>Nasıl Oynanır?</Text>

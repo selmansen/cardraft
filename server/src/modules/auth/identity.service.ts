@@ -79,6 +79,33 @@ export class IdentityService {
       select: { isGuest: true },
     });
 
+    /**
+     * E-posta BAŞKA bir hesapta kayıtlı olabilir.
+     *
+     * `users.email` benzersiz ve sağlayıcının verdiği adres bir başkasının
+     * satırında duruyorsa yazma denemesi patlıyordu — oyuncu 500 görüyor ve
+     * girişi hiç yapamıyordu. Oysa e-posta kimliğin kendisi DEĞİL: gerçek
+     * kimlik `(provider, subject)` ikilisi ve o benzersizliği zaten
+     * `user_identities` sağlıyor. E-posta yalnızca destek yazışması için
+     * tutulan bir kolaylık.
+     *
+     * Bu yüzden çakışma girişi engellemiyor, sadece e-posta yazılmıyor.
+     * Kimlik satırında zaten saklanıyor (`UserIdentity.email`), yani bilgi
+     * kaybolmuyor.
+     */
+    const emailTaken = verified.email
+      ? await this.prisma.user.findFirst({
+          where: { email: verified.email, id: { not: userId } },
+          select: { id: true },
+        })
+      : null;
+
+    if (emailTaken) {
+      this.logger.warn(
+        `Sağlayıcı e-postası başka hesapta kayıtlı, kullanıcı satırına yazılmadı: ${verified.email}`,
+      );
+    }
+
     await this.prisma.$transaction(async (tx) => {
       await tx.userIdentity.create({
         data: { userId, provider, subject: verified.subject, email: verified.email },
@@ -87,10 +114,11 @@ export class IdentityService {
         where: { id: userId },
         data: {
           isGuest: false,
-          // Sağlayıcının e-postası yalnızca BOŞSA yazılıyor: oyuncu ikinci bir
-          // sağlayıcı bağladığında ilk adresin üzerine yazmak, destek
-          // yazışmalarında yanlış adrese ulaşmak demek olurdu.
-          ...(verified.email ? { email: verified.email } : {}),
+          // Sağlayıcının e-postası yalnızca boşsa ve başkasında değilse
+          // yazılıyor: oyuncu ikinci bir sağlayıcı bağladığında ilk adresin
+          // üzerine yazmak, destek yazışmalarında yanlış adrese ulaşmak
+          // demek olurdu.
+          ...(verified.email && !emailTaken ? { email: verified.email } : {}),
         },
       });
     });

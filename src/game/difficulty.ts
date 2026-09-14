@@ -26,6 +26,20 @@ export interface DifficultyPreset {
  * 0.65·170 + 0.35·55 ≈ 130 jant → 3600 / 130 ≈ 28 maç.
  * Kaybedince de ödül var: sıfır ödül, kaybeden oyuncuyu oyunu kapatmaya iter.
  */
+/**
+ * Hoş geldin hediyesi — hesap BAĞLANDIĞINDA veriliyor, misafir açılışında değil.
+ *
+ * Motorda (paylaşılan dosyada) çünkü iki taraf da okuyor: sunucu veriyor,
+ * giriş ekranı "350 jant hediye" diye gösteriyor. İstemcide sabit yazılsaydı
+ * biri değişip diğeri geride kalırdı — oyuncuya söz verilen rakamla
+ * cüzdanına yazılan rakam farklı olurdu.
+ *
+ * Tutar Temel paketin fiyatına EŞİT (bkz. packs.ts): giriş ekranı "paketler
+ * aç" diye söz veriyorsa, giriş yaptıktan sonra ilk yapabileceği şey o olmalı.
+ * Sunucudaki bir birim testi bu iki sayıyı bağlı tutuyor.
+ */
+export const SIGNUP_BONUS_RIM = 350;
+
 export const WIN_REWARD = 170;
 export const LOSS_REWARD = 55;
 

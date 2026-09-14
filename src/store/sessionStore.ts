@@ -7,7 +7,14 @@ import { useGameStore } from './gameStore';
 import { authApi, economyApi, inventoryApi, storeApi } from '@/api/endpoints';
 import { ApiError, errorMessage, NetworkError } from '@/api/errors';
 import { readMigrated, STORAGE_KEYS } from '@/api/storageKeys';
-import type { AuthUser, CurrencyCode, DevicePlatform, PackOpenResult } from '@/api/types';
+import type {
+  AuthUser,
+  CurrencyCode,
+  DevicePlatform,
+  IdentityProvider,
+  PackOpenResult,
+} from '@/api/types';
+import { getProviderCredential, ProviderSignInCancelled } from '@/auth/providerSignIn';
 
 const INSTALL_KEY = STORAGE_KEYS.installation;
 
@@ -56,6 +63,15 @@ interface SessionState {
    * bir kimlik alır ve sunucudaki tekrar koruması işe yaramazdı.
    */
   openPack: (packId: string, requestId: string) => Promise<PackOpenResult | { error: string }>;
+  /**
+   * Apple / Google ile giriş.
+   *
+   * Misafir oturumunun ÜSTÜNE yapılıyor: sunucu tek uçla üç işi birden
+   * görüyor — misafiri yükseltmek, daha önce bağlanmış hesaba dönmek, ve
+   * cihaz değiştiren oyuncunun hesabını geri vermek. Dönen mesaj null ise
+   * başarılı; 'cancelled' ise oyuncu vazgeçti (hata gösterilmemeli).
+   */
+  signInWithProvider: (provider: IdentityProvider) => Promise<string | null | 'cancelled'>;
   signOut: () => Promise<void>;
 }
 
@@ -202,6 +218,28 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
       return result;
     } catch (error) {
       return { error: errorMessage(error) };
+    }
+  },
+
+  signInWithProvider: async (provider) => {
+    try {
+      const credential = await getProviderCredential(provider, await installationId());
+      const result = await authApi.signInWithProvider({
+        ...credential,
+        installationId: (await installationId()) ?? '',
+        platform: platform(),
+        appVersion: '0.1.0',
+      });
+      await setTokens({ accessToken: result.accessToken, refreshToken: result.refreshToken });
+      set({ user: result.user, connection: 'online' });
+      // Hesap değişmiş olabilir (cihaz değiştiren oyuncu eski hesabına döndü),
+      // bu yüzden cüzdan ve koleksiyon yeniden okunuyor — eski hesabın
+      // verisini göstermek en kötü hata olurdu.
+      await Promise.all([get().refreshWallet(), get().refreshInventory()]);
+      return null;
+    } catch (error) {
+      if (error instanceof ProviderSignInCancelled) return 'cancelled';
+      return errorMessage(error);
     }
   },
 

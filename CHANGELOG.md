@@ -13,7 +13,31 @@ Etiket öneki: `app-v`.
 
 ## [Yayınlanmamış]
 
+### Değiştirildi
+
+- **Alt menü ve ana ekran oyun olarak yeniden kurgulandı:**
+  `Garaj · Mağaza · [OYNA] · Lig · Profil`. Merkez düğme oyunun kendisi —
+  uygulama orada açılıyor, yani "ana ekran" ile "oyna" ayrı iki sekme değil.
+  Eski "Menü" sekmesi içi başka sekmelere giden satırlardan ibaret bir ara
+  katmandı.
+- **Koleksiyon ve Kadro tek Garaj ekranında birleşti.** Ayrıyken oyuncu
+  koleksiyonda kart seçerken kadrosunu görmüyordu, yani körlemesine deste
+  kuruyordu. Kadro artık üstte sabit, koleksiyon altında kayıyor.
+- Zorluk seçimi Oyna ekranına taşındı (ayrı ekran kaldırıldı); "Nasıl
+  oynanır" ve ayarlar Profil'e taşındı.
+
 ### Eklendi
+
+- **Profil ekranı**: hesap durumu, sunucudan okunan istatistikler, ses ve
+  otomatik tur ayarları, çıkış ve hesap silme.
+- **Giriş ekranı**: misafire ne kazanacağını anlatan dört vaat ve Apple /
+  Google düğmeleri. Bir duvar değil bir teklif — "şimdilik misafir kal" her
+  zaman açık.
+- **Maç sonunda misafire kaçırdığı ödül** gösteriliyor: rakam gerçek (aynı
+  formül sunucuda çalışıyor), üstü çizili ve gri. "Misafir olarak devam et"
+  bir kez seçilirse teklif bir daha çıkmıyor.
+- **Lig sekmesi** yerini şimdiden aldı ("yakında"): sonradan eklenirse alt
+  menü yeniden düzenlenir ve oyuncunun kas hafızası bozulurdu.
 
 - Dal, sürüm ve yayın akışı: `develop`/`main` ayrımı, GitHub Actions CI,
   etiketle tetiklenen yayın. Bkz. `docs/gelistirme-akisi.md`.

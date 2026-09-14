@@ -73,6 +73,7 @@ import {
 } from '@/game/battleEngine';
 import { planBotTurn } from '@/game/bot';
 import { makeBotLoadout, makeBotSupportLoadout } from '@/game/botDeck';
+import { ChunkyButton } from '@/components/ChunkyButton';
 import { CurrencyTag } from '@/components/Currency';
 import { MatchRecorder, openMatchSession, type MatchSetup } from '@/game/matchSession';
 import { useSessionStore } from '@/store/sessionStore';
@@ -497,7 +498,21 @@ export default function BattleScreen() {
   const recorder = useRef(new MatchRecorder());
   const [offlineMatch, setOfflineMatch] = useState(false);
   const [serverReward, setServerReward] = useState<number | null>(null);
+  /**
+   * Misafirin kaçırdığı ödül.
+   *
+   * Sunucu misafire 0 yazıyor (ADR 0016), dolayısıyla `serverReward`
+   * kullanılamaz — burada paylaşılan motorun formülü kullanılıyor, yani
+   * sunucunun hesap yapacağı formülün birebir aynısı. "Giriş yapsaydın X
+   * kazanacaktın" cümlesinin doğru olmasının tek yolu bu.
+   */
+  const missedReward = battle?.winner
+    ? battleReward(battle.winner === 'player', difficulty)
+    : 0;
   const refreshWallet = useSessionStore((s) => s.refreshWallet);
+  const isGuest = useSessionStore((s) => s.user?.isGuest ?? true);
+  const guestOfferDismissed = useGameStore((s) => s.guestOfferDismissed);
+  const dismissGuestOffer = useGameStore((s) => s.dismissGuestOffer);
 
   /**
    * Oyuncunun her hamlesi ÖNCE kaydediliyor, sonra uygulanıyor. Tek bir
@@ -850,10 +865,12 @@ export default function BattleScreen() {
   }, [playerLoadout, loadout, supportLoadout, battlesWon, difficulty, stopResultSfx]);
 
   useEffect(() => {
-    // Same "kadro tam mı" gate as the difficulty screen — a stray deep-link
-    // straight to /battle shouldn't skip it.
+    // Oyna ekranındaki "kadro tam mı" kapısının aynısı — /battle'a doğrudan
+    // gelen bir bağlantı onu atlamamalı. Eksik kadroyla maç, sunucuda da
+    // reddedilir (validateLoadout) ama oyuncuyu hata mesajıyla değil
+    // düzeltebileceği yere göndermek doğru.
     if (playerLoadout.length + supportLoadout.length < LOADOUT_TOTAL) {
-      router.replace('/squad');
+      router.replace('/garage');
       return;
     }
     void newBattle();
@@ -1685,7 +1702,39 @@ export default function BattleScreen() {
             {/* Ödül SUNUCUNUN yazdığı miktar. Gelene kadar tahmini gösteriyoruz
                 (aynı formül, aynı sayı — sadece henüz onaylanmamış); çevrimdışı
                 oynanmışsa ödül yok ve bunu saklamıyoruz. */}
-            {offlineMatch ? (
+            {isGuest ? (
+              /**
+               * MİSAFİR: kazanılmayan ödül gösteriliyor.
+               *
+               * Rakam gerçek — sunucu o maçın ne ettiğini biliyor ve
+               * yanıtta söylüyor; uydurma bir sayı değil. Üstü çizili ve gri,
+               * çünkü kazanılmış gibi durmaması gerekiyor.
+               *
+               * Teklif bir kez reddedilirse bir daha çıkmıyor: aynı soruyu her
+               * maçta sormak, cevabı hayır olan oyuncuyu oyundan kovmanın yolu.
+               */
+              !guestOfferDismissed && (
+                <View style={styles.guestOffer}>
+                  <View style={styles.guestMissed}>
+                    <CurrencyTag currency="rim" amount={missedReward} size={17} color={colors.textMuted} />
+                    <Text style={styles.guestMissedText}>
+                      Giriş yapsaydın {missedReward} jant kazanacaktın
+                    </Text>
+                  </View>
+                  <ChunkyButton
+                    variant="primary"
+                    label="Giriş yap ve kazan"
+                    onPress={() => {
+                      stopResultSfx();
+                      router.push('/sign-in');
+                    }}
+                  />
+                  <Pressable style={styles.guestSkip} onPress={dismissGuestOffer}>
+                    <Text style={styles.guestSkipText}>Misafir olarak devam et</Text>
+                  </Pressable>
+                </View>
+              )
+            ) : offlineMatch ? (
               <View style={styles.resultOffline}>
                 <MaterialCommunityIcons name="wifi-off" size={13} color={colors.textMuted} />
                 <Text style={styles.resultOfflineText}>Çevrimdışı maç — jant kazanılmadı</Text>
@@ -3480,6 +3529,24 @@ const styles = StyleSheet.create({
   resultText: { fontFamily: font.display, fontSize: 24 },
   resultReward: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   resultRewardPlus: { fontFamily: font.stat, fontSize: 17, color: colors.primaryInk },
+  guestOffer: { width: '100%', gap: 10, marginTop: 4 },
+  guestMissed: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 13,
+    borderRadius: radius.md,
+    backgroundColor: colors.sunken,
+  },
+  guestMissedText: {
+    flex: 1,
+    fontFamily: font.bodyBold,
+    fontSize: text.small.fontSize,
+    lineHeight: text.small.lineHeight,
+    color: colors.inkSoft,
+  },
+  guestSkip: { height: 40, alignItems: 'center', justifyContent: 'center' },
+  guestSkipText: { fontFamily: font.bodyBold, fontSize: text.body.fontSize, color: colors.textMuted },
   resultOffline: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   resultOfflineText: { fontFamily: font.bodyBold, fontSize: text.caption.fontSize, color: colors.textMuted },
   resultBtn: {

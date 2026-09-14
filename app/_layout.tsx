@@ -53,6 +53,10 @@ export default function RootLayout() {
                 ortasında geri gitmek, parası düşmüş ama sonucu görülmemiş bir
                 paket bırakırdı. */}
             <Stack.Screen name="pack-opening" options={{ gestureEnabled: false }} />
+            {/* Giriş ekranı alt gezinmenin dışında: bir hedef, bir sekme
+                değil. Her yerden (kilitli sekme, maç sonu, kilitli kart,
+                Oyna şeridi, profil) buraya gelinip geri dönülüyor. */}
+            <Stack.Screen name="sign-in" options={{ presentation: 'modal' }} />
           </Stack>
         ) : (
           <View style={styles.loading}>

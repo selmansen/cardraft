@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '../../infrastructure/prisma/prisma.service.js';
+import type { IdentityProvider } from '../../generated/prisma/enums.js';
 
 /** Dışarı verilebilir kullanıcı gösterimi — passwordHash burada YOK. */
 export interface PublicUser {
@@ -9,6 +10,14 @@ export interface PublicUser {
   displayName: string | null;
   isGuest: boolean;
   createdAt: Date;
+  /**
+   * Hesaba bağlı giriş yolları.
+   *
+   * İstemci bunu bilmek ZORUNDA: hesap silme sağlayıcıdan taze bir jeton
+   * istiyor ve istemcinin hangi sağlayıcıyı çağıracağını bilmesi gerekiyor.
+   * Olmadan tahmin etmek zorunda kalırdı.
+   */
+  providers: IdentityProvider[];
 }
 
 /**
@@ -29,6 +38,7 @@ export class UsersService {
     displayName: true,
     isGuest: true,
     createdAt: true,
+    identities: { select: { provider: true } },
   } as const;
 
   constructor(private readonly prisma: PrismaService) {}
@@ -39,7 +49,8 @@ export class UsersService {
       select: UsersService.publicFields,
     });
     if (!user) throw new NotFoundException('Kullanıcı bulunamadı');
-    return user;
+    const { identities, ...rest } = user;
+    return { ...rest, providers: identities.map((i) => i.provider) };
   }
 
   /** Şifre doğrulaması için — hash'i AÇIKÇA isteyen tek metot. */
