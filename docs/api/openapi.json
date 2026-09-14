@@ -502,6 +502,74 @@
           "Maç"
         ]
       }
+    },
+    "/api/store/packs": {
+      "get": {
+        "operationId": "StoreController_packs",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Satıştaki paketler — fiyatları ve çıkma oranlarıyla.",
+        "tags": [
+          "Mağaza"
+        ],
+        "description": "Oranlar istemcide sabit yazılmıyor, buradan geliyor: mağaza ekranında\ngösterilen oranla çekilişte kullanılan oranın aynı olması hem dürüstlük\nhem mağaza politikası meselesi."
+      }
+    },
+    "/api/store/packs/{id}/open": {
+      "post": {
+        "operationId": "StoreController_open",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OpenPackDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Paket açar. Fiyatı, oranları ve çıkan kartı sunucu belirler.",
+        "tags": [
+          "Mağaza"
+        ],
+        "description": "Gövdedeki `requestId` tekrar koruması: aynı kimlikle gelen ikinci istek\nyeni bir çekiliş yapmaz, ilk açılışın sonucunu döndürür. Mobil ağda\ncevabı kaybolan bir isteğin oyuncudan iki kez para düşürmesini\nengelleyen tek şey bu."
+      }
     }
   },
   "info": {
@@ -716,6 +784,19 @@
         },
         "required": [
           "turns"
+        ]
+      },
+      "OpenPackDto": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "description": "İstemcinin ürettiği tekrar koruması.\n\nZorunlu ve istemciden geliyor çünkü korunması gereken şey tam olarak\n\"aynı isteğin ikinci kez gönderilmesi\": mobil ağda cevap kaybolur,\nistemci tekrar dener. Sunucu kendi kimliğini üretseydi her deneme yeni\nbir açılış olurdu — oyuncudan iki kez para düşer, iki kart çekilirdi.\n\nUUID şartı bilinçli: tahmin edilemez ve çakışmaz. Sıra numarası\nolsaydı bir oyuncunun kimliği bir başkasınınkiyle çakışabilirdi\n(benzersizlik kullanıcı başına ama yine de öngörülebilirlik istemiyoruz).",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "requestId"
         ]
       }
     }

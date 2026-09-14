@@ -15,6 +15,7 @@ import { InventoryModule } from './modules/inventory/inventory.module.js';
 import { MatchModule } from './modules/match/match.module.js';
 import { NotificationsModule } from './modules/notifications/notifications.module.js';
 import { StatsModule } from './modules/stats/stats.module.js';
+import { StoreModule } from './modules/store/store.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 
 /**
@@ -42,6 +43,7 @@ import { UsersModule } from './modules/users/users.module.js';
     MatchModule,
     NotificationsModule,
     StatsModule,
+    StoreModule,
   ],
   controllers: [HealthController],
   providers: [
