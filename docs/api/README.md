@@ -272,6 +272,14 @@ Bütün hatalar aynı zarfla dönüyor (`AllExceptionsFilter`):
 | `401` | Token yok, geçersiz ya da süresi dolmuş → *Token yenile* |
 | `404` | Kayıt bulunamadı |
 | `409` | Çakışma — kart zaten sahip olunuyor, hesap zaten bağlı |
+| `429` | Hız sınırı aşıldı — bekleyip tekrar dene |
+
+**Hız sınırı** da global: varsayılan dakikada 120 istek, giriş ve kayıt
+uçlarında 10. Sayaç Redis'te tutuluyor (süreç belleğinde değil), yani sunucu
+birden fazla örnekle çalıştığında sınır kendiliğinden ikiye katlanmıyor.
+Anahtar kimlik doğrulanmışsa kullanıcıya, değilse IP'ye bağlı — yalnızca IP
+kullanmak aynı operatörün NAT'ı arkasındaki binlerce oyuncuyu tek sayaca
+toplardı.
 
 Doğrulama **global**: DTO'da tanımlı olmayan bir alan gönderirsen istek
 reddediliyor (sessizce atılmıyor). `{"coins": 999999}` gibi fazladan bir

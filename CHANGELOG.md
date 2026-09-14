@@ -25,6 +25,15 @@ Etiket öneki: `app-v`.
 
 ### Düzeltildi
 
+- **Çevrimdışıyken bakiye ekrandan ekrana farklı görünüyordu.** Menü yerel
+  bakiyeyi gösteriyor, Kadro / kart detayı / mağaza ise doğrudan sunucu
+  değerini okuduğu için **0 jant** gösteriyordu. Koleksiyon için yazılmış
+  `useCollection` kancasının cüzdan karşılığı yoktu; `useWallet` eklendi ve
+  dört ekran da ondan okuyor.
+- Menüdeki "Garajında X / 35 araç" sayısı sabit yazılıydı; kart havuzu
+  büyüdüğünde sessizce yanlış olacaktı. Artık katalogdan geliyor.
+- Maç sonunda gösterilen ödül artık sunucunun bildirdiği miktar.
+
 - **Bot, oyuncudan bir kart fazla taşıyordu.** Kadro bütçesi 8 kart ama botun
   destesi 6 araç + 3 pit'ten kuruluyordu. Deste kadronun iki katı ve deste
   bitince yorgunluk hasarı başladığı için bu, uzun maçlarda bota bedava

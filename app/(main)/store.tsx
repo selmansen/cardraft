@@ -10,6 +10,7 @@ import { ChunkyButton } from '@/components/ChunkyButton';
 import { CurrencyTag, WalletPill } from '@/components/Currency';
 import { colors, font, NAV_CLEARANCE, radius, rarity as rarityTheme, shadow, space, text } from '@/constants/theme';
 import { useSessionStore } from '@/store/sessionStore';
+import { useWallet } from '@/store/useWallet';
 
 /** Nadirliklerin gösterim sırası — oranlar nesnesinin anahtar sırasına
  *  güvenilmez, ayrıca oyuncu her pakette aynı sırayı görmeli. */
@@ -17,8 +18,7 @@ const RARITY_ORDER: Rarity[] = ['common', 'rare', 'epic', 'legendary'];
 
 export default function StoreScreen() {
   const router = useRouter();
-  const rims = useSessionStore((s) => s.rims);
-  const coins = useSessionStore((s) => s.coins);
+  const { rims, coins } = useWallet();
   const connection = useSessionStore((s) => s.connection);
 
   const [packs, setPacks] = useState<PackDto[] | null>(null);

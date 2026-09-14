@@ -2,6 +2,7 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/commo
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser, Public } from '../../common/decorators/auth.decorators.js';
+import { RateLimit } from '../../common/decorators/rate-limit.decorator.js';
 import { UsersService } from '../users/users.service.js';
 import { AuthService } from './auth.service.js';
 import {
@@ -51,6 +52,10 @@ export class AuthController {
    * Misafirken ilerleme kaydetmiş bir oyuncu için YANLIŞ uç: burası yeni ve boş
    * bir hesap yaratır. O durumda `POST /auth/link` kullanılmalı.
    */
+  // Kaba kuvvete karşı sıkı sınır: argon2 şifreyi koruyor ama saniyede
+  // yüzlerce deneme hem zayıf şifreleri bulur hem sunucuyu boğar
+  // (argon2 bilerek pahalı).
+  @RateLimit(10, 60)
   @Public()
   @Post('register')
   register(@Body() dto: RegisterDto): Promise<AuthTokensDto> {
@@ -58,6 +63,10 @@ export class AuthController {
   }
 
   /** E-postalı hesapla giriş. */
+  // Kaba kuvvete karşı sıkı sınır: argon2 şifreyi koruyor ama saniyede
+  // yüzlerce deneme hem zayıf şifreleri bulur hem sunucuyu boğar
+  // (argon2 bilerek pahalı).
+  @RateLimit(10, 60)
   @Public()
   @Post('login')
   // Varsayılan 201 yerine 200: yeni bir kaynak yaratılmıyor, oturum açılıyor.

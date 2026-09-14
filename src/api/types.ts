@@ -103,6 +103,8 @@ export interface SubmitTurnDto {
 export interface SubmitMatchResponse {
   won: boolean;
   turns: number;
+  /** Sunucunun gerçekten yazdığı ödül. İstemci bunu yeniden HESAPLAMAZ. */
+  reward: number;
   balance: BalanceSnapshot;
   stats: PlayerStats;
 }

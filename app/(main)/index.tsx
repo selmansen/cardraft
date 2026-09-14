@@ -7,11 +7,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChunkyButton } from '@/components/ChunkyButton';
 import { WalletPill } from '@/components/Currency';
 import { colors, font, NAV_CLEARANCE, radius, shadow, space, text } from '@/constants/theme';
-import { STARTER_CARD_IDS } from '@/data/cards';
+import { CARDS, STARTER_CARD_IDS } from '@/data/cards';
 import { DIFFICULTY } from '@/game/difficulty';
 import { LOADOUT_TOTAL, useGameStore } from '@/store/gameStore';
 import { useSessionStore } from '@/store/sessionStore';
 import { useVehicleCollection } from '@/store/useCollection';
+import { useWallet } from '@/store/useWallet';
 
 /** Module scope on purpose: the bottom nav navigates with replace(), so this
  *  screen unmounts and remounts often. A ref would reset with it and could
@@ -23,14 +24,7 @@ export default function MenuScreen() {
   // Bakiye SUNUCUDAN. Yerel gameStore'daki alanlar çevrimdışı yedek olarak
   // duruyor ama gösterimde sunucu kazanıyor: doğruluk kaynağı orası
   // (ADR 0006/0008) ve iki sayının farklı görünmesi kullanıcıyı yanıltırdı.
-  const connection = useSessionStore((s) => s.connection);
-  const serverRims = useSessionStore((s) => s.rims);
-  const serverCoins = useSessionStore((s) => s.coins);
-  const localRims = useGameStore((s) => s.rims);
-  const localCoins = useGameStore((s) => s.coins);
-  const online = connection === 'online';
-  const rims = online ? serverRims : localRims;
-  const coins = online ? serverCoins : localCoins;
+  const { rims, coins, fromServer: online } = useWallet();
   const won = useGameStore((s) => s.battlesWon);
   const played = useGameStore((s) => s.battlesPlayed);
   const squadCount = useGameStore((s) => s.loadout.length);
@@ -99,7 +93,7 @@ export default function MenuScreen() {
         />
         <MenuRow
           title="Koleksiyon"
-          sub={`Garajında ${ownedCount} / 35 araç var`}
+          sub={`Garajında ${ownedCount} / ${CARDS.length} araç var`}
           onPress={() => router.push('/collection')}
         />
         <MenuRow

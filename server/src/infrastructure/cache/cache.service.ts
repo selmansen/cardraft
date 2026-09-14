@@ -47,6 +47,20 @@ export class CacheService implements OnModuleDestroy {
   }
 
   /**
+   * Sayacı bir artırır ve yeni değeri döndürür; ilk artışta anahtara süre koyar.
+   *
+   * Hız sınırlama için: `INCR` atomik, yani iki eşzamanlı istek aynı sayıyı
+   * okuyup ikisi de "1" yazamaz. Süre YALNIZCA ilk artışta konuyor — her
+   * artışta yenilenseydi sürekli istek gönderen bir istemcinin penceresi hiç
+   * kapanmaz ve sınır sonsuza kadar sürerdi.
+   */
+  async increment(key: string, ttlSeconds: number): Promise<number> {
+    const count = await this.client.incr(key);
+    if (count === 1) await this.client.expire(key, ttlSeconds);
+    return count;
+  }
+
+  /**
    * "Önbellekte varsa onu ver, yoksa üret + sakla." Önbellek kullanımının
    * tek girişi burası olmalı.
    */

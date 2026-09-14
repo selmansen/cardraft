@@ -178,12 +178,21 @@ export class MatchService {
     // İkisi de SUNUCUNUN hesapladığı sonuca göre: önce istatistik (bir sonraki
     // maçın bot seviyesini bu belirleyecek), sonra ödül.
     const stats = await this.stats.recordBattle(userId, result.won);
-    const balance = await this.rewards.grant(
+    const { amount: reward, balance } = await this.rewards.grant(
       userId,
       match.id,
       result.won,
       match.difficulty as Difficulty,
     );
-    return { won: result.won, turns: result.turns, balance, stats };
+    /**
+     * `reward` yanıtta: istemci ödülü KENDİ hesaplamasın.
+     *
+     * Eskiden ekran `battleReward(won, difficulty)` çağırıp gösterdiği sayıyı
+     * kendi üretiyordu. Bugün aynı sonucu veriyor (kural paylaşılan motorda)
+     * ama sunucu ileride bir çarpan ya da bonus eklediğinde ekran sessizce
+     * yanlış rakam gösterirdi — oyuncunun gördüğü sayı ile bakiyesine yazılan
+     * sayı farklı olurdu.
+     */
+    return { won: result.won, turns: result.turns, reward, balance, stats };
   }
 }

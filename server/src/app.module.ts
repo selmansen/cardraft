@@ -8,6 +8,7 @@ import { NotificationModule } from './infrastructure/notification/notification.m
 import { PrismaModule } from './infrastructure/prisma/prisma.module.js';
 import { QueueModule } from './infrastructure/queue/queue.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { RateLimitGuard } from './common/guards/rate-limit.guard.js';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard.js';
 import { DevicesModule } from './modules/devices/devices.module.js';
 import { EconomyModule } from './modules/economy/economy.module.js';
@@ -51,6 +52,13 @@ import { UsersModule } from './modules/users/users.module.js';
     // için @Public() gerekiyor. Bkz. common/decorators/auth.decorators.ts —
     // güvenliği unutulabilecek bir adıma değil, varsayılana bağlamak.
     { provide: APP_GUARD, useClass: JwtAuthGuard },
+    /**
+     * Hız sınırı JwtAuthGuard'dan SONRA: sıra önemli, çünkü sayaç anahtarı
+     * kimlik doğrulanmışsa kullanıcıya, değilse IP'ye bağlanıyor ve
+     * `request.user` ancak auth guard çalıştıktan sonra dolu oluyor.
+     * NestJS global guard'ları tanımlanma sırasıyla çalıştırıyor.
+     */
+    { provide: APP_GUARD, useClass: RateLimitGuard },
   ],
 })
 export class AppModule {}
