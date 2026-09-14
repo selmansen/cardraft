@@ -96,11 +96,7 @@ Ayrıntı: \`docs/api/README.md\`. Kararların gerekçeleri: \`server/docs/adr/\
     { key: 'installationId', value: '', type: 'string' },
     { key: 'matchId', value: '', type: 'string' },
     { key: 'packId', value: 'basic', type: 'string' },
-    { key: 'emailToken', value: '', type: 'string' },
-    { key: 'resetToken', value: '', type: 'string' },
     { key: 'deviceId', value: '', type: 'string' },
-    { key: 'email', value: 'oyuncu@example.com', type: 'string' },
-    { key: 'password', value: 'cok-gizli-sifre', type: 'string' },
   ],
   item: [
     {
@@ -161,37 +157,24 @@ Kimliği kaybeden oyuncu hesabına bir daha erişemez — istemcide bu değerin 
           desc: 'Access token\'ın kime ait olduğunu söyler. Token geçerliliğini sınamanın en hızlı yolu.',
         }),
         req({
-          name: 'Kayıt (e-posta ile)',
+          name: 'Apple / Google ile giriş',
           method: 'POST',
-          path: '/auth/register',
-          auth: 'none',
-          status: 201,
-          body: { email: '{{email}}', password: '{{password}}', displayName: 'Test Oyuncu', ...device },
-          desc: `Sıfırdan e-postalı hesap. Misafirken ilerleme kaydettiyse bu **yanlış uç** — o durumda "Misafir hesabı yükselt" kullanılmalı, yoksa oyuncu yeni ve boş bir hesaba düşer.
-
-Şifre alt sınırı 8 karakter; karmaşıklık kuralı (büyük harf/rakam zorunluluğu) bilerek yok — NIST'in güncel önerisi uzunluğu tercih ediyor, karmaşıklık kuralları kullanıcıyı tahmin edilebilir kalıplara itiyor.`,
-          test: saveTokens,
-        }),
-        req({
-          name: 'Giriş',
-          method: 'POST',
-          path: '/auth/login',
-          auth: 'none',
-          body: { email: '{{email}}', password: '{{password}}', ...device },
-          desc: 'E-postalı hesapla giriş. 201 değil **200** döner: yeni bir kaynak yaratılmıyor, oturum açılıyor.',
-          test: saveTokens,
-        }),
-        req({
-          name: 'Misafir hesabı yükselt',
-          method: 'POST',
-          path: '/auth/link',
-          body: { email: '{{email}}', password: '{{password}}', displayName: 'Test Oyuncu' },
+          path: '/auth/identity',
+          body: { provider: 'APPLE', idToken: 'sahte:{{$guid}}:oyuncu@example.com', ...device },
           status: [200, 409],
-          statusLabel: 'Yükseltildi (200) ya da hesap zaten bağlı (409)',
-          desc: `Misafir hesaba e-posta ve şifre bağlar. **Kimlik doğrulaması gerektirir** (public değil) — hangi misafir hesabın yükseltileceği access token'dan biliniyor.
-
-Yeni satır açılmıyor, **aynı satır** yükseltiliyor: cüzdan, koleksiyon ve istatistikler olduğu gibi kalıyor. Bkz. ADR 0005.`,
+          statusLabel: 'Giriş yapıldı (200) ya da hesap başkasına bağlı (409)',
           test: saveTokens,
+          desc: `**Tek gerçek giriş yolu.** E-posta + şifre kaldırıldı: sağlayıcı hem kimliği hem e-postayı bizden daha iyi doğruluyor, ve şifre olmayınca sıfırlama, doğrulama, kaba kuvvet ve hesap sayımı yüzeyleri de olmuyor.
+
+Kimlik doğrulaması **şart** (public değil): çağıran her zaman oturum açmış durumda, çünkü uygulama açılışta misafir hesap alıyor. Böylece tek uç üç işi birden yapıyor:
+
+1. **Misafiri yükseltmek** — kimlik hiç kayıtlı değilse mevcut hesaba bağlanır, ilerleme olduğu gibi kalır (aynı satırda yükseltme, ADR 0005).
+2. **Geri dönmek** — kimlik bu kullanıcıya zaten bağlıysa sadece yeni jeton.
+3. **Hesabı kurtarmak** — kimlik başka bir hesaba bağlıysa o hesaba geçilir. Cihaz değiştiren oyuncunun ilerlemesini geri aldığı durum; asıl amaç bu.
+
+Üçüncü durumda buradaki misafir hesabın ilerlemesi varsa **409** dönüyor: \`force: true\` gelmeden geçiş yok, yoksa oyuncunun saatleri sessizce silinirdi.
+
+\`idToken\` geliştirmede sahte doğrulayıcıdan geçiyor (\`sahte:<subject>:<email>\`) — Apple/Google geliştirici hesapları henüz yok. Üretimde bu adapter devre dışı, gerçek JWKS doğrulaması çalışıyor.`,
         }),
         req({
           name: 'Token yenile',
@@ -205,74 +188,17 @@ Refresh token **rotasyonlu**: her yenilemede eskisi geçersizleşir ve yenisi ve
           test: saveTokens,
         }),
         req({
-          name: 'Doğrulama e-postası gönder',
-          method: 'POST',
-          path: '/auth/email/verify/send',
-          status: 204,
-          desc: `Doğrulama e-postasını (yeniden) gönderir.
-
-Doğrulama oyuna girişi **engellemiyor** — oyuncu kaydolur olmaz oynayabiliyor. Tek işlevi şifre sıfırlamayı mümkün kılmak: doğrulanmamış bir adrese sıfırlama bağlantısı göndermek, adresini yanlış yazan (ya da bilerek başkasınınkini yazan) kişinin hesabını o adresin gerçek sahibine vermek olurdu.
-
-Geliştirmede e-posta GÖNDERİLMİYOR, sunucu loguna yazılıyor (\`LogMailAdapter\`) — bağlantıdaki jetonu oradan kopyalayıp \`emailToken\` değişkenine yapıştır.`,
-        }),
-        req({
-          name: 'E-postayı doğrula',
-          method: 'POST',
-          path: '/auth/email/verify',
-          auth: 'none',
-          status: [204, 400],
-          statusLabel: 'Doğrulandı (204) ya da jeton geçersiz/kullanılmış (400)',
-          body: { token: '{{emailToken}}' },
-          desc: `Bağlantıdaki jetonu doğrular. **Tek kullanımlık**, 24 saat geçerli.
-
-Geçersiz, süresi dolmuş ve zaten kullanılmış jetonlar için AYNI mesaj dönüyor — ayrı mesajlar, elindeki jetonun var olup olmadığını deneyerek öğrenmeye yarardı.`,
-        }),
-        req({
-          name: 'Şifremi unuttum',
-          method: 'POST',
-          path: '/auth/password/forgot',
-          auth: 'none',
-          status: 204,
-          body: { email: '{{email}}' },
-          desc: `Sıfırlama e-postası ister. **Her durumda 204 döner** — hesabın var olup olmadığı söylenmez.
-
-Farklı cevap verilseydi saldırgan adresleri tek tek deneyerek hangilerinin kayıtlı olduğunu öğrenirdi (hesap sayımı). Adres kayıtlı değilse ya da **doğrulanmamışsa** e-posta gönderilmez, ama yanıt yine 204'tür.`,
-        }),
-        req({
-          name: 'Şifreyi sıfırla',
-          method: 'POST',
-          path: '/auth/password/reset',
-          auth: 'none',
-          status: [204, 400],
-          statusLabel: 'Sıfırlandı (204) ya da jeton geçersiz (400)',
-          body: { token: '{{resetToken}}', password: '{{password}}' },
-          desc: `Jetonla şifreyi sıfırlar ve **bütün oturumları kapatır**.
-
-Oturumların kapatılması isteğe bağlı bir incelik değil: sıfırlamanın en yaygın sebebi "hesabıma başkası giriyor olabilir". Açık oturum bırakılsaydı o kişi içeride kalmaya devam ederdi.
-
-Jeton 1 saat geçerli (doğrulamanınki 24 saat): bu bağlantı hesabın kendisi, pencere dar olmalı.`,
-        }),
-        req({
-          name: 'Şifre değiştir',
-          method: 'POST',
-          path: '/auth/password/change',
-          status: [204, 400],
-          statusLabel: 'Değişti (204) ya da mevcut şifre yanlış (400)',
-          body: { currentPassword: '{{password}}', newPassword: 'yeni-sifre-1234' },
-          desc: 'Oturum açıkken şifre değiştirir. Mevcut şifre şart. Sıfırlamada olduğu gibi bütün oturumlar kapanıyor.',
-        }),
-        req({
           name: 'Hesabı sil',
           method: 'DELETE',
           path: '/auth/account',
           status: [204, 400],
           statusLabel: 'Silindi (204) ya da şifre gerekli/yanlış (400)',
-          body: { password: '{{password}}' },
+          body: { provider: 'APPLE', idToken: 'sahte:{{$guid}}' },
           desc: `Hesabı ve bağlı bütün veriyi siler: cüzdan, defter, koleksiyon, maçlar, cihazlar.
 
 **Zorunlu bir uç:** Apple App Store, hesap açmaya izin veren uygulamanın hesabı uygulama içinden silmeye de izin vermesini şart koşuyor (5.1.1(v)). Yani bu bir incelik değil, yayın engeli.
 
-Misafir hesapta şifre yok, o yüzden \`password\` opsiyonel — şifresi olan hesapta zorunlu.
+Bağlı hesapta sağlayıcıdan **taze bir jeton** isteniyor: silme geri alınamaz ve access token 15 dakika yaşıyor — telefonu kısa süreliğine eline geçiren biri hesabı silememeli. Apple ve Google da kendi silme akışlarında aynısını yapıyor. Misafir hesapta kimlik olmadığı için gövde boş gönderilebilir.
 
 ⚠️ Bu istek gerçekten siler. Koleksiyondaki aktif hesabınla çalıştırma.`,
         }),

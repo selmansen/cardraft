@@ -1,6 +1,7 @@
 import { api } from './client';
 import type {
   AuthTokens,
+  IdentityProvider,
   AuthUser,
   BalanceSnapshot,
   CurrencyCode,
@@ -34,15 +35,29 @@ export const authApi = {
   guest: (device: Omit<DeviceInfo, 'installationId'> & { installationId?: string }) =>
     api.post<AuthTokens>('/auth/guest', device, { anonymous: true }),
 
-  register: (body: { email: string; password: string; displayName?: string } & DeviceInfo) =>
-    api.post<AuthTokens>('/auth/register', body, { anonymous: true }),
+  /**
+   * Apple / Google ile giriş — tek gerçek giriş yolu.
+   *
+   * Oturum ŞART: uygulama açılışta zaten misafir hesap alıyor ve bu çağrı o
+   * hesabın üstüne yapılıyor. Böylece tek uç üç işi birden görüyor —
+   * misafiri yükseltmek, daha önce bağlanmış hesaba dönmek, ve cihaz
+   * değiştiren oyuncunun hesabını geri vermek.
+   *
+   * `force`: sağlayıcı hesabı BAŞKA bir CarDraft hesabına bağlıysa ve
+   * buradaki misafirin ilerlemesi varsa sunucu 409 döner. Onaysız geçiş
+   * oyuncunun saatlerini sessizce silmek olurdu; onayı istemci alıyor.
+   */
+  signInWithProvider: (body: DeviceInfo & { provider: IdentityProvider; idToken: string; force?: boolean }) =>
+    api.post<AuthTokens>('/auth/identity', body),
 
-  login: (body: { email: string; password: string } & DeviceInfo) =>
-    api.post<AuthTokens>('/auth/login', body, { anonymous: true }),
-
-  /** Misafir → gerçek hesap, ilerleme kaybolmadan. */
-  link: (body: { email: string; password: string; displayName?: string }) =>
-    api.post<AuthTokens>('/auth/link', body),
+  /**
+   * Hesabı ve bağlı bütün veriyi siler.
+   *
+   * Bağlı hesapta sağlayıcıdan TAZE jeton gerekiyor: silme geri alınamaz ve
+   * access token 15 dakika yaşıyor. Misafir hesapta kimlik yok, gövde boş.
+   */
+  deleteAccount: (confirmation?: { provider: IdentityProvider; idToken: string }) =>
+    api.del<void>('/auth/account', confirmation ?? {}),
 
   logout: (refreshToken: string) =>
     api.post<void>('/auth/logout', { refreshToken }, { anonymous: true }),

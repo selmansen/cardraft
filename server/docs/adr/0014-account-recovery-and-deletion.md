@@ -1,6 +1,14 @@
 # 0014 — Hesap kurtarma: doğrulama, sıfırlama ve silme
 
-**Durum:** Kabul edildi · 2026-09-14
+**Durum:** ⚠️ **Yerini [0015](0015-provider-only-auth.md) aldı** (2026-09-14, aynı gün)
+
+> Bu ADR e-posta + şifre girişini varsayıyordu. Aynı gün giriş yolu yalnızca
+> Apple/Google'a indirildi: şifre olmayınca bu belgedeki doğrulama, sıfırlama
+> ve şifre değiştirme kararlarının konusu da ortadan kalktı. Kayıt olarak
+> duruyor çünkü **hesap silme** kararı (Karar 6) ve **hesap sayımı** gerekçesi
+> hâlâ geçerli ve 0015 onlara dayanıyor.
+
+**Kabul edilmişti:** 2026-09-14
 **İlgili:** [0004](0004-jwt-access-opaque-refresh.md) (oturumlar), [0005](0005-guest-account-upgrade.md) (misafir yükseltme), [0011](0011-inventory-and-client-integration.md) (envanter)
 
 ## Bağlam

@@ -129,49 +129,16 @@
         "description": "`installationId` gönderilmezse sunucu üretip yanıtta geri verir — istemci\nsaklayıp sonraki açılışlarda gönderir ve aynı hesaba döner. Üretimin\nsunucuda olmasının sebebi bu alanın fiilen giriş anahtarı olması: tahmin\nedilemez olmak zorunda, React Native tarafında ise güvenilir rastgelelik yok."
       }
     },
-    "/api/auth/register": {
+    "/api/auth/identity": {
       "post": {
-        "operationId": "AuthController_register",
+        "operationId": "AuthController_signInWithProvider",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/RegisterDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Sıfırdan e-postalı hesap açar.",
-        "tags": [
-          "Kimlik"
-        ],
-        "description": "Misafirken ilerleme kaydetmiş bir oyuncu için YANLIŞ uç: burası yeni ve boş\nbir hesap yaratır. O durumda `POST /auth/link` kullanılmalı."
-      }
-    },
-    "/api/auth/login": {
-      "post": {
-        "operationId": "AuthController_login",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginDto"
+                "$ref": "#/components/schemas/ProviderSignInDto"
               }
             }
           }
@@ -188,10 +155,16 @@
             }
           }
         },
-        "summary": "E-postalı hesapla giriş.",
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Apple ya da Google ile giriş — tek gerçek giriş yolu.",
         "tags": [
           "Kimlik"
-        ]
+        ],
+        "description": "Kimlik doğrulaması ŞART (public değil): çağıran her zaman oturum açmış\ndurumda, çünkü uygulama açılışta misafir hesap alıyor. Böylece bu tek uç\nüç işi birden yapıyor: misafiri yükseltmek, daha önce bağlanmış hesaba\ndönmek, ve cihaz değiştiren oyuncunun hesabını geri vermek.\n\nSağlayıcı hesabı BAŞKA bir CarDraft hesabına bağlıysa ve buradaki misafir\nhesabın ilerlemesi varsa **409** dönüyor: `force` gelmeden geçiş yok,\nyoksa oyuncunun saatleri sessizce silinirdi."
       }
     },
     "/api/auth/refresh": {
@@ -252,168 +225,6 @@
         ]
       }
     },
-    "/api/auth/link": {
-      "post": {
-        "operationId": "AuthController_link",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LinkAccountDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Misafir → gerçek hesap. Kimlik doğrulaması ŞART (public değil).",
-        "tags": [
-          "Kimlik"
-        ]
-      }
-    },
-    "/api/auth/email/verify/send": {
-      "post": {
-        "operationId": "AuthController_sendVerification",
-        "parameters": [],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "tags": [
-          "Kimlik"
-        ]
-      }
-    },
-    "/api/auth/email/verify": {
-      "post": {
-        "operationId": "AuthController_verifyEmail",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TokenDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "summary": "E-postadaki bağlantıdaki jetonu doğrular. Tek kullanımlık, 24 saat geçerli.",
-        "tags": [
-          "Kimlik"
-        ]
-      }
-    },
-    "/api/auth/password/forgot": {
-      "post": {
-        "operationId": "AuthController_forgotPassword",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ForgotPasswordDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "summary": "Şifre sıfırlama e-postası ister.",
-        "tags": [
-          "Kimlik"
-        ],
-        "description": "HER DURUMDA 204 döner — hesabın var olup olmadığı SÖYLENMEZ. Aksi halde\nsaldırgan adresleri tek tek deneyerek hangilerinin kayıtlı olduğunu\nöğrenirdi."
-      }
-    },
-    "/api/auth/password/reset": {
-      "post": {
-        "operationId": "AuthController_resetPassword",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ResetPasswordDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "summary": "Jetonla şifreyi sıfırlar ve bütün oturumları kapatır.",
-        "tags": [
-          "Kimlik"
-        ]
-      }
-    },
-    "/api/auth/password/change": {
-      "post": {
-        "operationId": "AuthController_changePassword",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ChangePasswordDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Oturum açıkken şifre değiştirir. Mevcut şifre şart; oturumlar kapanır.",
-        "tags": [
-          "Kimlik"
-        ]
-      }
-    },
     "/api/auth/account": {
       "delete": {
         "operationId": "AuthController_deleteAccount",
@@ -442,7 +253,7 @@
         "tags": [
           "Kimlik"
         ],
-        "description": "Apple App Store, hesap açmaya izin veren uygulamanın silmeye de izin\nvermesini şart koşuyor (5.1.1(v)) — yani bu bir yayın engeli, incelik\ndeğil. Silme gerçek: cüzdan, defter, koleksiyon, maçlar hepsi gidiyor."
+        "description": "Apple App Store, hesap açmaya izin veren uygulamanın silmeye de izin\nvermesini şart koşuyor (5.1.1(v)) — yayın engeli, incelik değil.\nBağlı hesapta sağlayıcıdan taze jeton isteniyor: silme geri alınamaz ve\naccess token 15 dakika yaşıyor."
       }
     },
     "/api/auth/me": {
@@ -778,13 +589,50 @@
         "type": "object",
         "properties": {}
       },
-      "RegisterDto": {
+      "ProviderSignInDto": {
         "type": "object",
-        "properties": {}
-      },
-      "LoginDto": {
-        "type": "object",
-        "properties": {}
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "APPLE",
+              "GOOGLE"
+            ]
+          },
+          "idToken": {
+            "type": "string",
+            "description": "Sağlayıcının döndürdüğü imzalı kimlik jetonu (JWT).",
+            "minLength": 20,
+            "maxLength": 4096
+          },
+          "force": {
+            "type": "boolean",
+            "description": "Bu sağlayıcı hesabı BAŞKA bir CarDraft hesabına bağlıysa, buradaki\nmisafir ilerlemesini bırakıp o hesaba geçmeyi onaylar.\n\nVarsayılan `false` ve bu bilinçli: onaysız geçiş, oyuncunun saatlerini\nsessizce silmek olurdu. Sunucu önce 409 dönüyor, istemci uyarıyor."
+          },
+          "installationId": {
+            "type": "string",
+            "description": "Uygulamanın o cihazdaki kurulumunu tanımlayan kimlik. İstemci üretir\n(expo-application / kendi ürettiği uuid) ve saklar. Donanım kimliği\nDEĞİL: iOS kalıcı donanım kimliği vermiyor, zorlamak da mağaza\npolitikalarıyla sorun yaratır.",
+            "minLength": 8,
+            "maxLength": 128
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "IOS",
+              "ANDROID"
+            ]
+          },
+          "appVersion": {
+            "type": "string",
+            "maxLength": 32
+          }
+        },
+        "required": [
+          "provider",
+          "idToken",
+          "installationId",
+          "platform"
+        ]
       },
       "RefreshDto": {
         "type": "object",
@@ -798,99 +646,19 @@
           "refreshToken"
         ]
       },
-      "LinkAccountDto": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "maxLength": 254,
-            "format": "email"
-          },
-          "password": {
-            "type": "string",
-            "minLength": 8,
-            "maxLength": 200
-          },
-          "displayName": {
-            "type": "string",
-            "maxLength": 40
-          }
-        },
-        "required": [
-          "email",
-          "password"
-        ]
-      },
-      "TokenDto": {
-        "type": "object",
-        "properties": {
-          "token": {
-            "type": "string",
-            "minLength": 20,
-            "maxLength": 200
-          }
-        },
-        "required": [
-          "token"
-        ]
-      },
-      "ForgotPasswordDto": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "maxLength": 254,
-            "format": "email"
-          }
-        },
-        "required": [
-          "email"
-        ]
-      },
-      "ResetPasswordDto": {
-        "type": "object",
-        "properties": {
-          "token": {
-            "type": "string",
-            "minLength": 20,
-            "maxLength": 200
-          },
-          "password": {
-            "type": "string",
-            "minLength": 8,
-            "maxLength": 200
-          }
-        },
-        "required": [
-          "token",
-          "password"
-        ]
-      },
-      "ChangePasswordDto": {
-        "type": "object",
-        "properties": {
-          "currentPassword": {
-            "type": "string",
-            "maxLength": 200
-          },
-          "newPassword": {
-            "type": "string",
-            "minLength": 8,
-            "maxLength": 200
-          }
-        },
-        "required": [
-          "currentPassword",
-          "newPassword"
-        ]
-      },
       "DeleteAccountDto": {
         "type": "object",
         "properties": {
-          "password": {
+          "provider": {
             "type": "string",
-            "description": "Misafir hesapta şifre yok; o yüzden opsiyonel.",
-            "maxLength": 200
+            "enum": [
+              "APPLE",
+              "GOOGLE"
+            ]
+          },
+          "idToken": {
+            "type": "string",
+            "maxLength": 4096
           }
         }
       },

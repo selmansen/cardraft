@@ -1,75 +1,75 @@
 import { IntersectionType, OmitType, PartialType, PickType } from '@nestjs/mapped-types';
-import { IsEmail, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsEnum, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 import { DeviceInfoDto } from '../../../common/dto/device-info.dto.js';
+import { IdentityProvider } from '../../../generated/prisma/enums.js';
 
 /**
  * Kimlik DTO'ları.
  *
- * Hepsi tek bir "kimlik bilgileri" tabanından türüyor. `PickType` /
- * `IntersectionType` (NestJS'in mapped-types'ı) burada tam olarak DRY için
- * var: aynı alanı iki DTO'da tanımlarsan doğrulama kuralları zamanla birbirinden
- * ayrışıyor — mesela şifre alt sınırını bir yerde 8'den 10'a çıkarıp diğerini
- * unutmak. Türetilmiş tipte bu mümkün değil, kural tek yerde.
+ * E-posta + şifre kaldırıldı: giriş yalnızca Apple ya da Google ile.
+ * Sağlayıcı hem kimliği hem e-postayı bizden daha iyi doğruluyor, ve şifre
+ * olmayınca sıfırlama/doğrulama/kaba kuvvet yüzeyleri de olmuyor.
  */
-class AuthCredentialsDto {
-  @IsEmail({}, { message: 'Geçerli bir e-posta adresi gerekli' })
-  @MaxLength(254)
-  email!: string;
-
-  @IsString()
-  // 8 karakter alt sınırı: NIST'in güncel önerisi uzunluğu karmaşıklık
-  // kurallarına (büyük harf/rakam zorunluluğu) tercih ediyor — karmaşıklık
-  // kuralları kullanıcıyı tahmin edilebilir kalıplara itiyor.
-  @MinLength(8, { message: 'Şifre en az 8 karakter olmalı' })
-  @MaxLength(200)
-  password!: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(40)
-  displayName?: string;
-}
-
-/** Kayıt: kimlik bilgileri + hangi cihazdan (ilk oturum o cihaza bağlanır). */
-export class RegisterDto extends IntersectionType(AuthCredentialsDto, DeviceInfoDto) {}
-
-/** Giriş: displayName'in burada işi yok, o yüzden sadece iki alan seçiliyor. */
-export class LoginDto extends IntersectionType(
-  PickType(AuthCredentialsDto, ['email', 'password'] as const),
-  DeviceInfoDto,
-) {}
 
 /**
  * Misafir giriş: hiç kimlik bilgisi yok, sadece cihaz.
  *
- * `installationId` burada — ve YALNIZCA burada — isteğe bağlı. Sebep güvenlik:
- * bu alan misafir hesabın fiili giriş anahtarı (bilen kişi o hesaba giriyor),
- * dolayısıyla TAHMİN EDİLEMEZ olmak zorunda. İstemci tarafında güvenilir
- * rastgelelik yok — React Native/Hermes `crypto.getRandomValues` sağlamıyor ve
- * `Math.random` bir kimlik anahtarı üretmek için uygun değil. Bu yüzden ilk
- * çağrıda alan boş gönderiliyor ve sunucu `randomUUID` ile üretip yanıtta
- * geri veriyor; istemci saklayıp sonraki çağrılarda gönderiyor.
- *
- * Alanın kuralları (uzunluk sınırları) yine `DeviceInfoDto`'dan geliyor —
- * sadece "zorunlu" olma durumu gevşetiliyor, kural kopyalanmıyor.
+ * `installationId` burada — ve yalnızca burada — isteğe bağlı. Sebep
+ * güvenlik: bu alan misafir hesabın fiili giriş anahtarı, dolayısıyla TAHMİN
+ * EDİLEMEZ olmak zorunda. İstemci tarafında güvenilir rastgelelik yok —
+ * React Native/Hermes `crypto.getRandomValues` sağlamıyor ve `Math.random`
+ * bir kimlik anahtarı üretmek için uygun değil. Bu yüzden ilk çağrıda alan
+ * boş gönderiliyor ve sunucu `randomUUID` ile üretip yanıtta geri veriyor.
  */
 export class GuestLoginDto extends IntersectionType(
   OmitType(DeviceInfoDto, ['installationId'] as const),
   PartialType(PickType(DeviceInfoDto, ['installationId'] as const)),
 ) {}
 
-/**
- * Misafir hesabı gerçek hesaba yükseltme. Cihaz bilgisi gerekmiyor: kullanıcı
- * zaten kimliği doğrulanmış olarak geliyor, hangi cihazdan olduğu access
- * token'dan biliniyor.
- */
-export class LinkAccountDto extends AuthCredentialsDto {}
+/** Apple / Google ile giriş — sağlayıcının verdiği kimlik jetonu + cihaz. */
+export class ProviderSignInDto extends DeviceInfoDto {
+  @IsEnum(IdentityProvider)
+  provider!: IdentityProvider;
+
+  /** Sağlayıcının döndürdüğü imzalı kimlik jetonu (JWT). */
+  @IsString()
+  @MinLength(20)
+  @MaxLength(4096)
+  idToken!: string;
+
+  /**
+   * Bu sağlayıcı hesabı BAŞKA bir CarDraft hesabına bağlıysa, buradaki
+   * misafir ilerlemesini bırakıp o hesaba geçmeyi onaylar.
+   *
+   * Varsayılan `false` ve bu bilinçli: onaysız geçiş, oyuncunun saatlerini
+   * sessizce silmek olurdu. Sunucu önce 409 dönüyor, istemci uyarıyor.
+   */
+  @IsOptional()
+  force?: boolean;
+}
 
 export class RefreshDto {
   @IsString()
   @MinLength(20)
   refreshToken!: string;
+}
+
+/**
+ * Hesap silme onayı. Bağlı hesapta sağlayıcıdan TAZE bir jeton isteniyor:
+ * access token 15 dakika yaşıyor ve silme geri alınamaz, telefonu kısa
+ * süreliğine eline geçiren birinin hesabı silebilmesi kabul edilemez.
+ * Misafir hesapta kimlik olmadığı için alanlar opsiyonel.
+ */
+export class DeleteAccountDto {
+  @IsOptional()
+  @IsEnum(IdentityProvider)
+  provider?: IdentityProvider;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(4096)
+  idToken?: string;
 }
 
 /** Tüm kimlik uç noktalarının ortak yanıtı. */
@@ -82,50 +82,6 @@ export interface AuthTokensDto {
     displayName: string | null;
     isGuest: boolean;
   };
-  /**
-   * Yalnızca misafir girişinde dolu: istemcinin saklaması gereken kurulum
-   * kimliği. Sunucu ürettiği için istemcinin rastgelelik kalitesine bağlı
-   * değil (bkz. GuestLoginDto).
-   */
+  /** Yalnızca misafir girişinde dolu. */
   installationId?: string;
-}
-
-/** Doğrulama ya da sıfırlama bağlantısındaki jeton. */
-export class TokenDto {
-  @IsString()
-  @MinLength(20)
-  @MaxLength(200)
-  token!: string;
-}
-
-export class ForgotPasswordDto {
-  @IsEmail({}, { message: 'Geçerli bir e-posta adresi gerekli' })
-  @MaxLength(254)
-  email!: string;
-}
-
-export class ResetPasswordDto extends TokenDto {
-  @IsString()
-  @MinLength(8, { message: 'Şifre en az 8 karakter olmalı' })
-  @MaxLength(200)
-  password!: string;
-}
-
-export class ChangePasswordDto {
-  @IsString()
-  @MaxLength(200)
-  currentPassword!: string;
-
-  @IsString()
-  @MinLength(8, { message: 'Şifre en az 8 karakter olmalı' })
-  @MaxLength(200)
-  newPassword!: string;
-}
-
-export class DeleteAccountDto {
-  /** Misafir hesapta şifre yok; o yüzden opsiyonel. */
-  @IsOptional()
-  @IsString()
-  @MaxLength(200)
-  password?: string;
 }

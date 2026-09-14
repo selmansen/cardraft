@@ -39,13 +39,21 @@ Mimari kararların gerekçeleri günlükte değil, [`docs/adr/`](docs/adr/) alt�
 
 ### Eklendi
 
-- **Hesap kurtarma akışları**: e-posta doğrulama, şifre sıfırlama, oturum
-  açıkken şifre değiştirme ve **hesap silme** (Apple App Store'un hesap
-  açmaya izin veren uygulamalardan şart koştuğu uç). Jetonlar hash'li, tek
-  kullanımlık ve süreli; şifre değişince bütün oturumlar kapanıyor.
-  E-posta bir port'un arkasında (`MailPort`) — sağlayıcı seçilmedi, bugün
-  loga yazılıyor. Bkz. ADR 0014.
-- `user_identities` tablosu: Apple/Google ile giriş için şema hazırlığı.
+- **Apple / Google ile giriş** (`POST /auth/identity`) — tek gerçek giriş yolu.
+  Tek uç üç işi yapıyor: misafiri yükseltme, geri dönüş ve cihaz değiştiren
+  oyuncunun hesabını kurtarma. Kimlik başka bir hesaba bağlıysa ve buradaki
+  misafirin ilerlemesi varsa 409 dönüyor — onaysız geçiş yok.
+- **Hesap silme** (`DELETE /auth/account`): Apple App Store'un hesap açmaya
+  izin veren uygulamalardan şart koştuğu uç. Bağlı hesapta sağlayıcıdan taze
+  jeton isteniyor. Bkz. ADR 0015.
+
+### Kaldırıldı
+
+- **E-posta + şifre girişi.** Kayıt, giriş, e-posta doğrulama, şifre
+  sıfırlama/değiştirme, `MailPort` ve `argon2` bağımlılığı gitti. Kaldırılan
+  kod kazancın küçük kısmı; asıl kazanç birlikte giden sorunlar: şifre
+  saklama sorumluluğu, kaba kuvvet, hesap sayımı, sıfırlama jetonu çalınması
+  ve bir e-posta sağlayıcısı işletme yükü.
 
 ### Güvenlik
 

@@ -2,34 +2,25 @@
 ///
 /// Misafir kullanıcı da burada normal bir User satırıdır — ayrı bir "guest"
 /// tablosu YOK. Sebebi Faz 2'nin şartı: misafirin gerçek hesaba geçişi veri
-/// kaybetmeden olmalı. Aynı satırda kalıp sadece email/passwordHash dolduğunda
+/// kaybetmeden olmalı. Aynı satırda kalıp sadece bir UserIdentity eklendiğinde
 /// bu "yükseltme" tek bir UPDATE oluyor; ayrı tablolar olsaydı tüm ilerlemeyi
-/// (koleksiyon, coin, istatistik) satır satır taşımak gerekirdi.
+/// (koleksiyon, jant, istatistik) satır satır taşımak gerekirdi.
 model User {
   id        String   @id @default(uuid()) @db.Uuid
-  /// Misafirken null; hesap yükseltmesinde dolar. Benzersiz ama opsiyonel:
-  /// Postgres'te birden fazla NULL aynı unique indekste sorun çıkarmaz.
+  /// Misafirken null; Apple/Google bağlanınca sağlayıcının bildirdiği adres
+  /// yazılır. Doğrulama alanı YOK — sağlayıcı adresi zaten doğrulamış olarak
+  /// veriyor, bizim ayrıca doğrulamamız hem gereksiz hem imkânsız.
+  /// Benzersiz ama opsiyonel: Postgres'te birden fazla NULL sorun çıkarmaz.
   email        String? @unique
-  /// argon2id hash. Asla dışarı sızmaması gereken tek alan — DTO katmanında
-  /// @Exclude ile korunuyor, sorguda select edilmiyor.
-  passwordHash String?
-  /// true olduğu sürece hesap sadece cihaza bağlı; email/şifre atandığında false.
+  /// true olduğu sürece hesap sadece cihaza bağlı; Apple/Google bağlanınca false.
   isGuest      Boolean @default(true)
   displayName  String?
 
-  /// E-posta doğrulandığı an. null = doğrulanmamış.
-  ///
-  /// Doğrulama OYUNA GİRİŞİ ENGELLEMİYOR — oyuncu kaydolur olmaz oynayabilir.
-  /// Tek işlevi şifre sıfırlamayı mümkün kılmak: doğrulanmamış bir adrese
-  /// sıfırlama bağlantısı göndermek, adresi yanlış yazan (ya da başkasının
-  /// adresini yazan) kişinin hesabını o adresin sahibine vermek demektir.
-  emailVerifiedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   refreshTokens RefreshToken[]
-  authTokens    AuthToken[]
   identities    UserIdentity[]
   devices       Device[]
   wallets       Wallet[]

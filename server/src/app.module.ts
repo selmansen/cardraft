@@ -4,7 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AppConfigModule } from './config/app-config.module.js';
 import { CacheModule } from './infrastructure/cache/cache.module.js';
 import { HealthController } from './infrastructure/health/health.controller.js';
-import { MailModule } from './infrastructure/mail/mail.module.js';
+import { IdentityModule } from './infrastructure/identity/identity.module.js';
 import { NotificationModule } from './infrastructure/notification/notification.module.js';
 import { PrismaModule } from './infrastructure/prisma/prisma.module.js';
 import { QueueModule } from './infrastructure/queue/queue.module.js';
@@ -36,7 +36,7 @@ import { UsersModule } from './modules/users/users.module.js';
     CacheModule,
     QueueModule,
     NotificationModule,
-    MailModule,
+    IdentityModule,
     // İş modülleri.
     UsersModule,
     DevicesModule,
