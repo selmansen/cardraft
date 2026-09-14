@@ -21,6 +21,24 @@ Mimari kararların gerekçeleri günlükte değil, [`docs/adr/`](docs/adr/) alt�
   gerçek Postgres ve Redis ile.
 - API belgesi ve çalıştırılabilir Postman koleksiyonu (`docs/api/`): 18 istek,
   token'ları kendi yakalayan script'lerle.
+- **OpenAPI/Swagger**: `/api/docs` arayüzü (üretimde kapalı) ve koddan üretilen
+  `docs/api/openapi.json`. Şema, controller'lardaki açıklama yorumlarından
+  besleniyor — `@ApiOperation` ile ikinci bir kopya yazılmıyor.
+- Katalog ve ödül kuralları için birim testleri (8 test): fiyatların
+  sunucuda olduğu, ödülün her zaman jant olduğu, zorlukla arttığı.
+- `npm run openapi` · `npm run postman` · `npm run check:api-docs` — belgenin
+  kodla aynı kalmasını CI'da doğrulayan kontroller.
+
+### Düzeltildi
+
+- **`GET /api/health` iki kez tanımlıymış.** Bağımlılıkları (Postgres, Redis,
+  kuyruk) gerçekten yoklayan `HealthController` zaten vardı; CI için eklenen
+  basit uç, modül sırası yüzünden onu gölgeliyordu — sağlık kontrolü
+  veritabanı düşükken bile "ok" derdi. Basit uç kaldırıldı, sürüm ve ayakta
+  kalma süresi gerçek kontrolün yanıtına taşındı.
+- Sürüm numarası `npm_package_version`'dan okunuyordu; `node dist/main` ile
+  doğrudan başlatılınca (üretimde olacağı gibi) boş gelip sessizce "0.0.0"
+  oluyordu. Artık `src/version.ts` üzerinden `package.json`'dan okunuyor.
 
 ### Değiştirildi
 
@@ -30,7 +48,7 @@ Mimari kararların gerekçeleri günlükte değil, [`docs/adr/`](docs/adr/) alt�
 
 ### Kaldırıldı
 
-- Nest iskeletinden kalan "Hello World" ucu ve testi.
+- Nest iskeletinden kalan `AppController`/`AppService` ve testi.
 
 ## [0.1.0] — 2026-09-14
 

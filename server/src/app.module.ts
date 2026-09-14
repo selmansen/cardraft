@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 
-import { AppController } from './app.controller.js';
-import { AppService } from './app.service.js';
 import { AppConfigModule } from './config/app-config.module.js';
 import { CacheModule } from './infrastructure/cache/cache.module.js';
 import { HealthController } from './infrastructure/health/health.controller.js';
@@ -45,9 +43,8 @@ import { UsersModule } from './modules/users/users.module.js';
     NotificationsModule,
     StatsModule,
   ],
-  controllers: [AppController, HealthController],
+  controllers: [HealthController],
   providers: [
-    AppService,
     // Kimlik kontrolü global: her uç nokta varsayılan olarak KAPALI, açmak
     // için @Public() gerekiyor. Bkz. common/decorators/auth.decorators.ts —
     // güvenliği unutulabilecek bir adıma değil, varsayılana bağlamak.

@@ -8,7 +8,9 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postman": "node scripts/build-postman.mjs",
+    "check:api-docs": "node scripts/check-api-docs.mjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",

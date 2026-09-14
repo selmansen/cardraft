@@ -76,7 +76,7 @@
                 "health"
               ]
             },
-            "description": "Sunucunun ayakta olduğunu, çalışan sürümü ve süreç kaç saniyedir açık olduğunu döner.\n\nBilerek public: bunu çağıran şey bir oyuncu değil, CI ve yük dengeleyici. Token isteyen bir sağlık kontrolü, dengeleyicinin sağlıklı sunucuyu ölü sanmasına yol açardı.",
+            "description": "Sunucunun durumu, çalışan sürüm, ayakta kalma süresi ve **üç altyapı bağımlılığının** (Postgres, Redis, kuyruk) gerçekten ayakta olup olmadığı.\n\nBoş bir \"200 OK\" neden yetmiyor: uygulama ayakta ama veritabanı düşmüşse yine 200 döner ve izleme sistemi her şeyin yolunda sandığı için kimse haberdar olmaz. Bağımlılıklardan biri cevap vermiyorsa `status` **degraded** olur.\n\nBilerek public: bunu çağıran şey bir oyuncu değil, CI ve yük dengeleyici. Token isteyen bir sağlık kontrolü, dengeleyicinin sağlıklı sunucuyu ölü sanmasına yol açardı.",
             "auth": {
               "type": "noauth"
             }
@@ -89,7 +89,10 @@
                 "type": "text/javascript",
                 "exec": [
                   "const json = pm.response.json();",
-                  "pm.test('Sunucu ayakta', () => pm.expect(json.status).to.eql('ok'));",
+                  "pm.test('Sunucu ve bağımlılıkları ayakta', () => {",
+                  "  pm.expect(json.status).to.eql('ok');",
+                  "  pm.expect(json.dependencies).to.deep.equal({ database: true, redis: true, queue: true });",
+                  "});",
                   "pm.test('Sürüm bildiriliyor', () => pm.expect(json.version).to.match(/^\\d+\\.\\d+\\.\\d+/));",
                   "",
                   "pm.test('200 döndü', () => pm.response.to.have.status(200));"

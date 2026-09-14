@@ -1,10 +1,13 @@
 import { Controller, Get, Query } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/auth.decorators.js';
 import type { AccessTokenPayload } from '../auth/token.service.js';
 import { LedgerQueryDto } from './dto/economy.dto.js';
 import { EconomyService } from './economy.service.js';
 
+@ApiTags('Ekonomi')
+@ApiBearerAuth('access-token')
 @Controller('economy')
 export class EconomyController {
   constructor(private readonly economy: EconomyService) {}
@@ -15,6 +18,12 @@ export class EconomyController {
     return this.economy.balances(user.sub);
   }
 
+  /**
+   * Bakiyeyi oluşturan hareketlerin dökümü: kayıt bonusu, maç ödülü, harcama.
+   *
+   * Bakiye tek başına saklanmıyor, her değişim deftere yazılıyor — "jantım neden
+   * azaldı" sorusunun cevabı ancak böyle verilebiliyor.
+   */
   @Get('ledger')
   history(@CurrentUser() user: AccessTokenPayload, @Query() query: LedgerQueryDto) {
     return this.economy.history(user.sub, query.currency, query.page, query.limit);

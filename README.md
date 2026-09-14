@@ -122,7 +122,7 @@ cp .env.example .env
 docker compose up -d
 npx prisma migrate deploy
 
-# 3. Sunucu (http://localhost:3000/api)
+# 3. Sunucu (http://localhost:3000/api · belge: /api/docs)
 npm run start:dev
 
 # 4. İstemci — ayrı terminalde, kök dizinde
@@ -146,13 +146,19 @@ npm run build            # nest build (motoru da senkronlar)
 npm test                 # birim testleri
 npm run test:e2e         # e2e (çalışan Postgres + Redis ister)
 npm run db:studio        # Prisma Studio
+npm run openapi          # docs/api/openapi.json'ı koddan yeniden üret
+```
+
+```bash
+npm run postman          # Postman koleksiyonunu üret (kök dizinde)
+npm run check:api-docs   # şema ile koleksiyon aynı uçları kapsıyor mu
 ```
 
 ## Belgeler
 
 | | |
 |---|---|
-| [API belgesi](docs/api/) | Uç noktalar + hazır Postman koleksiyonu |
+| [API belgesi](docs/api/) | Swagger arayüzü, OpenAPI şeması, Postman koleksiyonu |
 | [Geliştirme akışı](docs/gelistirme-akisi.md) | Dallar, sürümleme, yayın, CI |
 | [Mimari karar kayıtları](server/docs/adr/) | Her önemli kararın gerekçesi |
 | [Yol dokümanı](docs/cardraft-yol-dokumani.md) | Oyun tasarımı ve faz planı |

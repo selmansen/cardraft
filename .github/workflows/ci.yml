@@ -117,3 +117,16 @@ jobs:
 
       - name: e2e testleri
         run: npm run test:e2e
+
+      # Şema koddan üretiliyor; repodaki kopya eskiyse fark burada çıkar.
+      # Veritabanı gerektirmiyor (preview kipi), bu yüzden sırası serbest.
+      - name: OpenAPI şeması güncel mi
+        run: |
+          npm run openapi
+          git diff --exit-code ../docs/api/openapi.json \
+            || { echo "::error::docs/api/openapi.json eski. Çalıştır: cd server && npm run openapi"; exit 1; }
+
+      # Postman koleksiyonu elle yazıldı; şemadaki her uç noktayı kapsıyor mu.
+      - name: API belgesi tutarlı mı
+        working-directory: .
+        run: node scripts/check-api-docs.mjs

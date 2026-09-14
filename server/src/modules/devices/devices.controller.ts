@@ -1,25 +1,13 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post } from '@nestjs/common';
-import { IntersectionType } from '@nestjs/mapped-types';
-import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/auth.decorators.js';
-import { DeviceInfoDto } from '../../common/dto/device-info.dto.js';
 import type { AccessTokenPayload } from '../auth/token.service.js';
+import { RegisterDeviceDto } from './dto/device.dto.js';
 import { DevicesService } from './devices.service.js';
 
-class PushTokenDto {
-  /** FCM jetonu opsiyonel: kullanıcı bildirim iznini reddetmiş olabilir,
-   *  cihaz kaydı yine de tutulmalı (oturum listesi için). */
-  @IsOptional()
-  @IsString()
-  @MinLength(20)
-  @MaxLength(4096)
-  fcmToken?: string;
-}
-
-/** Cihaz bilgisi + push jetonu — ikisi tek istekte, ikisi de zaten tanımlı. */
-class RegisterDeviceDto extends IntersectionType(DeviceInfoDto, PushTokenDto) {}
-
+@ApiTags('Cihaz')
+@ApiBearerAuth('access-token')
 @Controller('devices')
 export class DevicesController {
   constructor(private readonly devices: DevicesService) {}
@@ -41,11 +29,18 @@ export class DevicesController {
     return device;
   }
 
+  /**
+   * Hesaba bağlı cihazlar.
+   *
+   * Son görülme zamanı burada tutuluyor; 24 saattir girmeyene gönderilen
+   * hatırlatma bildirimi bu veriye dayanıyor.
+   */
   @Get()
   list(@CurrentUser() user: AccessTokenPayload) {
     return this.devices.listForUser(user.sub);
   }
 
+  /** Cihaz kaydını ve ona bağlı push jetonunu siler. */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(

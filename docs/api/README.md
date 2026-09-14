@@ -1,15 +1,37 @@
 # CarDraft API
 
-Sunucunun bütün uç noktaları, çalıştırılabilir bir Postman koleksiyonu olarak.
+API'yi görmenin iki yolu var: tarayıcıda **Swagger arayüzü** (kurulum yok,
+şema koddan üretiliyor) ve **Postman koleksiyonu** (akışı baştan sona
+çalıştırmak için).
 
 | Dosya | |
 |---|---|
+| [`openapi.json`](openapi.json) | OpenAPI 3 şeması — **koddan üretilir**, elle düzenlenmez |
 | [`CarDraft.postman_collection.json`](CarDraft.postman_collection.json) | 18 istek, 6 klasör — token yakalama script'leriyle |
 | [`CarDraft.postman_environment.json`](CarDraft.postman_environment.json) | `baseUrl` (yerel geliştirme) |
 
 ---
 
-## Kurulum
+## Swagger arayüzü
+
+Sunucu çalışırken **http://localhost:3000/api/docs** açık. Uç noktaların
+tamamı, gövde şemaları, doğrulama kuralları ve enum değerleri orada; üstelik
+her isteği doğrudan tarayıcıdan gönderebiliyorsun.
+
+Korumalı bir ucu denemeden önce: `POST /auth/guest` çalıştır, dönen
+`accessToken`'ı sağ üstteki **Authorize** düğmesine yapıştır. Sayfayı
+yenilesen de kalır.
+
+Ham şema: `GET /api/docs-json` — ya da repodaki [`openapi.json`](openapi.json).
+
+> Arayüz **üretimde kapalı**. Şema, var olan bütün uçları ve gövde
+> biçimlerini tek sayfada listeliyor; geliştirirken tam istediğimiz şey,
+> canlıda ise saldırganın işini kolaylaştırmaktan başka işe yaramaz. Bu bir
+> güvenlik önlemi değil (güvenlik guard'larda), gereksiz bilgi vermemek.
+
+---
+
+## Postman kurulumu
 
 **1. Sunucuyu çalıştır**
 
@@ -83,7 +105,20 @@ Hepsi `/api` öneki altında.
 
 | | | |
 |---|---|---|
-| `GET` | `/health` | Sürüm + ayakta kalma süresi. Kimlik istemez. |
+| `GET` | `/health` | Bağımlılıkların durumu + sürüm + ayakta kalma süresi. Kimlik istemez. |
+
+```json
+{
+  "status": "ok",
+  "version": "0.1.0",
+  "uptimeSeconds": 1,
+  "dependencies": { "database": true, "redis": true, "queue": true }
+}
+```
+
+Bağımlılıklardan biri cevap vermezse `status` **degraded** olur. Boş bir
+"200 OK" yetmezdi: uygulama ayakta ama veritabanı düşmüşse yine 200 döner ve
+izleme sistemi her şeyin yolunda sanır.
 
 ### Kimlik — `/auth`
 
@@ -244,22 +279,49 @@ alanın beklenmedik bir yere sızmasını engelleyen ilk savunma hattı bu.
 
 ---
 
-## Koleksiyonu güncel tutmak
+## Belge nasıl güncel kalıyor
 
-Koleksiyon elle yazıldı ve **otomatik üretilmiyor** — yeni bir uç nokta
-eklediğinde buraya da eklemek gerekiyor. Kalıcı çözüm bir OpenAPI şeması
-(`@nestjs/swagger`) ve ondan üretilen koleksiyon; henüz kurulmadı.
+İki artefakt var ve ikisi de elle yazılmıyor:
 
-O gün gelene kadar pratik kontrol: koleksiyondaki istek sayısı ile
-controller'lardaki uç nokta sayısı aynı mı?
+| | Kaynağı | Üretme komutu |
+|---|---|---|
+| `openapi.json` | **Kodun kendisi** — controller'lar, DTO'lar, doğrulama kuralları ve koddaki açıklama yorumları | `cd server && npm run openapi` |
+| Postman koleksiyonu | [`scripts/build-postman.mjs`](../../scripts/build-postman.mjs) | `npm run postman` |
+
+**Neden koleksiyon şemadan türetilmiyor:** OpenAPI API'nin *yüzeyini* anlatır
+— hangi yol, hangi alan, hangi tip. Koleksiyonun değerli kısmı ise yüzey
+değil *akış*: hangi isteği önce göndereceğin, token'ın kendiliğinden
+yakalanması, gerçekten çalışan örnek gövdeler. Şemadan otomatik üretilen bir
+koleksiyonda bunların hiçbiri olmaz; elle eklenirse de ilk yeniden üretimde
+kaybolur.
+
+**O zaman ikisi nasıl ayrışmıyor:** [`scripts/check-api-docs.mjs`](../../scripts/check-api-docs.mjs)
+şemadaki her uç noktanın koleksiyonda karşılığı olduğunu (ve tersini)
+doğruluyor, CI'da her PR'da koşuyor. Yeni bir uç nokta ekleyip koleksiyona
+yazmazsan CI kırılır.
 
 ```bash
-grep -rcE "@(Get|Post|Put|Patch|Delete)\(" server/src/modules/*/*.controller.ts server/src/app.controller.ts \
-  | awk -F: '{ n += $2 } END { print n " uç nokta" }'
-node -e "const c=require('./docs/api/CarDraft.postman_collection.json'); \
-  console.log(c.item.reduce((n,f)=>n+f.item.length,0) + ' istek')"
+npm run check:api-docs
 ```
 
-> İki sayı birebir eşleşmiyor: `/auth/guest` koleksiyonda iki isteğe ayrıldı
-> (yeni kurulum / kayıtlı kurulum), çünkü ikisi farklı davranışı gösteriyor.
-> Yani beklenen fark **+1**.
+CI ayrıca `openapi.json`'ın kodla aynı olduğunu da kontrol ediyor: şemayı
+yeniden üretip `git diff --exit-code` çalıştırıyor. Yani bir uç noktayı
+değiştirip şemayı yenilemeyi unutmak da kırmızı dönüyor.
+
+### Yeni uç nokta eklerken
+
+1. Controller'a yaz ve **üstüne bir açıklama yorumu koy** — o yorum belgeye
+   ilk satırı başlık, gerisi gövde olacak şekilde geçiyor (`@ApiOperation`
+   yazmaya gerek yok, `src/swagger.ts` ayırıyor).
+2. `cd server && npm run openapi`
+3. `scripts/build-postman.mjs` içine isteği ekle, `npm run postman`
+4. `npm run check:api-docs` — yeşilse tamam.
+
+### Bilinen eksik
+
+Yanıt gövdeleri şemada `type: object` olarak görünüyor. Sebebi servislerin
+arayüz (`interface`) döndürmesi; Swagger eklentisi çalışma zamanında var
+olmayan bir tipten şema çıkaramıyor. Düzeltmek için yanıtların da sınıf
+olarak tanımlanması gerekiyor — yapılacak, ama istek gövdelerinin doğru
+olması daha önemliydi: yanlış gönderilen istek hata verir, yanlış belgelenen
+yanıt ise sessizce yanlış kod yazdırır.

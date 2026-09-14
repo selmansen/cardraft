@@ -39,10 +39,14 @@ describe('Açılış zinciri (e2e)', () => {
     await app.close();
   });
 
-  it('GET /api/health — token istemeden ayakta olduğunu söyler', async () => {
+  it('GET /api/health — token istemeden bağımlılıkların durumunu söyler', async () => {
     const res = await request(server).get('/api/health').expect(200);
 
+    // Üçünün de ayakta olması bekleniyor: bu test zaten gerçek Postgres ve
+    // Redis ile koşuyor. Biri düşükse "degraded" gelir ve test kırılır —
+    // istenen de bu, çünkü o durumda sunucu gerçekten iş göremez durumdadır.
     expect(res.body.status).toBe('ok');
+    expect(res.body.dependencies).toEqual({ database: true, redis: true, queue: true });
     expect(res.body.version).toMatch(/^\d+\.\d+\.\d+/);
   });
 
