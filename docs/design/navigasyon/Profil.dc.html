@@ -1,0 +1,128 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700;900&display=swap">
+  <style>
+    body { margin: 0; background: #FBF7F0; }
+    a { color: #2E62C8; } a:hover { color: #1E4FB0; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div style="width: 402px; height: 874px; background: #FBF7F0; font-family: Nunito, system-ui, sans-serif; color: #1E2436; display: flex; flex-direction: column; overflow: hidden;">
+
+  <h1 style="margin: 16px 16px 0 16px; font: 800 26px/32px 'Baloo 2', sans-serif;">Profil</h1>
+
+  <div style="flex-grow: 1; overflow: hidden; padding: 14px 16px 0 16px; display: flex; flex-direction: column; gap: 12px;">
+
+    <!-- Hesap durumu en üstte: "kimim ve verim güvende mi" sorusu. -->
+    <div style="background: #FFFFFF; border: 1px solid #EBE3D6; border-radius: 20px; padding: 16px; box-shadow: 0 4px 12px rgba(30,36,54,0.05);">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 48px; height: 48px; border-radius: 999px; background: #DCE9FF; display: flex; align-items: center; justify-content: center;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2E62C8" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"></path></svg>
+        </div>
+        <div style="flex-grow: 1;">
+          <div style="font: 700 17px/21px 'Baloo 2', sans-serif;">Sürücü</div>
+          <div style="display: flex; align-items: center; gap: 5px; margin-top: 2px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="#1E2436"><path d="M16.4 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.7.8-3.4.8-.7 0-1.8-.8-3-.8-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.3 2.9 2.3 1.2 0 1.6-.7 3-.7 1.4 0 1.8.7 3 .7 1.2 0 2-1.1 2.8-2.2.9-1.3 1.3-2.5 1.3-2.6-.1 0-2.6-1-2.6-3.8z"/></svg>
+            <span style="font: 700 13px/18px Nunito, sans-serif; color: #137A40;">Apple ile bağlı</span>
+          </div>
+        </div>
+        <div style="padding: 5px 10px; border-radius: 999px; background: #F3EEE4;">
+          <span style="font: 900 11px/14px Nunito, sans-serif; letter-spacing: 0.3px; color: #137A40;">GÜVENDE</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- İstatistikler: sunucudan geliyor, lig sistemi de bunlara dayanacak. -->
+    <div style="display: flex; gap: 8px;">
+      <div style="flex-grow: 1; padding: 13px 0; background: #FFFFFF; border: 1px solid #EBE3D6; border-radius: 16px; text-align: center;">
+        <div style="font: 800 22px/26px 'Baloo 2', sans-serif;">47</div>
+        <div style="font: 700 11px/14px Nunito, sans-serif; color: #6B7285;">Maç</div>
+      </div>
+      <div style="flex-grow: 1; padding: 13px 0; background: #FFFFFF; border: 1px solid #EBE3D6; border-radius: 16px; text-align: center;">
+        <div style="font: 800 22px/26px 'Baloo 2', sans-serif; color: #137A40;">29</div>
+        <div style="font: 700 11px/14px Nunito, sans-serif; color: #6B7285;">Galibiyet</div>
+      </div>
+      <div style="flex-grow: 1; padding: 13px 0; background: #FFFFFF; border: 1px solid #EBE3D6; border-radius: 16px; text-align: center;">
+        <div style="font: 800 22px/26px 'Baloo 2', sans-serif; color: #B35C00;">5</div>
+        <div style="font: 700 11px/14px Nunito, sans-serif; color: #6B7285;">En iyi seri</div>
+      </div>
+    </div>
+
+    <!-- Menüden taşınanlar burada topladı: yardım ve ayarlar. -->
+    <div style="background: #FFFFFF; border: 1px solid #EBE3D6; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 12px rgba(30,36,54,0.05);">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 15px 16px; border-bottom: 1px solid #EBE3D6;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7285" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.2 9.2a3 3 0 0 1 5.6 1.3c0 2-3 2.4-3 4"></path><line x1="12" y1="17.2" x2="12" y2="17.3"></line></svg>
+        <span style="flex-grow: 1; font: 700 15px/20px Nunito, sans-serif;">Nasıl oynanır?</span>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#A0A6B5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 15px 16px; border-bottom: 1px solid #EBE3D6;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7285" stroke-width="2" stroke-linecap="round"><path d="M11 5L6 9H3v6h3l5 4z"></path><path d="M16 9a4 4 0 0 1 0 6"></path><path d="M19 6.5a7.5 7.5 0 0 1 0 11"></path></svg>
+        <span style="flex-grow: 1; font: 700 15px/20px Nunito, sans-serif;">Ses</span>
+        <div style="width: 44px; height: 26px; border-radius: 999px; background: #3A7BF0; padding: 3px; display: flex; justify-content: flex-end;">
+          <div style="width: 20px; height: 20px; border-radius: 999px; background: #FFFFFF;"></div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 15px 16px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7285" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"></path></svg>
+        <span style="flex-grow: 1; font: 700 15px/20px Nunito, sans-serif;">Turu otomatik bitir</span>
+        <div style="width: 44px; height: 26px; border-radius: 999px; background: #3A7BF0; padding: 3px; display: flex; justify-content: flex-end;">
+          <div style="width: 20px; height: 20px; border-radius: 999px; background: #FFFFFF;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tehlikeli işlemler ayrı blokta ve en altta. Hesap silme, App Store'un
+         şart koştuğu uç — uygulama içinden erişilebilir olmak zorunda. -->
+    <div style="background: #FFFFFF; border: 1px solid #EBE3D6; border-radius: 20px; overflow: hidden;">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 15px 16px; border-bottom: 1px solid #EBE3D6;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7285" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
+        <span style="flex-grow: 1; font: 700 15px/20px Nunito, sans-serif;">Çıkış yap</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 15px 16px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C22C29" stroke-width="2" stroke-linecap="round"><path d="M4 7h16"></path><path d="M9 7V5h6v2"></path><path d="M6 7l1 13h10l1-13"></path></svg>
+        <span style="flex-grow: 1; font: 700 15px/20px Nunito, sans-serif; color: #C22C29;">Hesabı sil</span>
+      </div>
+    </div>
+
+    <p style="margin: 0; font: 600 12px/16px Nunito, sans-serif; color: #A0A6B5; text-align: center;">CarDraft 0.2.0</p>
+  </div>
+
+  <div style="position: relative; height: 78px; background: #FFFFFF; border-top: 1px solid #EBE3D6; display: flex; align-items: flex-start; padding-top: 10px;">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A0A6B5" stroke-width="2" stroke-linejoin="round"><path d="M3 10l3-5h12l3 5v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"></path><path d="M3 10h18"></path><circle cx="8" cy="15" r="1.5"></circle></svg>
+      <span style="font: 700 11px/14px Nunito, sans-serif; color: #A0A6B5;">Garaj</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A0A6B5" stroke-width="2" stroke-linejoin="round"><path d="M4 8h16l-1.2 11a1 1 0 0 1-1 .9H6.2a1 1 0 0 1-1-.9z"></path><path d="M9 8V6a3 3 0 0 1 6 0v2"></path></svg>
+      <span style="font: 700 11px/14px Nunito, sans-serif; color: #A0A6B5;">Mağaza</span>
+    </div>
+    <div style="width: 84px;"></div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A0A6B5" stroke-width="2" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0z"></path><path d="M7 6H4v2a3 3 0 0 0 3 3"></path><path d="M17 6h3v2a3 3 0 0 1-3 3"></path><path d="M12 14v4"></path><path d="M8.5 20h7"></path></svg>
+      <span style="font: 700 11px/14px Nunito, sans-serif; color: #A0A6B5;">Lig</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2E62C8" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"></path></svg>
+      <span style="font: 900 11px/14px Nunito, sans-serif; color: #2E62C8;">Profil</span>
+    </div>
+    <div style="position: absolute; left: 50%; top: -16px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 3px;">
+      <div style="background: #1E4FB0; border-radius: 999px;">
+        <div style="width: 62px; height: 62px; margin-bottom: 4px; border-radius: 999px; background: #3A7BF0; border: 3px solid #FFFFFF; display: flex; align-items: center; justify-content: center;">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8z"></path></svg>
+        </div>
+      </div>
+      <span style="font: 700 11px/14px Nunito, sans-serif; color: #A0A6B5;">OYNA</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

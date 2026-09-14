@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700;900&display=swap">
+  <style>
+    body { margin: 0; background: #FBF7F0; }
+    a { color: #2E62C8; } a:hover { color: #1E4FB0; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div style="width: 402px; height: 874px; background: #EDE7DA; font-family: Nunito, system-ui, sans-serif; color: #1E2436; position: relative; overflow: hidden;">
+
+  <!-- Arkada savaş ekranı: maç bitti, üstüne sonuç geldi. -->
+  <div style="padding: 20px 16px; opacity: .35;">
+    <div style="height: 44px; border-radius: 999px; background: #FFFFFF;"></div>
+    <div style="margin-top: 16px; display: flex; gap: 8px; justify-content: center;">
+      <div style="width: 92px; height: 122px; border-radius: 14px; background: #FFFFFF;"></div>
+      <div style="width: 92px; height: 122px; border-radius: 14px; background: #FFFFFF;"></div>
+    </div>
+    <div style="margin-top: 40px; display: flex; gap: 8px; justify-content: center;">
+      <div style="width: 92px; height: 122px; border-radius: 14px; background: #FFFFFF;"></div>
+      <div style="width: 92px; height: 122px; border-radius: 14px; background: #FFFFFF;"></div>
+      <div style="width: 92px; height: 122px; border-radius: 14px; background: #FFFFFF;"></div>
+    </div>
+  </div>
+
+  <div style="position: absolute; inset: 0; background: rgba(16,18,28,0.64);"></div>
+
+  <!-- SONUÇ — misafir hâli -->
+  <div style="position: absolute; left: 16px; right: 16px; top: 50%; transform: translateY(-50%); background: #FFFFFF; border-radius: 28px; padding: 24px 20px 20px 20px; box-shadow: 0 10px 24px rgba(30,36,54,0.16);">
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+      <div style="width: 64px; height: 64px; border-radius: 999px; background: #2FBF6B; display: flex; align-items: center; justify-content: center; margin-bottom: 4px;">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 13 10 18 19 6"></polyline></svg>
+      </div>
+      <div style="font: 800 30px/34px 'Baloo 2', sans-serif; color: #1E2436;">Kazandın!</div>
+      <div style="font: 700 13px/18px Nunito, sans-serif; color: #6B7285;">9 turda bitti · Normal</div>
+    </div>
+
+    <!-- Kaçırılan ödül. Rakam GERÇEK: sunucu o maçın ne ettiğini biliyor,
+         uydurma bir sayı değil. Gri gösteriliyor — kazanılmış gibi
+         durmaması gerekiyor. -->
+    <div style="margin-top: 18px; padding: 15px 16px; background: #F3EEE4; border-radius: 18px; display: flex; align-items: center; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 5px; opacity: .5;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7285" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3.5"></circle></svg>
+        <span style="font: 800 24px/28px 'Baloo 2', sans-serif; color: #6B7285; text-decoration: line-through;">170</span>
+      </div>
+      <div style="flex-grow: 1; font: 700 13px/18px Nunito, sans-serif; color: #4A5266;">
+        Giriş yapsaydın <strong style="font-weight: 900;">170 jant</strong> kazanacaktın
+      </div>
+    </div>
+
+    <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 10px;">
+      <div style="background: #1E4FB0; border-radius: 999px;">
+        <div style="height: 52px; margin-bottom: 4px; background: #3A7BF0; border-radius: 999px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><path d="M10 17l5-5-5-5"></path><path d="M15 12H3"></path></svg>
+          <span style="font: 900 15px/20px Nunito, sans-serif; letter-spacing: 0.2px; color: #FFFFFF;">Giriş yap ve kazan</span>
+        </div>
+      </div>
+      <!-- Vazgeçme yolu AÇIK ve utandırıcı değil. Bir kez seçilirse bu şerit
+           bir daha çıkmıyor — aynı soruyu her maçta sormak, cevabı hayır olan
+           oyuncuyu oyundan kovmanın yolu. -->
+      <div style="height: 44px; display: flex; align-items: center; justify-content: center;">
+        <span style="font: 700 14px/19px Nunito, sans-serif; color: #6B7285;">Misafir olarak devam et</span>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
