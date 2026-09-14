@@ -1,9 +1,11 @@
-import { ConflictException, Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 
-import { IdentityProvider } from '../../generated/prisma/enums.js';
+import { CurrencyCode, IdentityProvider, LedgerReason } from '../../generated/prisma/enums.js';
 import { IDENTITY_VERIFIER, type IdentityVerifier } from '../../infrastructure/identity/identity.port.js';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service.js';
 import { DevicesService } from '../devices/devices.service.js';
+import { EconomyService } from '../economy/economy.service.js';
+import { SIGNUP_BONUS_RIM } from '../economy/reward.rules.js';
 import type { DeviceInfoDto } from '../../common/dto/device-info.dto.js';
 import type { AuthTokensDto } from './dto/auth.dto.js';
 import { TokenService } from './token.service.js';
@@ -28,6 +30,7 @@ export class IdentityService {
     private readonly prisma: PrismaService,
     private readonly tokens: TokenService,
     private readonly devices: DevicesService,
+    private readonly economy: EconomyService,
     @Inject(IDENTITY_VERIFIER) private readonly verifier: IdentityVerifier,
   ) {}
 
@@ -48,7 +51,6 @@ export class IdentityService {
     provider: IdentityProvider,
     idToken: string,
     device: DeviceInfoDto,
-    force = false,
   ): Promise<AuthTokensDto> {
     const verified = await this.verifier.verify(provider, idToken);
 
@@ -57,20 +59,26 @@ export class IdentityService {
       select: { userId: true },
     });
 
-    // 1 & 3 — kimlik zaten kayıtlı.
+    // 1 & 3 — kimlik zaten kayıtlı: o hesaba geçiliyor.
+    //
+    // Onay sorulmuyor ve sorulması da gerekmiyor: misafir hesapta cüzdan 0 ve
+    // koleksiyon yalnızca başlangıç kartlarından ibaret, yani geride bırakılan
+    // bir şey yok. Bu, misafirin hiçbir şey biriktirmemesi kararının doğrudan
+    // kazancı — bir onay diyaloğu, bir `force` bayrağı ve iki hesabı
+    // birleştirme sorusu birden ortadan kalkıyor.
     if (existing) {
       if (existing.userId !== userId) {
-        if (!force && (await this.hasProgress(userId))) {
-          throw new ConflictException(
-            'Bu hesap başka bir CarDraft hesabına bağlı. O hesaba geçersen buradaki ilerlemen kaybolur.',
-          );
-        }
-        this.logger.log(`Hesap devralındı: ${userId} → ${existing.userId}`);
+        this.logger.log(`Hesaba dönüldü: ${userId} (misafir) → ${existing.userId}`);
       }
       return this.issueFor(existing.userId, device);
     }
 
-    // 2 — yeni kimlik, mevcut hesaba bağlanıyor.
+    // 2 — yeni kimlik, mevcut misafir hesaba bağlanıyor.
+    const wasGuest = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { isGuest: true },
+    });
+
     await this.prisma.$transaction(async (tx) => {
       await tx.userIdentity.create({
         data: { userId, provider, subject: verified.subject, email: verified.email },
@@ -87,22 +95,25 @@ export class IdentityService {
       });
     });
 
+    /**
+     * Hoş geldin hediyesi — hesap ilk kez bağlandığında.
+     *
+     * `idempotencyKey` sayesinde ikinci bir sağlayıcı bağlayan oyuncu bonusu
+     * tekrar almıyor; defter zaten aynı anahtarla ikinci kayıt kabul etmiyor.
+     */
+    if (wasGuest?.isGuest) {
+      await this.economy.move({
+        userId,
+        currency: CurrencyCode.RIM,
+        amount: SIGNUP_BONUS_RIM,
+        reason: LedgerReason.SIGNUP_BONUS,
+        idempotencyKey: `signup:${userId}`,
+      });
+    }
+
     return this.issueFor(userId, device);
   }
 
-  /**
-   * Hesabın kaybedilecek bir şeyi var mı?
-   *
-   * Başlangıç kartları ve kayıt bonusu sayılmıyor — onlar her hesapta var ve
-   * "ilerleme" değil. Ölçüt: oynanmış maç ya da sonradan edinilmiş kart.
-   */
-  private async hasProgress(userId: string): Promise<boolean> {
-    const [stats, acquired] = await Promise.all([
-      this.prisma.userStats.findUnique({ where: { userId }, select: { battlesPlayed: true } }),
-      this.prisma.ownedCard.count({ where: { userId, source: { not: 'STARTER' } } }),
-    ]);
-    return (stats?.battlesPlayed ?? 0) > 0 || acquired > 0;
-  }
 
   private async issueFor(userId: string, info: DeviceInfoDto): Promise<AuthTokensDto> {
     const user = await this.prisma.user.findUniqueOrThrow({

@@ -94,34 +94,70 @@ describe('Sağlayıcı girişi (e2e)', () => {
     expect(res.body.user.id).toBe(first.user.id);
   });
 
-  it('ilerlemesi olan misafir, başkasının hesabına sessizce geçemiyor', async () => {
-    const subject = `google-cakisma-${Date.now()}`;
-    const owner = await guest();
-    await request(server)
+  it('misafirin cüzdanı 0, giriş yapınca hoş geldin hediyesi geliyor', async () => {
+    const user = await guest();
+
+    // Misafirlik bir deneme: oynanabiliyor ama hiçbir şey birikmiyor.
+    const before = await request(server)
+      .get('/api/economy/wallet')
+      .set('Authorization', `Bearer ${user.accessToken}`)
+      .expect(200);
+    expect(before.body.find((b: { currency: string }) => b.currency === 'RIM')?.balance ?? 0).toBe(0);
+
+    const linked = await request(server)
       .post('/api/auth/identity')
-      .set('Authorization', `Bearer ${owner.accessToken}`)
-      .send({ provider: 'GOOGLE', idToken: `sahte:${subject}`, ...device('o') })
+      .set('Authorization', `Bearer ${user.accessToken}`)
+      .send({ provider: 'GOOGLE', idToken: `sahte:hediye-${Date.now()}`, ...device('h') })
       .expect(200);
 
-    const other = await guest();
-    // Bu misafirin ilerlemesi var: onaysız geçiş saatlerini silmek olurdu.
-    await prisma.ownedCard.create({
-      data: { userId: other.user.id, cardId: 'apex-meridian', kind: 'VEHICLE', source: 'PURCHASE' },
-    });
+    const after = await request(server)
+      .get('/api/economy/wallet')
+      .set('Authorization', `Bearer ${linked.body.accessToken}`)
+      .expect(200);
+    // Hediye ilk paketi tam karşılıyor — "paketler aç" vaadi giriş biter
+    // bitmez kullanılabilir olmalı.
+    expect(after.body.find((b: { currency: string }) => b.currency === 'RIM').balance).toBe(350);
+  });
+
+  it('misafir paket açamıyor ve kart alamıyor', async () => {
+    const user = await guest();
+    const auth = `Bearer ${user.accessToken}`;
+
+    // Arayüzde düğmeyi gizlemek görgü kuralı, koruma değil: uçlar doğrudan
+    // çağrılabilir. Mesaj da "yetersiz bakiye" değil — o yanlış sebebi söyler
+    // ve oyuncuyu jant aramaya iter, oysa yapması gereken giriş yapmak.
+    const pack = await request(server)
+      .post('/api/store/packs/basic/open')
+      .set('Authorization', auth)
+      .send({ requestId: crypto.randomUUID() })
+      .expect(403);
+    expect(pack.body.message).toContain('giriş yapman');
 
     await request(server)
-      .post('/api/auth/identity')
-      .set('Authorization', `Bearer ${other.accessToken}`)
-      .send({ provider: 'GOOGLE', idToken: `sahte:${subject}`, ...device('x') })
-      .expect(409);
+      .post('/api/inventory/unlock')
+      .set('Authorization', auth)
+      .send({ cardId: 'nocturne-coupe', currency: 'RIM' })
+      .expect(403);
+  });
 
-    // Onay verilince geçiş yapılıyor.
-    const forced = await request(server)
+  it('ikinci sağlayıcı bağlanınca hediye tekrar verilmiyor', async () => {
+    const user = await guest();
+    let auth = `Bearer ${user.accessToken}`;
+    const first = await request(server)
       .post('/api/auth/identity')
-      .set('Authorization', `Bearer ${other.accessToken}`)
-      .send({ provider: 'GOOGLE', idToken: `sahte:${subject}`, force: true, ...device('x') })
+      .set('Authorization', auth)
+      .send({ provider: 'APPLE', idToken: `sahte:ilk-${Date.now()}`, ...device('i') })
       .expect(200);
-    expect(forced.body.user.id).toBe(owner.user.id);
+
+    auth = `Bearer ${first.body.accessToken}`;
+    await request(server)
+      .post('/api/auth/identity')
+      .set('Authorization', auth)
+      .send({ provider: 'GOOGLE', idToken: `sahte:ikinci-${Date.now()}`, ...device('i') })
+      .expect(200);
+
+    const wallet = await request(server).get('/api/economy/wallet').set('Authorization', auth).expect(200);
+    expect(wallet.body.find((b: { currency: string }) => b.currency === 'RIM').balance).toBe(350);
   });
 
   it('bağlı hesap doğrulamasız silinemiyor', async () => {

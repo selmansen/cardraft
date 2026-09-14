@@ -57,9 +57,9 @@ export class AuthController {
    * üç işi birden yapıyor: misafiri yükseltmek, daha önce bağlanmış hesaba
    * dönmek, ve cihaz değiştiren oyuncunun hesabını geri vermek.
    *
-   * Sağlayıcı hesabı BAŞKA bir CarDraft hesabına bağlıysa ve buradaki misafir
-   * hesabın ilerlemesi varsa **409** dönüyor: `force` gelmeden geçiş yok,
-   * yoksa oyuncunun saatleri sessizce silinirdi.
+   * Onay diyaloğu YOK: misafir hesapta cüzdan 0 ve koleksiyon yalnızca
+   * başlangıç kartları, yani geride bırakılan bir şey yok. Misafirin hiçbir
+   * şey biriktirmemesi kararının doğrudan kazancı bu.
    */
   @RateLimit(20, 60)
   @ApiBearerAuth('access-token')
@@ -69,7 +69,7 @@ export class AuthController {
     @CurrentUser() user: AccessTokenPayload,
     @Body() dto: ProviderSignInDto,
   ): Promise<AuthTokensDto> {
-    return this.identity.signIn(user.sub, dto.provider, dto.idToken, dto, dto.force ?? false);
+    return this.identity.signIn(user.sub, dto.provider, dto.idToken, dto);
   }
 
   /**

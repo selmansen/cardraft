@@ -29,3 +29,4 @@ dokümanlar yazılmaz ve okunmaz; bu dosyalar bir sayfayı geçmemeli.
 | [0013](0013-store-pack-opening.md) | Paket açma: çekiliş sunucuda, tekrar koruması istemcinin kimliğiyle |
 | [0014](0014-account-recovery-and-deletion.md) | ~~Hesap kurtarma: e-posta doğrulama, şifre sıfırlama~~ → 0015 |
 | [0015](0015-provider-only-auth.md) | Tek giriş yolu: Apple / Google; hesap silme sağlayıcıyla doğrulanıyor |
+| [0016](0016-guest-is-a-demo.md) | Misafirlik bir deneme: cüzdan 0, ilerleme yok, hediye girişte |

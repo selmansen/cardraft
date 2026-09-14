@@ -4,11 +4,8 @@ import { randomUUID } from 'node:crypto';
 import type { DeviceInfoDto } from '../../common/dto/device-info.dto.js';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service.js';
 import { DevicesService } from '../devices/devices.service.js';
-import { EconomyService } from '../economy/economy.service.js';
 import { InventoryService } from '../inventory/inventory.service.js';
-import { SIGNUP_BONUS_RIM } from '../economy/reward.rules.js';
 import { UsersService } from '../users/users.service.js';
-import { CurrencyCode, LedgerReason } from '../../generated/prisma/enums.js';
 import type { AuthTokensDto, GuestLoginDto } from './dto/auth.dto.js';
 import { TokenService } from './token.service.js';
 
@@ -27,7 +24,6 @@ export class AuthService {
     private readonly users: UsersService,
     private readonly devices: DevicesService,
     private readonly tokens: TokenService,
-    private readonly economy: EconomyService,
     private readonly inventory: InventoryService,
   ) {}
 
@@ -41,15 +37,6 @@ export class AuthService {
    * Idempotency anahtarı kullanıcı kimliği: aynı hesaba ikinci kez bonus
    * yazılması veritabanı seviyesinde imkânsız.
    */
-  private async grantSignupBonus(userId: string): Promise<void> {
-    await this.economy.move({
-      userId,
-      currency: CurrencyCode.RIM,
-      amount: SIGNUP_BONUS_RIM,
-      reason: LedgerReason.SIGNUP_BONUS,
-      idempotencyKey: `signup:${userId}`,
-    });
-  }
 
   /**
    * Misafir giriş.
@@ -92,7 +79,9 @@ export class AuthService {
       data: { isGuest: true },
       select: { id: true, email: true, displayName: true, isGuest: true },
     });
-    await this.grantSignupBonus(user.id);
+    // Hoş geldin hediyesi BURADA verilmiyor: misafirin cüzdanı 0. Başlangıç
+    // kartları veriliyor çünkü onlarsız maça çıkılamıyor — onlar bir kazanım
+    // değil, denemenin kendisi.
     await this.inventory.grantStarters(user.id);
     const device = await this.devices.register(user.id, info);
     return { ...(await this.tokens.issue(user, device.id)), installationId };

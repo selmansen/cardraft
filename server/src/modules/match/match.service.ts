@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, Logger, NotFoundException } from '@nes
 import { randomUUID } from 'node:crypto';
 
 import type { LoadoutEntry } from '../../game-engine/game/battleEngine.js';
-import { MatchStatus } from '../../generated/prisma/enums.js';
+import { CurrencyCode, MatchStatus } from '../../generated/prisma/enums.js';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service.js';
 import { BattleRewardService } from '../economy/battle-reward.service.js';
 import { InventoryService } from '../inventory/inventory.service.js';
@@ -178,12 +178,24 @@ export class MatchService {
     // İkisi de SUNUCUNUN hesapladığı sonuca göre: önce istatistik (bir sonraki
     // maçın bot seviyesini bu belirleyecek), sonra ödül.
     const stats = await this.stats.recordBattle(userId, result.won);
-    const { amount: reward, balance } = await this.rewards.grant(
-      userId,
-      match.id,
-      result.won,
-      match.difficulty as Difficulty,
-    );
+
+    /**
+     * MİSAFİR JANT KAZANMAZ — ama maçı yine de doğrulanıyor ve sayılıyor.
+     *
+     * İstatistiğin tutulması şart: bot ölçeklemesi `battlesWon`'a bakıyor ve
+     * "kaç maç oynadın" sayacı, giriş teklifinin ne zaman çıkacağını da
+     * belirliyor. Ödülün verilmemesi ise misafirliğin tanımı: deneme var,
+     * ilerleme yok.
+     */
+    const guest = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { isGuest: true },
+    });
+
+    const granted = guest?.isGuest
+      ? { amount: 0, balance: { currency: CurrencyCode.RIM, balance: 0 } }
+      : await this.rewards.grant(userId, match.id, result.won, match.difficulty as Difficulty);
+    const { amount: reward, balance } = granted;
     /**
      * `reward` yanıtta: istemci ödülü KENDİ hesaplamasın.
      *

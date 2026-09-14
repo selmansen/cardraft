@@ -1,6 +1,7 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+import { AccountRequired } from '../../common/decorators/account-required.decorator.js';
 import { CurrentUser } from '../../common/decorators/auth.decorators.js';
 import type { AccessTokenPayload } from '../auth/token.service.js';
 import { OpenPackDto } from './dto/store.dto.js';
@@ -32,6 +33,7 @@ export class StoreController {
    * cevabı kaybolan bir isteğin oyuncudan iki kez para düşürmesini
    * engelleyen tek şey bu.
    */
+  @AccountRequired()
   @Post('packs/:id/open')
   @HttpCode(HttpStatus.OK)
   open(
