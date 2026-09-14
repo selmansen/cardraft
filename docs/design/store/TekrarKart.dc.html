@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700;900&display=swap">
+  <style>
+    body { margin: 0; background: #FBF7F0; }
+    a { color: #2E62C8; } a:hover { color: #1E4FB0; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div style="width: 402px; height: 874px; background: #FBF7F0; font-family: Nunito, system-ui, sans-serif; color: #1E2436; display: flex; flex-direction: column; align-items: center; padding: 0 16px; overflow: hidden;">
+
+  <!-- Kutlama YOK: tekrar çıkan kart iyi haber değil, dürüst bir sonuç. -->
+  <div style="margin-top: 54px; display: flex; flex-direction: column; align-items: center; gap: 5px;">
+    <div style="display: flex; align-items: center; gap: 6px; padding: 5px 13px; border-radius: 999px; background: #F3EEE4;">
+      <span style="font: 900 12px/16px Nunito, sans-serif; letter-spacing: 0.6px; color: #6B7285;">ZATEN SENDE</span>
+    </div>
+    <div style="font: 800 26px/32px 'Baloo 2', sans-serif; color: #1E2436;">Jant olarak geri döndü</div>
+  </div>
+
+  <!-- Kart soluk: sahip olunan kart, kazanım değil -->
+  <div style="margin-top: 22px; width: 178px; opacity: 0.72; background: #FFFFFF; border: 3px solid #3A7BF0; border-radius: 24px; overflow: hidden; box-shadow: 0 4px 12px rgba(30,36,54,0.05);">
+    <div style="position: relative; height: 122px; background: #DCE9FF; display: flex; align-items: center; justify-content: center;">
+      <svg width="100" height="62" viewBox="0 0 120 72" fill="none">
+        <path d="M22 46c-4 0-7-3-7-7l3-11c1-3 3-5 6-5h20l12-9h22c4 0 7 2 9 5l7 13c4 1 7 4 7 7v7c0 2-2 4-4 4H22z" fill="#FFFFFF" stroke="#2E62C8" stroke-width="2.5" stroke-linejoin="round"/>
+        <circle cx="34" cy="50" r="8" fill="#FFFFFF" stroke="#2E62C8" stroke-width="2.5"/>
+        <circle cx="82" cy="50" r="8" fill="#FFFFFF" stroke="#2E62C8" stroke-width="2.5"/>
+      </svg>
+      <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(251,247,240,0.55);">
+        <div style="width: 44px; height: 44px; border-radius: 999px; background: #FFFFFF; border: 2px solid #EBE3D6; display: flex; align-items: center; justify-content: center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#137A40" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 13 10 18 19 6"></polyline></svg>
+        </div>
+      </div>
+    </div>
+    <div style="padding: 11px 12px 13px 12px; display: flex; flex-direction: column; gap: 7px;">
+      <div style="font: 700 16px/20px 'Baloo 2', sans-serif; color: #1E2436;">Nocturne Coupe</div>
+      <div style="display: flex; align-items: center; gap: 5px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="#3A7BF0"><path d="M12 2l3 6.5 7 .9-5 4.9 1.2 7L12 18l-6.2 3.3L7 14.3l-5-4.9 7-.9z"/></svg>
+        <span style="font: 700 12px/16px Nunito, sans-serif; letter-spacing: 0.5px; color: #2E62C8;">NADİR</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- İade: tek büyük rakam, hesabı da görünsün -->
+  <div style="margin-top: 24px; width: 100%; padding: 18px 16px; background: #FFFFFF; border: 2px solid #2FBF6B; border-radius: 20px; display: flex; flex-direction: column; align-items: center; gap: 4px; box-shadow: 0 4px 12px rgba(30,36,54,0.05);">
+    <div style="display: flex; align-items: center; gap: 7px;">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#137A40" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3.5"></circle></svg>
+      <span style="font: 800 34px/38px 'Baloo 2', sans-serif; color: #137A40;">+150</span>
+    </div>
+    <span style="font: 700 13px/18px Nunito, sans-serif; color: #6B7285;">600 jant değerinin %25'i</span>
+  </div>
+
+  <div style="margin-top: 14px; width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #F3EEE4; border-radius: 16px;">
+    <span style="font: 700 13px/18px Nunito, sans-serif; color: #4A5266;">Yeni bakiyen</span>
+    <div style="display: flex; align-items: center; gap: 5px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2E62C8" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3.5"></circle></svg>
+      <span style="font: 800 17px/20px 'Baloo 2', sans-serif; color: #1E2436;">1040</span>
+    </div>
+  </div>
+
+  <div style="margin-top: auto; margin-bottom: 30px; width: 100%; display: flex; flex-direction: column; gap: 10px;">
+    <div style="background: #1E4FB0; border-radius: 999px;">
+      <div style="height: 52px; margin-bottom: 4px; background: #3A7BF0; border-radius: 999px; display: flex; align-items: center; justify-content: center; gap: 7px;">
+        <span style="font: 900 15px/20px Nunito, sans-serif; letter-spacing: 0.2px; color: #FFFFFF;">Bir tane daha aç · 350</span>
+      </div>
+    </div>
+    <div style="background: #DCE9FF; border-radius: 999px;">
+      <div style="height: 52px; margin-bottom: 4px; background: #FFFFFF; border: 2px solid #DCE9FF; border-radius: 999px; display: flex; align-items: center; justify-content: center;">
+        <span style="font: 900 15px/20px Nunito, sans-serif; letter-spacing: 0.2px; color: #2E62C8;">Mağazaya dön</span>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

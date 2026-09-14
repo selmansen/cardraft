@@ -33,3 +33,7 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# Tasarım tuvalinin üretilen çıktısı — düzenleyici kodunu da içerdiği için
+# ~2,4 MB. Kaynak, yanındaki .dc.html dosyaları; bu dosya onlardan üretiliyor.
+docs/design/**/cardraft-*.html

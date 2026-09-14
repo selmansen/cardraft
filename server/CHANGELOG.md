@@ -14,6 +14,11 @@ Mimari kararların gerekçeleri günlükte değil, [`docs/adr/`](docs/adr/) alt�
 
 ### Eklendi
 
+- **Mağaza: paket açma.** `GET /api/store/packs` (fiyatlar ve oranlar) ve
+  `POST /api/store/packs/:id/open`. Çekiliş sunucuda, kriptografik üreteçle;
+  jant düşme, kart verme ve tekrar kart iadesi tek transaction. Tekrar
+  gönderilen istek yeni çekiliş yapmıyor (`requestId`). Bkz. ADR 0013.
+
 - `GET /api/health` — kimlik doğrulama istemeyen sağlık kontrolü; çalışan
   sürümü ve ayakta kalma süresini döner. CI, Docker ve ileride AWS yük
   dengeleyici bunu kullanacak.

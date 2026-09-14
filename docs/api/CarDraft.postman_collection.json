@@ -42,6 +42,11 @@
       "type": "string"
     },
     {
+      "key": "packId",
+      "value": "basic",
+      "type": "string"
+    },
+    {
       "key": "deviceId",
       "value": "",
       "type": "string"
@@ -682,6 +687,96 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"Açıldı (200), bakiye yetmedi (400) ya da zaten sahip (409)\", () => pm.expect(pm.response.code).to.be.oneOf([200,400,409]));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mağaza",
+      "description": "Paketler. Çekilişi **sunucu** yapıyor: istemci çekseydi kazanan sonucu bulana kadar deneyip onu gönderebilirdi ve oranları yayınlamanın anlamı kalmazdı. Fiyatlar ve oranlar paylaşılan motorda (`game/packs.ts`) — mağaza ekranının gösterdiği oranla çekilişte kullanılan oran aynı dosyadan geliyor.",
+      "item": [
+        {
+          "name": "Paketler",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/store/packs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "store",
+                "packs"
+              ]
+            },
+            "description": "Satıştaki paketler, fiyatları ve çıkma oranlarıyla.\n\nOranlar istemcide sabit yazılmıyor, buradan geliyor. Mağaza politikaları gösterilen oranla gerçek oranın aynı olmasını zorunlu tutuyor; tek kaynak bunu yapısal olarak garanti ediyor.\n\nBugün iki paket var: **Temel** (350 jant · %60/26/11/3) ve **Nadir+** (800 jant · %50/33/17, sıradan kart çıkmaz)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('Oranlar 100 ediyor', () => {",
+                  "  for (const pack of json) {",
+                  "    const total = Object.values(pack.odds).reduce((s, n) => s + n, 0);",
+                  "    pm.expect(total, pack.id).to.eql(100);",
+                  "  }",
+                  "});",
+                  "",
+                  "pm.test('200 döndü', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Paket aç",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/store/packs/{{packId}}/open",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "store",
+                "packs",
+                "{{packId}}",
+                "open"
+              ]
+            },
+            "description": "Paket açar: jant düşülür, kart çekilir, kart zaten koleksiyondaysa değerinin **%25'i** geri verilir. Hepsi tek transaction — biri olup diğeri olamaz.\n\n`requestId` tekrar korumasıdır ve **zorunludur**. Mobil ağda cevabı kaybolan bir istek tekrar gönderilirse, aynı kimlikle gelen ikinci istek yeni çekiliş yapmaz; ilk açılışın sonucunu döndürür. Olmasaydı oyuncudan iki kez para düşer ve iki kart çekilirdi.\n\nKoleksiyonda `{{$guid}}` Postman'in her çalıştırmada yeni ürettiği bir UUID — gerçek istemci de her açılış için yeni bir tane üretir.\n\nYeni hesabın 300 janti 350'lik pakete yetmez; o yüzden ilk denemede **400** beklenir. Jant için önce maç kazan.\n\n`packId` koleksiyon değişkeni: `basic` ya da `rare-plus`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requestId\": \"{{$guid}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Açıldı (200) ya da bakiye yetmedi (400)\", () => pm.expect(pm.response.code).to.be.oneOf([200,400]));"
                 ]
               }
             }

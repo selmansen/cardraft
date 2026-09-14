@@ -43,6 +43,9 @@ const FILES = [
   // Kopya tutmak yerine tek kaynaktan almak, o sınıf hatayı tümden kaldırıyor.
   ['game/difficulty.ts', 'game/difficulty.ts'],
   ['game/botDeck.ts', 'game/botDeck.ts'],
+  // Paket fiyatları ve oranları: mağaza ekranı gösteriyor, sunucu çekiyor.
+  // İki kopya olsaydı gösterilen oranla gerçek oran ayrışabilirdi.
+  ['game/packs.ts', 'game/packs.ts'],
 ];
 
 /**

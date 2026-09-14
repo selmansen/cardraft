@@ -1,0 +1,41 @@
+/// Açılmış bir paket — makbuz.
+///
+/// NEDEN SAKLANIYOR: paket açmak geri alınamaz bir para hareketi ve sonucu
+/// rastgele. Mobil ağda istek yarıda kalıp istemci tekrar denerse, kayıt
+/// olmadan oyuncudan ikinci kez para düşer ve ikinci bir kart çekilir.
+/// İstemcinin gönderdiği `requestId` ile birlikte bu tablo o tekrarı
+/// zararsız hale getiriyor: aynı kimlikle gelen ikinci istek yeni bir
+/// çekiliş yapmıyor, ilk sonucu geri veriyor.
+///
+/// İkinci işlevi denge: "hangi paketten ne çıktı" ve "kaç açılış tekrar
+/// karta gitti" sorularının cevabı burada. İade oranının (%25) doğru olup
+/// olmadığı ancak gerçek açılış verisiyle bilinebilir.
+model PackOpening {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Katalogdaki paket kimliği ("basic", "rare-plus"). Yabancı anahtar
+  /// değil: paket tanımları kartlar gibi kodda (senkronlanan motorda).
+  packId String
+
+  /// Çekilen kart ve ne ödendiği — sonradan oranların gerçekten tuttuğunu
+  /// doğrulayabilmek için ham hâliyle duruyor.
+  cardId String
+  rarity String
+  /// Kart zaten koleksiyonda mıydı?
+  duplicate Boolean
+  /// Harcanan jant (pozitif) ve tekrar karta verilen iade (0 ya da pozitif).
+  spent  Int
+  refund Int    @default(0)
+
+  /// İstemcinin ürettiği tekrar koruması. Kullanıcı başına benzersiz:
+  /// aynı kimlikle gelen ikinci istek yeni açılış yapmaz.
+  requestId String
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, requestId])
+  @@index([userId, createdAt])
+  @@map("pack_openings")
+}

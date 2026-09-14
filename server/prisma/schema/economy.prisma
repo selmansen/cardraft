@@ -33,6 +33,14 @@ enum LedgerReason {
   SPEND_CARD_UPGRADE
   ADMIN_ADJUSTMENT
   SIGNUP_BONUS
+  /// Paket açıldı — jant harcaması.
+  PACK_OPEN
+  /// Paketten sahip olunan bir kart çıktı, değerinin bir kısmı geri verildi.
+  /// PACK_OPEN'dan ayrı bir sebep: "paketlere ne kadar harcandı" ile "ne
+  /// kadarı iade olarak geri döndü" ayrı sorular ve denge ayarlarken ikisi
+  /// de lazım. Tek sebeple yazılsaydı defterde net rakam kalır, iade oranının
+  /// gerçekte ne getirdiği ölçülemezdi.
+  PACK_DUPLICATE_REFUND
 }
 
 /// Kullanıcının bir para birimindeki güncel bakiyesi.

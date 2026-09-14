@@ -95,6 +95,7 @@ Ayrıntı: \`docs/api/README.md\`. Kararların gerekçeleri: \`server/docs/adr/\
     { key: 'refreshToken', value: '', type: 'string' },
     { key: 'installationId', value: '', type: 'string' },
     { key: 'matchId', value: '', type: 'string' },
+    { key: 'packId', value: 'basic', type: 'string' },
     { key: 'deviceId', value: '', type: 'string' },
     { key: 'email', value: 'oyuncu@example.com', type: 'string' },
     { key: 'password', value: 'cok-gizli-sifre', type: 'string' },
@@ -265,6 +266,46 @@ Bakiye tek başına saklanmıyor, her değişim deftere yazılıyor. "Jantım ne
 Bakiye düşürme ve kartın yazılması **tek transaction**: biri olup diğeri olamaz.
 
 Örnek kart nadir (600 jant), yeni hesabın 300 janti yetmez → **400**. Yetecek bir kart için önce maç kazan. Zaten sahip olunan kart → **409**.`,
+        }),
+      ],
+    },
+    {
+      name: 'Mağaza',
+      description: `Paketler. Çekilişi **sunucu** yapıyor: istemci çekseydi kazanan sonucu bulana kadar deneyip onu gönderebilirdi ve oranları yayınlamanın anlamı kalmazdı. Fiyatlar ve oranlar paylaşılan motorda (\`game/packs.ts\`) — mağaza ekranının gösterdiği oranla çekilişte kullanılan oran aynı dosyadan geliyor.`,
+      item: [
+        req({
+          name: 'Paketler',
+          method: 'GET',
+          path: '/store/packs',
+          desc: `Satıştaki paketler, fiyatları ve çıkma oranlarıyla.
+
+Oranlar istemcide sabit yazılmıyor, buradan geliyor. Mağaza politikaları gösterilen oranla gerçek oranın aynı olmasını zorunlu tutuyor; tek kaynak bunu yapısal olarak garanti ediyor.
+
+Bugün iki paket var: **Temel** (350 jant · %60/26/11/3) ve **Nadir+** (800 jant · %50/33/17, sıradan kart çıkmaz).`,
+          test: `const json = pm.response.json();
+pm.test('Oranlar 100 ediyor', () => {
+  for (const pack of json) {
+    const total = Object.values(pack.odds).reduce((s, n) => s + n, 0);
+    pm.expect(total, pack.id).to.eql(100);
+  }
+});`,
+        }),
+        req({
+          name: 'Paket aç',
+          method: 'POST',
+          path: '/store/packs/{{packId}}/open',
+          body: { requestId: '{{$guid}}' },
+          status: [200, 400],
+          statusLabel: 'Açıldı (200) ya da bakiye yetmedi (400)',
+          desc: `Paket açar: jant düşülür, kart çekilir, kart zaten koleksiyondaysa değerinin **%25'i** geri verilir. Hepsi tek transaction — biri olup diğeri olamaz.
+
+\`requestId\` tekrar korumasıdır ve **zorunludur**. Mobil ağda cevabı kaybolan bir istek tekrar gönderilirse, aynı kimlikle gelen ikinci istek yeni çekiliş yapmaz; ilk açılışın sonucunu döndürür. Olmasaydı oyuncudan iki kez para düşer ve iki kart çekilirdi.
+
+Koleksiyonda \`{{$guid}}\` Postman'in her çalıştırmada yeni ürettiği bir UUID — gerçek istemci de her açılış için yeni bir tane üretir.
+
+Yeni hesabın 300 janti 350'lik pakete yetmez; o yüzden ilk denemede **400** beklenir. Jant için önce maç kazan.
+
+\`packId\` koleksiyon değişkeni: \`basic\` ya da \`rare-plus\`.`,
         }),
       ],
     },
