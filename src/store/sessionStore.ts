@@ -4,10 +4,10 @@ import { create } from 'zustand';
 
 import { hasSession, setTokens } from '@/api/client';
 import { useGameStore } from './gameStore';
-import { authApi, economyApi, inventoryApi } from '@/api/endpoints';
+import { authApi, economyApi, inventoryApi, storeApi } from '@/api/endpoints';
 import { ApiError, errorMessage, NetworkError } from '@/api/errors';
 import { readMigrated, STORAGE_KEYS } from '@/api/storageKeys';
-import type { AuthUser, CurrencyCode, DevicePlatform } from '@/api/types';
+import type { AuthUser, CurrencyCode, DevicePlatform, PackOpenResult } from '@/api/types';
 
 const INSTALL_KEY = STORAGE_KEYS.installation;
 
@@ -48,6 +48,14 @@ interface SessionState {
   refreshInventory: () => Promise<void>;
   /** Kart açar. Dönen mesaj null ise başarılı; değilse kullanıcıya gösterilir. */
   unlockCard: (cardId: string, currency: CurrencyCode) => Promise<string | null>;
+  /**
+   * Paket açar. Başarılıysa sonucu, değilse hata mesajını döndürür.
+   *
+   * `requestId` DIŞARIDAN geliyor: ekran onu bir kez üretip saklıyor ki
+   * yeniden deneme aynı kimlikle gitsin. Burada üretilseydi her çağrı yeni
+   * bir kimlik alır ve sunucudaki tekrar koruması işe yaramazdı.
+   */
+  openPack: (packId: string, requestId: string) => Promise<PackOpenResult | { error: string }>;
   signOut: () => Promise<void>;
 }
 
@@ -170,6 +178,30 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
       return null;
     } catch (error) {
       return errorMessage(error);
+    }
+  },
+
+  openPack: async (packId, requestId) => {
+    try {
+      const result = await storeApi.openPack(packId, requestId);
+      set((s) => ({
+        rims: result.balance.balance,
+        // Yeni kart geldiyse koleksiyona ekle; tekrar kartta koleksiyon
+        // değişmiyor, yalnızca bakiye artıyor.
+        ownedVehicles: result.duplicate
+          ? s.ownedVehicles
+          : new Set(s.ownedVehicles).add(result.card.cardId),
+      }));
+      // Çevrimdışı görünüm için yerel önbelleği de tazele.
+      if (!result.duplicate) {
+        const s = get();
+        useGameStore
+          .getState()
+          .cacheCollections([...s.ownedVehicles], [...s.ownedSupport]);
+      }
+      return result;
+    } catch (error) {
+      return { error: errorMessage(error) };
     }
   },
 

@@ -106,3 +106,36 @@ export interface SubmitMatchResponse {
   balance: BalanceSnapshot;
   stats: PlayerStats;
 }
+
+export type Rarity = 'common' | 'rare' | 'epic' | 'legendary';
+
+export interface CardPriceDto {
+  rim: number;
+  coin: number;
+}
+
+/**
+ * Mağazadaki bir paket. Oranlar İSTEMCİDE SABİT DEĞİL, sunucudan geliyor:
+ * ekranda gösterilen oranla çekilişte kullanılan oranın aynı olması hem
+ * dürüstlük hem mağaza politikası meselesi (bkz. ADR 0013).
+ */
+export interface PackDto {
+  id: string;
+  name: string;
+  blurb: string;
+  price: CardPriceDto;
+  /** Nadirlik → yüzde. Toplamı 100. Paketin çekemediği nadirlik hiç yok. */
+  odds: Partial<Record<Rarity, number>>;
+}
+
+/** `POST /store/packs/:id/open` yanıtı. */
+export interface PackOpenResult {
+  packId: string;
+  card: { cardId: string; name: string; rarity: Rarity };
+  /** Kart zaten koleksiyondaysa true — o zaman kart değil jant geliyor. */
+  duplicate: boolean;
+  spent: number;
+  /** Tekrar kartın iadesi; yeni kartta 0. */
+  refund: number;
+  balance: BalanceSnapshot;
+}

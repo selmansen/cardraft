@@ -8,6 +8,8 @@ import type {
   DifficultyId,
   OpenMatchResponse,
   OwnedCard,
+  PackDto,
+  PackOpenResult,
   PlayerStats,
   SubmitMatchResponse,
   SubmitTurnDto,
@@ -59,6 +61,22 @@ export const inventoryApi = {
    *  Fiyata sunucu karar veriyor. */
   unlock: (cardId: string, currency: CurrencyCode) =>
     api.post<UnlockResult>('/inventory/unlock', { cardId, currency }),
+};
+
+export const storeApi = {
+  /** Paketler, fiyatları ve oranlarıyla. Oranlar istemcide sabit yazılmıyor. */
+  packs: () => api.get<PackDto[]>('/store/packs'),
+
+  /**
+   * Paket açar.
+   *
+   * `requestId` tekrar koruması: cevabı kaybolan bir istek tekrar
+   * gönderilirse sunucu yeni çekiliş yapmaz, ilk sonucu döndürür. Bu yüzden
+   * kimliği çağıran ÜRETİP SAKLAMALI — her denemede yenisini üretmek
+   * korumayı işlevsiz kılar (bkz. ADR 0013).
+   */
+  openPack: (packId: string, requestId: string) =>
+    api.post<PackOpenResult>(`/store/packs/${packId}/open`, { requestId }),
 };
 
 export const matchApi = {

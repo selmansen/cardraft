@@ -103,6 +103,11 @@ export default function MenuScreen() {
           onPress={() => router.push('/collection')}
         />
         <MenuRow
+          title="Mağaza"
+          sub="Paket aç, koleksiyonunu büyüt"
+          onPress={() => router.push('/store')}
+        />
+        <MenuRow
           title="Nasıl Oynanır?"
           sub="Kuralları öğren, ustalaş!"
           onPress={() => router.push('/how-to-play')}
