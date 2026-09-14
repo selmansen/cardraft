@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700;900&display=swap">
+  <style>
+    body { margin: 0; background: #FBF7F0; }
+    a { color: #2E62C8; } a:hover { color: #1E4FB0; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div style="width: 402px; height: 874px; background: #FBF7F0; font-family: Nunito, system-ui, sans-serif; color: #1E2436; display: flex; flex-direction: column; align-items: center; padding: 0 16px; position: relative; overflow: hidden;">
+
+  <!-- Destansı nadirlikte turuncu ışık: kutlama nadirliğin rengiyle yapılıyor -->
+  <div style="position: absolute; top: 40px; width: 420px; height: 420px; border-radius: 999px; background: radial-gradient(circle, rgba(255,149,34,0.28) 0%, rgba(255,149,34,0) 65%);"></div>
+
+  <div style="position: relative; margin-top: 54px; display: flex; flex-direction: column; align-items: center; gap: 5px;">
+    <div style="display: flex; align-items: center; gap: 6px; padding: 5px 13px; border-radius: 999px; background: #FF6FA5;">
+      <span style="font: 900 12px/16px Nunito, sans-serif; letter-spacing: 0.6px; color: #1E2436;">YENİ KART</span>
+    </div>
+    <div style="font: 800 26px/32px 'Baloo 2', sans-serif; color: #1E2436;">Garajına katıldı!</div>
+  </div>
+
+  <!-- Kart: GameCard anatomisi büyütülmüş hâli (2px nadirlik kenarı, radius 20) -->
+  <div style="position: relative; margin-top: 22px; width: 214px; background: #FFFFFF; border: 3px solid #FF9522; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 24px rgba(30,36,54,0.16);">
+    <div style="position: relative; height: 152px; background: #FFF0DC; display: flex; align-items: center; justify-content: center;">
+      <svg width="118" height="72" viewBox="0 0 120 72" fill="none">
+        <path d="M14 50h92" stroke="#B35C00" stroke-width="3" stroke-linecap="round" opacity=".25"/>
+        <path d="M22 46c-4 0-7-3-7-7l3-11c1-3 3-5 6-5h20l12-9h22c4 0 7 2 9 5l7 13c4 1 7 4 7 7v7c0 2-2 4-4 4H22z" fill="#FFFFFF" stroke="#B35C00" stroke-width="2.5" stroke-linejoin="round"/>
+        <circle cx="34" cy="50" r="8" fill="#FFFFFF" stroke="#B35C00" stroke-width="2.5"/>
+        <circle cx="82" cy="50" r="8" fill="#FFFFFF" stroke="#B35C00" stroke-width="2.5"/>
+      </svg>
+      <div style="position: absolute; top: 8px; left: 8px; display: flex; align-items: center; gap: 3px; padding: 4px 9px; border-radius: 999px; background: #FFFFFF;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="#FF9522"><path d="M13 2L4.5 13.5H11l-1 8.5 8.5-11.5H12z"/></svg>
+        <span style="font: 800 13px/16px 'Baloo 2', sans-serif; color: #1E2436;">5</span>
+      </div>
+    </div>
+    <div style="padding: 12px 12px 14px 12px; display: flex; flex-direction: column; gap: 9px;">
+      <div style="font: 700 19px/23px 'Baloo 2', sans-serif; color: #1E2436;">Apex Meridian</div>
+      <div style="display: flex; align-items: center; gap: 5px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="#FF9522"><path d="M12 2l3 6.5 7 .9-5 4.9 1.2 7L12 18l-6.2 3.3L7 14.3l-5-4.9 7-.9z"/></svg>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="#FF9522"><path d="M12 2l3 6.5 7 .9-5 4.9 1.2 7L12 18l-6.2 3.3L7 14.3l-5-4.9 7-.9z"/></svg>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="#FF9522"><path d="M12 2l3 6.5 7 .9-5 4.9 1.2 7L12 18l-6.2 3.3L7 14.3l-5-4.9 7-.9z"/></svg>
+        <span style="font: 700 12px/16px Nunito, sans-serif; letter-spacing: 0.5px; color: #B35C00;">DESTANSI</span>
+      </div>
+      <div style="display: flex; gap: 5px;">
+        <div style="flex-grow: 1; padding: 7px 0; border-radius: 12px; background: #F3EEE4; text-align: center;">
+          <div style="font: 800 17px/20px 'Baloo 2', sans-serif; color: #C22C29;">7</div>
+          <div style="font: 700 11px/14px Nunito, sans-serif; color: #6B7285;">Güç</div>
+        </div>
+        <div style="flex-grow: 1; padding: 7px 0; border-radius: 12px; background: #F3EEE4; text-align: center;">
+          <div style="font: 800 17px/20px 'Baloo 2', sans-serif; color: #137A40;">6</div>
+          <div style="font: 700 11px/14px Nunito, sans-serif; color: #6B7285;">Dayanıklılık</div>
+        </div>
+        <div style="flex-grow: 1; padding: 7px 0; border-radius: 12px; background: #F3EEE4; text-align: center;">
+          <div style="font: 800 17px/20px 'Baloo 2', sans-serif; color: #2E62C8;">8</div>
+          <div style="font: 700 11px/14px Nunito, sans-serif; color: #6B7285;">Hız</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="position: relative; margin-top: 16px; width: 100%; padding: 11px 14px; background: #FFFFFF; border: 1px solid #EBE3D6; border-radius: 16px; display: flex; align-items: center; gap: 9px;">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#7B32D6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4.5 13.5H11l-1 8.5 8.5-11.5H12z"></path></svg>
+    <span style="flex-grow: 1; font: 600 13px/18px Nunito, sans-serif; color: #4A5266;">Yakıt maliyeti 5 · rakip garaja doğrudan saldırabilir</span>
+  </div>
+
+  <div style="position: relative; margin-top: auto; margin-bottom: 30px; width: 100%; display: flex; flex-direction: column; gap: 10px;">
+    <div style="background: #1E4FB0; border-radius: 999px;">
+      <div style="height: 52px; margin-bottom: 4px; background: #3A7BF0; border-radius: 999px; display: flex; align-items: center; justify-content: center;">
+        <span style="font: 900 15px/20px Nunito, sans-serif; letter-spacing: 0.2px; color: #FFFFFF;">Kadroya ekle</span>
+      </div>
+    </div>
+    <div style="background: #DCE9FF; border-radius: 999px;">
+      <div style="height: 52px; margin-bottom: 4px; background: #FFFFFF; border: 2px solid #DCE9FF; border-radius: 999px; display: flex; align-items: center; justify-content: center;">
+        <span style="font: 900 15px/20px Nunito, sans-serif; letter-spacing: 0.2px; color: #2E62C8;">Mağazaya dön</span>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

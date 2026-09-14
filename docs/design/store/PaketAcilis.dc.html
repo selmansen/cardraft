@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700;900&display=swap">
+  <style>
+    body { margin: 0; background: #FBF7F0; }
+    a { color: #2E62C8; } a:hover { color: #1E4FB0; }
+    * { box-sizing: border-box; }
+    @keyframes cardraft-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+    @keyframes cardraft-glow { 0%, 100% { opacity: .35; } 50% { opacity: .75; } }
+  </style>
+</helmet>
+
+<div style="width: 402px; height: 874px; background: #1E2436; font-family: Nunito, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+
+  <!-- Arkadaki ışık halkası: nadirlik rengi daha belli olmadığı için nötr -->
+  <div style="position: absolute; width: 380px; height: 380px; border-radius: 999px; background: radial-gradient(circle, rgba(255,149,34,0.55) 0%, rgba(255,149,34,0) 68%); animation: cardraft-glow 2.4s ease-in-out infinite;"></div>
+
+  <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 30px;">
+
+    <!-- Kart arkası: paket açılmadan önce -->
+    <div style="width: 196px; height: 268px; border-radius: 24px; background: #3A7BF0; border: 3px solid #FFFFFF; box-shadow: 0 10px 24px rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; animation: cardraft-pulse 2.4s ease-in-out infinite;">
+      <div style="width: 152px; height: 224px; border-radius: 16px; border: 2px dashed rgba(255,255,255,0.55); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;">
+        <svg width="62" height="62" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3.5"></circle><line x1="12" y1="3" x2="12" y2="8.5"></line><line x1="12" y1="15.5" x2="12" y2="21"></line><line x1="3" y1="12" x2="8.5" y2="12"></line><line x1="15.5" y1="12" x2="21" y2="12"></line></svg>
+        <span style="font: 800 17px/22px 'Baloo 2', sans-serif; color: #FFFFFF; letter-spacing: 0.5px;">CARDRAFT</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+      <div style="font: 800 24px/30px 'Baloo 2', sans-serif; color: #FFFFFF;">Temel Paket</div>
+      <div style="font: 700 14px/19px Nunito, sans-serif; color: rgba(255,255,255,0.72);">Açmak için karta dokun</div>
+    </div>
+  </div>
+
+  <!-- Harcanan tutar en baştan görünür: sürpriz fatura olmasın -->
+  <div style="position: absolute; bottom: 40px; display: flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 999px; background: rgba(255,255,255,0.12);">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3.5"></circle></svg>
+    <span style="font: 900 14px/19px Nunito, sans-serif; color: #FFFFFF;">−350 jant</span>
+    <span style="font: 600 14px/19px Nunito, sans-serif; color: rgba(255,255,255,0.6);">· kalan 890</span>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

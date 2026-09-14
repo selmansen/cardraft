@@ -1,0 +1,78 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 402,
+      "h": 874,
+      "title": "Mağaza"
+    },
+    {
+      "file": "OranTablosu.dc.html",
+      "x": 502,
+      "y": 0,
+      "w": 402,
+      "h": 874,
+      "title": "Oranlar (modal)"
+    },
+    {
+      "file": "YetersizBakiye.dc.html",
+      "x": 1004,
+      "y": 0,
+      "w": 402,
+      "h": 874,
+      "title": "Yetersiz bakiye"
+    },
+    {
+      "file": "PaketAcilis.dc.html",
+      "x": 0,
+      "y": 1000,
+      "w": 402,
+      "h": 874,
+      "title": "Paket açılışı"
+    },
+    {
+      "file": "YeniKart.dc.html",
+      "x": 502,
+      "y": 1000,
+      "w": 402,
+      "h": 874,
+      "title": "Yeni kart"
+    },
+    {
+      "file": "TekrarKart.dc.html",
+      "x": 1004,
+      "y": 1000,
+      "w": 402,
+      "h": 874,
+      "title": "Tekrar kart"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "akis",
+      "x": 0,
+      "y": -150,
+      "w": 900,
+      "text": "ÜST SIRA — mağaza ve üstüne açılan tabakalar\nMağaza → paket içindeki \"Detay\"ya dokununca Oranlar modalı → bakiye yetmezse Yetersiz bakiye"
+    },
+    {
+      "id": "acilis",
+      "x": 0,
+      "y": 850,
+      "w": 900,
+      "text": "ALT SIRA — satın alma akışı\nPaket açılışı → (yeni kart) veya (tekrar kart)"
+    },
+    {
+      "id": "coin-notu",
+      "x": 1460,
+      "y": 0,
+      "w": 300,
+      "text": "COIN AYRI BİR ADIM\nCoin ile alım tüm satın alma akışlarına sonradan, tek seferde eklenecek. Bu yüzden bu ekranlarda yalnızca jant var."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}
