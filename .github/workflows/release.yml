@@ -1,0 +1,70 @@
+name: Yayın
+
+# Etiket itildiğinde koşar. İki ayrı yayınlanabilir parça var, iki ayrı
+# etiket öneki: app-v* (mobil uygulama) ve server-v* (API).
+# Gerekçe: sunucu haftada birkaç kez, uygulama ayda bir yayınlanacak —
+# tek numara ikisi hakkında da yalan söylerdi.
+on:
+  push:
+    tags:
+      - 'app-v*'
+      - 'server-v*'
+
+permissions:
+  contents: write # GitHub Release oluşturmak için
+
+jobs:
+  release:
+    name: GitHub Release oluştur
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # etiketler arası karşılaştırma için tüm geçmiş
+
+      - name: Etiketi çöz
+        id: tag
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          COMPONENT="${TAG%%-v*}"          # app | server
+          VERSION="${TAG#*-v}"             # 0.2.0
+          if [ "$COMPONENT" = "server" ]; then
+            CHANGELOG="server/CHANGELOG.md"
+            TITLE="Sunucu v${VERSION}"
+          else
+            CHANGELOG="CHANGELOG.md"
+            TITLE="Uygulama v${VERSION}"
+          fi
+          {
+            echo "component=${COMPONENT}"
+            echo "version=${VERSION}"
+            echo "changelog=${CHANGELOG}"
+            echo "title=${TITLE}"
+          } >> "$GITHUB_OUTPUT"
+
+      # Sürüm notları elle yazılmıyor: CHANGELOG'da o sürüm için zaten
+      # yazılmış bölüm aynen alınıyor. Tek kaynak, kopyalama hatası yok.
+      - name: Sürüm notlarını çıkar
+        id: notes
+        run: |
+          VERSION="${{ steps.tag.outputs.version }}"
+          FILE="${{ steps.tag.outputs.changelog }}"
+          # "## [0.2.0]" başlığından bir sonraki "## " başlığına kadar.
+          awk -v ver="$VERSION" '
+            $0 ~ "^## \\[" ver "\\]" { inside = 1; next }
+            inside && /^## / { exit }
+            inside { print }
+          ' "$FILE" > /tmp/notes.md
+          if [ ! -s /tmp/notes.md ]; then
+            echo "UYARI: $FILE içinde [$VERSION] bölümü bulunamadı." >&2
+            echo "Sürüm notu yok — CHANGELOG güncellenmemiş." > /tmp/notes.md
+          fi
+          cat /tmp/notes.md
+
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${{ steps.tag.outputs.title }}" \
+            --notes-file /tmp/notes.md

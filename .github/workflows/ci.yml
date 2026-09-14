@@ -1,0 +1,119 @@
+name: CI
+
+# main ve develop'a giden her PR'da ve bu dallara her itmede koşar.
+# Amaç tek cümle: "bu değişiklik iki tarafı da kırıyor mu?"
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+# Aynı dala arka arkaya itilirse eski koşu iptal edilir — birikmiş,
+# artık kimsenin bakmadığı koşular için dakika harcanmasın.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─────────────────────────────── İSTEMCİ ───────────────────────────────
+  client:
+    name: İstemci (Expo / React Native)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      # .npmrc'deki legacy-peer-deps=true burada da geçerli: SDK 57 + npm 10
+      # ERESOLVE çatışması yüzünden şart (bkz. docs/gelistirme-akisi.md).
+      - name: Bağımlılıklar
+        run: npm ci
+
+      - name: Tip kontrolü
+        run: npm run typecheck
+
+      # Paketleme kontrolü: tsc'nin göremediği çalışma zamanı hatalarını
+      # yakalar — eksik asset, çözülemeyen import, bozuk Metro yapılandırması.
+      # Uygulamayı gerçekten paketlemeden bunlar ancak telefonda fark edilir.
+      - name: Paketleme (expo export)
+        run: npx expo export --platform ios --output-dir "${RUNNER_TEMP}/expo-export"
+        env:
+          EXPO_NO_TELEMETRY: "1"
+
+  # ─────────────────────────────── SUNUCU ────────────────────────────────
+  server:
+    name: Sunucu (NestJS)
+    runs-on: ubuntu-latest
+
+    # Gerçek Postgres ve Redis. Sahtelerle koşmak e2e'nin cevap vermesi
+    # gereken tek soruyu ("parçalar birbirine bağlanıyor mu") atlamak olurdu.
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: cardraft
+          POSTGRES_PASSWORD: cardraft
+          POSTGRES_DB: cardraft
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U cardraft"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    # Sırlar değil, CI'a özel tek kullanımlık değerler. JWT sırları şemadaki
+    # 32 karakter alt sınırını geçmek için uzun — gerçek ortamlarda bunlar
+    # GitHub Secrets'tan gelecek.
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://cardraft:cardraft@localhost:5432/cardraft?schema=public
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      JWT_ACCESS_SECRET: ci-access-secret-only-for-github-actions-runs
+      JWT_REFRESH_SECRET: ci-refresh-secret-only-for-github-actions-runs
+
+    defaults:
+      run:
+        working-directory: server
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      # postinstall → prisma generate. Üretilen istemci repoda tutulmuyor.
+      - name: Bağımlılıklar
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # prebuild → sync-engine.mjs: savaş motorunu istemciden kopyalar.
+      # Derlemenin geçmesi, motorun iki tarafta da aynı derlendiğini gösterir.
+      - name: Derleme
+        run: npm run build
+
+      - name: Şema (migrate deploy)
+        run: npx prisma migrate deploy
+
+      - name: Birim testleri
+        run: npm test
+
+      - name: e2e testleri
+        run: npm run test:e2e

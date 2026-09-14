@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 
 import { CurrentUser } from '../../common/decorators/auth.decorators.js';
 import type { AccessTokenPayload } from '../auth/token.service.js';

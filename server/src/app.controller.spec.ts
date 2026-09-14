@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 
@@ -14,9 +15,15 @@ describe('AppController', () => {
     appController = app.get<AppController>(AppController);
   });
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+  describe('health', () => {
+    it('durum, sürüm ve ayakta kalma süresi döner', () => {
+      const health = appController.health();
+
+      expect(health.status).toBe('ok');
+      // Sürüm package.json'dan okunuyor; sabit bir değere bağlamak testi her
+      // yayında kırardı. Doğrulanan şey biçim: "0.1.0" gibi bir semver.
+      expect(health.version).toMatch(/^\d+\.\d+\.\d+/);
+      expect(health.uptimeSeconds).toBeGreaterThanOrEqual(0);
     });
   });
 });
