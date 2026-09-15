@@ -77,6 +77,10 @@ Etiket öneki: `app-v`.
 - **Pit Ekibi kartları eski tasarımına döndü**: mor (pembe değil), ikon →
   ad → etki → güç noktaları sırasıyla, köşede kilit/seçim rozetiyle.
   Sekmelerin ikonu ve kadro sayacı da geri geldi.
+- **Oyna ekranında kadro şeridi kaydırılamıyordu**: kutunun tamamı Garaj'a
+  giden bir dokunma alanıydı ve yatay kaydırmayı yutuyordu — oyuncu kaydırmaya
+  çalışınca Garaj açılıyordu. Gezinme artık yalnızca başlık satırında
+  ("Düzenle ›"), şerit serbestçe kayıyor.
 - **Kadro şeridi ekrana sığmıyordu** (8 yuva + ayraç 402 px'i aşıyor); artık
   yatay kayıyor. Sabit genişliğe sıkıştırmak yuvaları okunmaz hale getirirdi.
 - **Kadrodan kart çıkarma işareti** köşedeki kırmızı rozetten kartın tam

@@ -132,16 +132,20 @@ export default function PlayScreen() {
 
         {/* Kadro özeti: "hazır mıyım" sorusunun cevabı savaşa çıkmadan
             görünüyor. Dokununca Garaj'a. */}
-        <Pressable style={styles.squadCard} onPress={() => router.replace('/garage')}>
-          <View style={styles.squadHead}>
+        {/* Kutunun TAMAMI dokunulabilir DEĞİL: içindeki yatay kaydırma dış
+            Pressable tarafından yutuluyordu — oyuncu kadroyu kaydırmaya
+            çalışınca Garaj açılıyordu. Gezinme yalnızca başlık satırında. */}
+        <View style={styles.squadCard}>
+          <Pressable style={styles.squadHead} onPress={() => router.replace('/garage')}>
             <Text style={styles.squadTitle}>{isGuest ? 'Başlangıç kadrosu' : 'Kadron'}</Text>
             <View style={styles.squadLink}>
               <Text style={[styles.squadCount, !ready && styles.squadCountWarn]}>
                 {total} / {LOADOUT_TOTAL}
               </Text>
+              <Text style={styles.squadEdit}>Düzenle</Text>
               <MaterialCommunityIcons name="chevron-right" size={15} color={colors.primaryInk} />
             </View>
-          </View>
+          </Pressable>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -159,7 +163,7 @@ export default function PlayScreen() {
               <EmptySlot key={`empty-${i}`} />
             ))}
           </ScrollView>
-        </Pressable>
+        </View>
 
         <ChunkyButton variant="accent" height={76} onPress={() => router.push('/battle')} disabled={!ready}>
           <View style={styles.playInner}>
@@ -274,7 +278,8 @@ const styles = StyleSheet.create({
   },
   squadHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 11 },
   squadTitle: { fontFamily: font.headingSm, fontSize: 15, lineHeight: 19, color: colors.ink },
-  squadLink: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  squadLink: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  squadEdit: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.primaryInk },
   squadCount: { fontFamily: font.bodyBlack, fontSize: text.bodySmall.fontSize, color: colors.successInk },
   squadCountWarn: { color: colors.accentDark },
   squadRow: { flexDirection: 'row', gap: 5, alignItems: 'center' },
