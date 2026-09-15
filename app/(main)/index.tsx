@@ -8,7 +8,7 @@ import { ChunkyButton } from '@/components/ChunkyButton';
 import { WalletPill } from '@/components/Currency';
 import { colors, font, radius, shadow, space, text } from '@/constants/theme';
 import { EmptySlot, SquadSlot } from '@/components/SquadSlot';
-import { DIFFICULTY, DIFFICULTY_ORDER, type Difficulty } from '@/game/difficulty';
+import { DIFFICULTY, DIFFICULTY_ORDER, SIGNUP_BONUS_RIM, type Difficulty } from '@/game/difficulty';
 import { LOADOUT_TOTAL, useGameStore } from '@/store/gameStore';
 import { useSessionStore } from '@/store/sessionStore';
 import { useWallet } from '@/store/useWallet';
@@ -95,7 +95,14 @@ export default function PlayScreen() {
             <MaterialCommunityIcons name="shopping" size={22} color={colors.primaryInk} />
             <View style={{ flex: 1 }}>
               <Text style={styles.guestTitle}>Kartların ve jantın kayıtlı değil</Text>
-              <Text style={styles.guestSub}>Giriş yap, 350 jant hediye ile başla</Text>
+              {/* Rakam sabit YAZILMIYOR: hediye tutarı paylaşılan motorda ve
+                  sunucu da oradan okuyor. Burada 350 yazsaydık, tutar
+                  değiştiğinde oyuncuya söz verilen sayı ile cüzdanına yazılan
+                  sayı ayrışırdı. */}
+              <Text style={styles.guestSub}>
+                Giriş yap, <Text style={styles.guestStrong}>{SIGNUP_BONUS_RIM} jant</Text> hediye ile
+                başla
+              </Text>
             </View>
             <MaterialCommunityIcons name="chevron-right" size={18} color={colors.primaryInk} />
           </Pressable>
@@ -234,6 +241,7 @@ const styles = StyleSheet.create({
   },
   guestTitle: { fontFamily: font.bodyBlack, fontSize: text.body.fontSize, color: colors.primaryInk },
   guestSub: { fontFamily: font.body, fontSize: text.bodySmall.fontSize, color: colors.primaryInk, opacity: 0.8 },
+  guestStrong: { fontFamily: font.bodyBlack },
 
   tutorialRow: {
     flexDirection: 'row',
