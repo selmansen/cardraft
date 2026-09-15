@@ -60,8 +60,8 @@ const styles = StyleSheet.create({
   chipOff: { backgroundColor: colors.surface, borderColor: colors.borderStrong },
   text: {
     fontFamily: font.bodyBold,
-    fontSize: text.small.fontSize,
-    lineHeight: text.small.fontSize + 2,
+    fontSize: text.bodySmall.fontSize,
+    lineHeight: text.bodySmall.fontSize + 2,
     includeFontPadding: false,
   },
 });

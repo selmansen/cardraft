@@ -1,11 +1,12 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { IdentityProvider } from '@/api/types';
 import { CurrencyTag } from '@/components/Currency';
+import { useDialog } from '@/components/overlay/DialogProvider';
 import { colors, font, radius, shadow, space, text } from '@/constants/theme';
 import { SIGNUP_BONUS_RIM } from '@/game/difficulty';
 import { CARDS } from '@/data/cards';
@@ -61,6 +62,7 @@ const PROMISES: {
 
 export default function SignInScreen() {
   const router = useRouter();
+  const dialog = useDialog();
   const signIn = useSessionStore((s) => s.signInWithProvider);
   const [busy, setBusy] = useState<IdentityProvider | null>(null);
 
@@ -72,7 +74,11 @@ export default function SignInScreen() {
     // göstermek, yaptığı şeyi yanlışmış gibi sunmak olurdu.
     if (result === 'cancelled') return;
     if (result) {
-      Alert.alert('Giriş yapılamadı', result);
+      dialog.show({
+        title: 'Giriş yapılamadı',
+        message: result,
+        actions: [{ label: 'Tamam', variant: 'primary' }],
+      });
       return;
     }
     router.back();
@@ -182,7 +188,7 @@ const styles = StyleSheet.create({
   },
   promiseIcon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   promiseTitle: { fontFamily: font.headingSm, fontSize: 15, lineHeight: 19, color: colors.ink },
-  promiseSub: { fontFamily: font.body, fontSize: text.small.fontSize, color: colors.textMuted },
+  promiseSub: { fontFamily: font.body, fontSize: text.bodySmall.fontSize, color: colors.textMuted },
 
   giftWrap: { paddingHorizontal: space.lg },
   gift: {
@@ -208,7 +214,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 9,
   },
-  appleText: { fontFamily: font.bodyBlack, fontSize: text.bodyLg.fontSize, color: '#FFFFFF' },
+  appleText: { fontFamily: font.bodyBlack, fontSize: text.bodyBig.fontSize, color: '#FFFFFF' },
   googleBase: { backgroundColor: colors.borderStrong, borderRadius: radius.pill },
   googleFace: {
     height: 54,
@@ -222,7 +228,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 9,
   },
-  googleText: { fontFamily: font.bodyBlack, fontSize: text.bodyLg.fontSize, color: colors.ink },
+  googleText: { fontFamily: font.bodyBlack, fontSize: text.bodyBig.fontSize, color: colors.ink },
   skip: { height: 40, alignItems: 'center', justifyContent: 'center' },
   skipText: { fontFamily: font.bodyBold, fontSize: text.body.fontSize, color: colors.textMuted },
 });

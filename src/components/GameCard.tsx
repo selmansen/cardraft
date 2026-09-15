@@ -53,7 +53,7 @@ function GameCardBase({ card, owned, mode = 'browse', selected, inSquad, onPress
           // takip ettiği para birimi jant.
           <View style={styles.lockBadge}>
             <MaterialCommunityIcons name="lock" size={11} color={colors.ink} />
-            <CurrencyTag currency="rim" amount={card.price.rim} size={text.micro.fontSize} />
+            <CurrencyTag currency="rim" amount={card.price.rim} size={text.bodySmall.fontSize} />
           </View>
         )}
 
@@ -93,7 +93,7 @@ function GameCardBase({ card, owned, mode = 'browse', selected, inSquad, onPress
 function Stat({ icon, tint, v }: { icon: keyof typeof MaterialCommunityIcons.glyphMap; tint: string; v: number }) {
   return (
     <View style={styles.stat}>
-      <MaterialCommunityIcons name={icon} size={12} color={tint} />
+      <MaterialCommunityIcons name={icon} size={14} color={tint} />
       <Text style={styles.statV}>{v}</Text>
     </View>
   );
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   locked: { opacity: 0.6 },
-  art: { position: 'relative', width: '100%', height: 88 },
+  art: { position: 'relative', width: '100%', height: 104 },
   artImg: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%' },
   lockBadge: {
     position: 'absolute',
@@ -161,14 +161,14 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     backgroundColor: colors.bubble,
   },
-  squadTagText: { fontFamily: font.bodyBold, fontSize: text.micro.fontSize, color: colors.ink, letterSpacing: 0.4 },
+  squadTagText: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.ink, letterSpacing: 0.4 },
   body: { padding: 10, paddingBottom: 11, gap: 7 },
-  name: { fontFamily: font.headingSm, fontSize: 15, color: colors.ink },
+  name: { fontFamily: font.headingSm, fontSize: 16, color: colors.ink },
   rarityRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   rarityText: {
     fontFamily: font.bodyBold,
-    fontSize: text.caption.fontSize,
-    lineHeight: text.caption.lineHeight,
+    fontSize: text.bodySmall.fontSize,
+    lineHeight: text.bodySmall.lineHeight,
     letterSpacing: 0.5,
     color: colors.textMuted,
   },
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.sunken,
     borderRadius: 8,
   },
-  statV: { fontFamily: font.stat, fontSize: 13, color: colors.ink },
+  statV: { fontFamily: font.stat, fontSize: 15, color: colors.ink },
 });
 
 export const GameCard = memo(GameCardBase);

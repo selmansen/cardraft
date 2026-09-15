@@ -1,11 +1,12 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { authApi, statsApi } from '@/api/endpoints';
 import type { PlayerStats } from '@/api/types';
+import { useDialog } from '@/components/overlay/DialogProvider';
 import { colors, font, NAV_CLEARANCE, radius, shadow, space, text } from '@/constants/theme';
 import { getProviderCredential } from '@/auth/providerSignIn';
 import { useGameStore } from '@/store/gameStore';
@@ -19,6 +20,7 @@ import { useSessionStore } from '@/store/sessionStore';
  */
 export default function ProfileScreen() {
   const router = useRouter();
+  const dialog = useDialog();
   const user = useSessionStore((s) => s.user);
   const signOut = useSessionStore((s) => s.signOut);
   const soundOn = useGameStore((s) => s.soundOn);
@@ -52,10 +54,14 @@ export default function ProfileScreen() {
   const best = stats?.bestWinStreak ?? 0;
 
   function onSignOut() {
-    Alert.alert('Çıkış yap', 'Tekrar giriş yaptığında ilerlemen olduğu gibi duruyor olacak.', [
-      { text: 'Vazgeç', style: 'cancel' },
-      { text: 'Çıkış yap', style: 'destructive', onPress: () => void signOut().then(() => router.replace('/')) },
-    ]);
+    dialog.show({
+      title: 'Çıkış yap',
+      message: 'Tekrar giriş yaptığında ilerlemen olduğu gibi duruyor olacak.',
+      actions: [
+        { label: 'Çıkış yap', variant: 'primary', onPress: () => void signOut().then(() => router.replace('/')) },
+        { label: 'Vazgeç' },
+      ],
+    });
   }
 
   /**
@@ -69,14 +75,13 @@ export default function ProfileScreen() {
    * eline geçiren biri hesabı silememeli.
    */
   function onDelete() {
-    Alert.alert(
-      'Hesabı sil',
-      'Kartların, jantın ve bütün ilerlemen kalıcı olarak silinecek. Bu işlem geri alınamaz.',
-      [
-        { text: 'Vazgeç', style: 'cancel' },
+    dialog.show({
+      title: 'Hesabı sil',
+      message: 'Kartların, jantın ve bütün ilerlemen kalıcı olarak silinecek. Bu işlem geri alınamaz.',
+      actions: [
         {
-          text: 'Hesabı sil',
-          style: 'destructive',
+          label: 'Hesabı sil',
+          variant: 'danger',
           onPress: () => {
             void (async () => {
               try {
@@ -93,13 +98,18 @@ export default function ProfileScreen() {
                 await signOut();
                 router.replace('/');
               } catch (error) {
-                Alert.alert('Hesap silinemedi', (error as Error).message);
+                dialog.show({
+                  title: 'Hesap silinemedi',
+                  message: (error as Error).message,
+                  actions: [{ label: 'Tamam', variant: 'primary' }],
+                });
               }
             })();
           },
         },
+        { label: 'Vazgeç' },
       ],
-    );
+    });
   }
 
   return (
@@ -229,7 +239,7 @@ const styles = StyleSheet.create({
   },
   avatarGuest: { backgroundColor: colors.sunken },
   accountName: { fontFamily: font.headingSm, fontSize: 17, lineHeight: 21, color: colors.ink },
-  accountSub: { fontFamily: font.bodyBold, fontSize: text.small.fontSize, color: colors.textMuted },
+  accountSub: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.textMuted },
   accountSubOk: { color: colors.successInk },
   linkPill: {
     paddingHorizontal: 12,
@@ -237,11 +247,11 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     backgroundColor: colors.primarySoft,
   },
-  linkPillText: { fontFamily: font.bodyBlack, fontSize: text.small.fontSize, color: colors.primaryInk },
+  linkPillText: { fontFamily: font.bodyBlack, fontSize: text.bodySmall.fontSize, color: colors.primaryInk },
   safePill: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill, backgroundColor: colors.sunken },
   safePillText: {
     fontFamily: font.bodyBlack,
-    fontSize: text.micro.fontSize,
+    fontSize: text.bodySmall.fontSize,
     letterSpacing: 0.3,
     color: colors.successInk,
   },
@@ -257,7 +267,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: { fontFamily: font.stat, fontSize: 22, lineHeight: 26, color: colors.ink },
-  statLabel: { fontFamily: font.bodyBold, fontSize: text.micro.fontSize, color: colors.textMuted },
+  statLabel: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.textMuted },
 
   group: {
     backgroundColor: colors.surface,
@@ -269,11 +279,11 @@ const styles = StyleSheet.create({
   },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 15 },
   rowDivider: { borderBottomWidth: 1, borderBottomColor: colors.border },
-  rowLabel: { flex: 1, fontFamily: font.bodyBold, fontSize: text.bodyLg.fontSize, color: colors.ink },
+  rowLabel: { flex: 1, fontFamily: font.bodyBold, fontSize: text.bodyBig.fontSize, color: colors.ink },
   rowLabelDanger: { color: colors.dangerInk },
   version: {
     fontFamily: font.body,
-    fontSize: text.caption.fontSize,
+    fontSize: text.bodySmall.fontSize,
     color: colors.textFaint,
     textAlign: 'center',
   },

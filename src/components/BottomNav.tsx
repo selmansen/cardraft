@@ -140,8 +140,8 @@ const styles = StyleSheet.create({
   centerGap: { width: 84 },
   label: {
     fontFamily: font.bodyBold,
-    fontSize: text.micro.fontSize,
-    lineHeight: text.micro.lineHeight,
+    fontSize: text.bodySmall.fontSize,
+    lineHeight: text.bodySmall.lineHeight,
   },
   labelOn: { fontFamily: font.bodyBlack },
   labelOff: { color: colors.textFaint },

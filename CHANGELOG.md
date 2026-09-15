@@ -49,6 +49,40 @@ Etiket öneki: `app-v`.
 
 ### Düzeltildi
 
+- **Tipografi büyütüldü.** Gövde ölçeği beş basamaktan (11·12·13·14·15) üçe
+  indi: `bodySmall` 14 · `body` 16 · `bodyBig` 18. En küçüğü artık 14 —
+  eskiden rozet rakamları, nadirlik etiketleri ve ipucu metinleri telefonda
+  okunmuyordu ve 11-12-13 arasındaki fark hiyerarşi kurmuyordu, sadece
+  tutarsızlık üretiyordu.
+- **Koleksiyon ızgarası iki sütuna indi.** Üç sütunda kart 108 px kalıyordu ve
+  içindeki dört stat kutusu taşıp okunmaz oluyordu — kartın taşıdığı asıl
+  bilgi görünmüyordu.
+- **Kadro şeritlerinde kart görselleri yoktu** (Oyna ve Garaj), yalnızca
+  nadirlik rengi vardı; oyuncu hangi aracı seçtiğini göremiyordu. İki ekran
+  artık aynı bileşeni kullanıyor.
+- **Saha Ekibi / Pit Ekibi ayrımı segment olarak geri geldi.** Filtre çipleri
+  arasına konmuştu ama iki havuz gerçekten farklı: kart anatomisi, kadro
+  sınırları ve kategori filtreleri ayrı.
+- **Pit Ekibi kartlarının hepsi aynı anahtar ikonuyla gösteriliyordu**; artık
+  yeteneğin türüne göre farklı ikon alıyorlar. Basılı tutunca da tam etkiyi
+  gösteren alt sayfa açılıyor (ızgarada iki satıra sığmıyordu).
+- Ana ekranda kadro "3 pit" yazısıyla bitiyordu; pit kartları da yuva olarak
+  diziliyor.
+- "Savaşa Başla" yazısı düğme içinde yukarı kayıyordu (Baloo 2'nin iç boşluğu).
+- **Uygulama artık "nasıl oynanır" ekranıyla açılmıyor.** Oynamaya gelen
+  oyuncuyu okumaya zorluyordu; kurallar Oyna ekranındaki bir satırda ve
+  Profil'de duruyor.
+
+### Değiştirildi (görünüm)
+
+- **Diyaloglar uygulamanın kendi tasarımında.** `Alert.alert` işletim
+  sisteminin diyaloğunu açıyordu: iOS'ta sistem fontu ve mavi düğmeler —
+  oyunun ortasında başka bir uygulama açılmış gibi duruyordu. Beş ekrandaki
+  tüm onaylar artık `DialogProvider` üzerinden.
+- **Alt sayfaların animasyonu düzeldi.** Karartma panelle birlikte aşağıdan
+  yukarı kayıyordu (ekranın altından siyah bir blok geliyormuş gibi); artık
+  karartma soluyor, panel kayıyor.
+
 - **Çevrimdışıyken bakiye ekrandan ekrana farklı görünüyordu.** Menü yerel
   bakiyeyi gösteriyor, Kadro / kart detayı / mağaza ise doğrudan sunucu
   değerini okuduğu için **0 jant** gösteriyordu. Koleksiyon için yazılmış

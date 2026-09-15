@@ -6,6 +6,8 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { DialogProvider } from '@/components/overlay/DialogProvider';
+
 import { colors, font } from '@/constants/theme';
 import { useGameStore } from '@/store/gameStore';
 import { useSessionStore } from '@/store/sessionStore';
@@ -39,6 +41,9 @@ export default function RootLayout() {
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
         <StatusBar style="dark" />
+        {/* Diyalog sağlayıcısı Stack'in DIŞINDA: diyalog ekrana değil
+            uygulamaya ait ve ekran değiştiğinde kaybolmamalı. */}
+        <DialogProvider>
         {ready ? (
           <Stack
             screenOptions={{
@@ -64,6 +69,7 @@ export default function RootLayout() {
             <Text style={styles.loadingText}>Garaj açılıyor…</Text>
           </View>
         )}
+        </DialogProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

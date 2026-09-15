@@ -1,22 +1,17 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ChunkyButton } from '@/components/ChunkyButton';
 import { WalletPill } from '@/components/Currency';
-import { colors, font, radius, rarity, shadow, space, text } from '@/constants/theme';
-import { getCard } from '@/data/cards';
+import { colors, font, radius, shadow, space, text } from '@/constants/theme';
+import { EmptySlot, SquadSlot } from '@/components/SquadSlot';
 import { DIFFICULTY, DIFFICULTY_ORDER, type Difficulty } from '@/game/difficulty';
 import { LOADOUT_TOTAL, useGameStore } from '@/store/gameStore';
 import { useSessionStore } from '@/store/sessionStore';
 import { useWallet } from '@/store/useWallet';
-
-/** Module scope on purpose: the bottom nav navigates with replace(), so this
- *  screen unmounts and remounts often. A ref would reset with it and could
- *  push a second copy of the tutorial onto the stack. */
-let tutorialAutoOpened = false;
 
 /**
  * OYNA — oyunun ana ekranı ve alt menünün merkez düğmesi.
@@ -54,11 +49,6 @@ export default function PlayScreen() {
     }, [refreshWallet, refreshInventory]),
   );
 
-  useEffect(() => {
-    if (howToPlaySeen || tutorialAutoOpened) return;
-    tutorialAutoOpened = true;
-    router.push('/how-to-play');
-  }, [howToPlaySeen, router]);
 
   const total = loadout.length + supportLoadout.length;
   const ready = total === LOADOUT_TOTAL;
@@ -111,6 +101,17 @@ export default function PlayScreen() {
           </Pressable>
         )}
 
+        {/* Öğretici artık uygulamayı AÇMIYOR — oyuncu oyuna düşüyor, kurallar
+            burada duruyor. Açılışta bir eğitim ekranıyla karşılamak, oynamaya
+            gelen oyuncuyu okumaya zorlamak demekti. */}
+        {!howToPlaySeen && (
+          <Pressable style={styles.tutorialRow} onPress={() => router.push('/how-to-play')}>
+            <MaterialCommunityIcons name="school-outline" size={20} color={colors.accentDark} />
+            <Text style={styles.tutorialText}>İlk kez mi oynuyorsun? Kuralları öğren</Text>
+            <MaterialCommunityIcons name="chevron-right" size={18} color={colors.accentDark} />
+          </Pressable>
+        )}
+
         <View>
           <Text style={styles.sectionLabel}>ZORLUK</Text>
           <View style={styles.difficultyRow}>
@@ -142,21 +143,17 @@ export default function PlayScreen() {
             </View>
           </View>
           <View style={styles.squadRow}>
-            {/* Bu boyutta kart anatomisi okunmuyor; tek taşıdığı bilgi
-                nadirlik ve o da kenar rengiyle veriliyor. */}
-            {loadout.map((id) => {
-              const tint = rarity[getCard(id).rarity];
-              return (
-                <View
-                  key={id}
-                  style={[styles.slot, { backgroundColor: tint.art, borderColor: tint.border }]}
-                />
-              );
-            })}
-            <View style={styles.pitSlot}>
-              <MaterialCommunityIcons name="wrench" size={14} color={colors.bubble} />
-              <Text style={styles.pitText}>{supportLoadout.length} pit</Text>
-            </View>
+            {loadout.map((id) => (
+              <SquadSlot key={id} cardId={id} />
+            ))}
+            {/* Pit kartları da yuva olarak diziliyor, "3 pit" yazısı olarak
+                değil: araçlar görsel, pit yazıysa kadro yarım görünüyordu. */}
+            {supportLoadout.map((id) => (
+              <SquadSlot key={id} cardId={id} kind="support" />
+            ))}
+            {Array.from({ length: Math.max(0, LOADOUT_TOTAL - total) }).map((_, i) => (
+              <EmptySlot key={`empty-${i}`} />
+            ))}
           </View>
         </Pressable>
 
@@ -201,7 +198,7 @@ const styles = StyleSheet.create({
   avatarGuest: { backgroundColor: colors.sunken },
   name: { fontFamily: font.headingSm, fontSize: 15, lineHeight: 19, color: colors.ink },
   nameGuest: { color: colors.textMuted },
-  sub: { fontFamily: font.bodyBold, fontSize: text.caption.fontSize, color: colors.textMuted },
+  sub: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.textMuted },
   signInPill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -213,7 +210,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.primarySoft,
   },
-  signInText: { fontFamily: font.bodyBlack, fontSize: text.small.fontSize, color: colors.primaryInk },
+  signInText: { fontFamily: font.bodyBlack, fontSize: text.bodySmall.fontSize, color: colors.primaryInk },
 
   body: { flex: 1, justifyContent: 'center', gap: 14, paddingHorizontal: space.md },
 
@@ -226,11 +223,25 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primarySoft,
   },
   guestTitle: { fontFamily: font.bodyBlack, fontSize: text.body.fontSize, color: colors.primaryInk },
-  guestSub: { fontFamily: font.body, fontSize: text.small.fontSize, color: colors.primaryInk, opacity: 0.8 },
+  guestSub: { fontFamily: font.body, fontSize: text.bodySmall.fontSize, color: colors.primaryInk, opacity: 0.8 },
 
+  tutorialRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 13,
+    borderRadius: 18,
+    backgroundColor: colors.accentSoft,
+  },
+  tutorialText: {
+    flex: 1,
+    fontFamily: font.bodyBold,
+    fontSize: text.body.fontSize,
+    color: colors.accentDark,
+  },
   sectionLabel: {
     fontFamily: font.bodyBold,
-    fontSize: text.caption.fontSize,
+    fontSize: text.bodySmall.fontSize,
     letterSpacing: 0.4,
     color: colors.textMuted,
     marginBottom: 7,
@@ -260,27 +271,26 @@ const styles = StyleSheet.create({
   squadHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 11 },
   squadTitle: { fontFamily: font.headingSm, fontSize: 15, lineHeight: 19, color: colors.ink },
   squadLink: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  squadCount: { fontFamily: font.bodyBlack, fontSize: text.small.fontSize, color: colors.successInk },
+  squadCount: { fontFamily: font.bodyBlack, fontSize: text.bodySmall.fontSize, color: colors.successInk },
   squadCountWarn: { color: colors.accentDark },
   squadRow: { flexDirection: 'row', gap: 5, alignItems: 'stretch' },
-  slot: { width: 38, height: 50, borderRadius: 9, borderWidth: 2 },
-  pitSlot: {
-    flex: 1,
-    height: 50,
-    borderRadius: 8,
-    backgroundColor: colors.sunken,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 4,
-  },
-  pitText: { fontFamily: font.bodyBold, fontSize: text.small.fontSize, color: colors.textMuted },
 
   playInner: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  playText: { fontFamily: font.display, fontSize: 26, lineHeight: 30, color: colors.ink },
+  /** `lineHeight` bilerek font boyutuna eşit: Baloo 2'nin kendi iç boşluğu
+   *  üstte fazla yer bırakıyor ve satır yüksekliği büyüdükçe yazı düğmenin
+   *  içinde yukarı kayıyordu. `includeFontPadding` Android'de aynı sorunu
+   *  ayrıca üretiyor, o yüzden o da kapalı. */
+  playText: {
+    fontFamily: font.display,
+    fontSize: 26,
+    lineHeight: 26,
+    color: colors.ink,
+    includeFontPadding: false,
+    textAlignVertical: 'center',
+  },
   notReady: {
     fontFamily: font.body,
-    fontSize: text.small.fontSize,
+    fontSize: text.bodySmall.fontSize,
     color: colors.accentDark,
     textAlign: 'center',
   },

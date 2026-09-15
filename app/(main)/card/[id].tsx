@@ -1,10 +1,11 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ChunkyButton } from '@/components/ChunkyButton';
+import { useDialog } from '@/components/overlay/DialogProvider';
 import { CURRENCY, CurrencyTag, WalletPill } from '@/components/Currency';
 import { RarityStars } from '@/components/GameCard';
 import { colors, font, NAV_CLEARANCE, radius, rarity as RAR, shadow, space, text } from '@/constants/theme';
@@ -21,6 +22,7 @@ import type { Currency } from '@/types';
 export default function CardDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const dialog = useDialog();
   const card = getCard(id);
   const r = RAR[card.rarity];
 
@@ -47,7 +49,7 @@ export default function CardDetail() {
    */
   const buy = async (currency: CurrencyCode) => {
     const error = await unlock(card.id, currency);
-    if (error) Alert.alert(card.name, error);
+    if (error) dialog.show({ title: card.name, message: error, actions: [{ label: 'Tamam', variant: 'primary' }] });
     else buzz();
   };
 
@@ -231,7 +233,7 @@ const styles = StyleSheet.create({
   content: { padding: space.md, gap: 14, paddingBottom: NAV_CLEARANCE + space.lg },
   crumbRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   back: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', paddingVertical: 4 },
-  backText: { fontFamily: font.bodyBold, fontSize: 13, color: colors.textMuted },
+  backText: { fontFamily: font.bodyBold, fontSize: 14, color: colors.textMuted },
   hero: { height: 190, borderRadius: radius.xl, overflow: 'hidden', position: 'relative' },
   dim: { opacity: 0.6 },
   heroImg: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%' },
@@ -245,12 +247,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     ...shadow.card,
   },
-  levelPillText: { fontFamily: font.stat, fontSize: 13, color: colors.ink },
+  levelPillText: { fontFamily: font.stat, fontSize: 14, color: colors.ink },
   name: { fontFamily: font.display, fontSize: 26, color: colors.ink },
-  flavor: { fontFamily: font.body, fontSize: 13, lineHeight: 19, fontStyle: 'italic', color: colors.textMuted },
+  flavor: { fontFamily: font.body, fontSize: 14, lineHeight: 20, fontStyle: 'italic', color: colors.textMuted },
   pillRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
   pill: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderRadius: radius.pill },
-  pillText: { fontFamily: font.bodyBold, fontSize: text.caption.fontSize, letterSpacing: 0.5 },
+  pillText: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, letterSpacing: 0.5 },
   statRow: { flexDirection: 'row', gap: 7 },
   statBox: {
     flex: 1,
@@ -262,9 +264,9 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
   statValue: { fontFamily: font.stat, fontSize: 18, color: colors.ink },
-  statDelta: { fontFamily: font.stat, fontSize: text.caption.fontSize, color: colors.successInk },
-  statLabel: { fontFamily: font.bodyBold, fontSize: text.micro.fontSize, color: colors.textFaint, textAlign: 'center' },
-  sectionLabel: { fontFamily: font.bodyBold, fontSize: text.caption.fontSize, letterSpacing: 1, color: colors.textFaint },
+  statDelta: { fontFamily: font.stat, fontSize: text.bodySmall.fontSize, color: colors.successInk },
+  statLabel: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.textFaint, textAlign: 'center' },
+  sectionLabel: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, letterSpacing: 1, color: colors.textFaint },
   abilityBox: {
     backgroundColor: colors.surface,
     borderWidth: 1,
@@ -275,9 +277,9 @@ const styles = StyleSheet.create({
   abilityRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-start', padding: 14 },
   abilityDivider: { borderBottomWidth: 1, borderBottomColor: colors.border },
   abilityDot: { width: 7, height: 7, marginTop: 5, borderRadius: 4, backgroundColor: colors.accent },
-  abilityText: { flex: 1, fontFamily: font.body, fontSize: text.small.fontSize, lineHeight: text.small.lineHeight, color: colors.inkSoft },
+  abilityText: { flex: 1, fontFamily: font.body, fontSize: text.bodySmall.fontSize, lineHeight: text.bodySmall.lineHeight, color: colors.inkSoft },
   abilityLabel: { fontFamily: font.bodyBold, color: colors.ink },
-  noAbility: { fontFamily: font.body, fontSize: text.small.fontSize, color: colors.textFaint, textAlign: 'center' },
+  noAbility: { fontFamily: font.body, fontSize: text.bodySmall.fontSize, color: colors.textFaint, textAlign: 'center' },
   upgradeInner: {
     flex: 1,
     flexDirection: 'row',
@@ -297,6 +299,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     backgroundColor: 'rgba(255,255,255,0.18)',
   },
-  costChipText: { fontFamily: font.stat, fontSize: 13, color: '#FFFFFF' },
-  needHint: { fontFamily: font.bodyBold, fontSize: text.caption.fontSize, color: colors.textMuted, textAlign: 'center', marginTop: -2 },
+  costChipText: { fontFamily: font.stat, fontSize: 14, color: '#FFFFFF' },
+  needHint: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.textMuted, textAlign: 'center', marginTop: -2 },
 });

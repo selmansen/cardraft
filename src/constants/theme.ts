@@ -68,17 +68,24 @@ export const font = {
 export const radius = { sm: 12, md: 16, lg: 20, xl: 24, xxl: 28, pill: 999 } as const;
 
 /**
- * Non-headline type scale — every step was bumped up one notch for readability
- * (headline/display sizes in Baloo 2 were fine and are untouched). Pair each
- * with a lineHeight ~1.3x so custom fonts (Baloo 2 / Nunito) sit centered
- * inside pills and buttons instead of looking vertically off.
+ * Gövde tipografisi — üç basamak, en küçüğü 14.
+ *
+ * Eskiden beş basamak vardı (micro 11 · caption 12 · small 13 · body 14 ·
+ * bodyLg 15) ve ilk üçü telefonda okunmuyordu: rozet rakamları, nadirlik
+ * etiketleri ve ipucu metinleri gözü yoruyordu. Ayrıca 11-12-13 arasındaki
+ * fark bir hiyerarşi kurmuyordu, sadece tutarsızlık üretiyordu.
+ *
+ * Şimdi üç basamak var ve aralarındaki fark görünür:
+ *   bodySmall 14 — ikincil bilgi, rozet, etiket (ALT SINIR)
+ *   body      16 — varsayılan metin, buton, liste satırı
+ *   bodyBig   18 — öne çıkan satır, modal başlığı altı
+ *
+ * Başlıklar (Baloo 2) bu ölçeğin dışında; onlar yerinde yazılıyor.
  */
 export const text = {
-  micro: { fontSize: 11, lineHeight: 14 }, // badge numbers, tiny stat labels
-  caption: { fontSize: 12, lineHeight: 16 }, // uppercase labels, chip text
-  small: { fontSize: 13, lineHeight: 18 }, // secondary/help text
-  body: { fontSize: 14, lineHeight: 19 }, // default body, button labels
-  bodyLg: { fontSize: 15, lineHeight: 20 },
+  bodySmall: { fontSize: 14, lineHeight: 19 },
+  body: { fontSize: 16, lineHeight: 22 },
+  bodyBig: { fontSize: 18, lineHeight: 24 },
 } as const;
 
 export const space = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 } as const;

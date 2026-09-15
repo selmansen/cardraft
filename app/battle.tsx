@@ -5,7 +5,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { type MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -74,6 +73,7 @@ import {
 import { planBotTurn } from '@/game/bot';
 import { makeBotLoadout, makeBotSupportLoadout } from '@/game/botDeck';
 import { ChunkyButton } from '@/components/ChunkyButton';
+import { useDialog } from '@/components/overlay/DialogProvider';
 import { CurrencyTag } from '@/components/Currency';
 import { MatchRecorder, openMatchSession, type MatchSetup } from '@/game/matchSession';
 import { useSessionStore } from '@/store/sessionStore';
@@ -510,6 +510,7 @@ export default function BattleScreen() {
     ? battleReward(battle.winner === 'player', difficulty)
     : 0;
   const refreshWallet = useSessionStore((s) => s.refreshWallet);
+  const dialog = useDialog();
   const isGuest = useSessionStore((s) => s.user?.isGuest ?? true);
   const guestOfferDismissed = useGameStore((s) => s.guestOfferDismissed);
   const dismissGuestOffer = useGameStore((s) => s.dismissGuestOffer);
@@ -1034,19 +1035,19 @@ export default function BattleScreen() {
           toast(`Saha dolu. Yeni araç için birinin üstüne bırak.`, 'error');
           return;
         }
-        Alert.alert(
-          'Hurdaya ayrılsın mı?',
-          `${victim.name} sahadan çıkacak, yerine ${card.name} geçecek.`,
-          [
-            { text: 'Vazgeç', style: 'cancel' },
-            { text: 'Hurdaya Ayır', style: 'destructive', onPress: () => commit(victim.uid) },
+        dialog.show({
+          title: 'Hurdaya ayrılsın mı?',
+          message: `${victim.name} sahadan çıkacak, yerine ${card.name} geçecek.`,
+          actions: [
+            { label: 'Hurdaya ayır', variant: 'danger', onPress: () => commit(victim.uid) },
+            { label: 'Vazgeç' },
           ],
-        );
+        });
         return;
       }
       commit();
     },
-    [busy, toast, hitTest, holdForSpawn],
+    [busy, toast, hitTest, holdForSpawn, dialog],
   );
 
   /** Why a black-bordered hand card can't be played right now. */
@@ -3293,7 +3294,7 @@ const styles = StyleSheet.create({
     ...shadow.card,
   },
   actionBtnPrimary: { backgroundColor: colors.accent },
-  actionBtnText: { fontFamily: font.bodyBold, fontSize: text.small.fontSize },
+  actionBtnText: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize },
   // One tooltip container holding both the hint and the preference — not two
   // stacked cards, and no scale animation: it just appears under its button.
   helpTip: {
@@ -3308,8 +3309,8 @@ const styles = StyleSheet.create({
   helpTipText: {
     flex: 1,
     fontFamily: font.bodyBold,
-    fontSize: text.small.fontSize,
-    lineHeight: text.small.lineHeight,
+    fontSize: text.bodySmall.fontSize,
+    lineHeight: text.bodySmall.lineHeight,
     color: colors.accentInk,
   },
   // Auto-end-turn, now a labelled row inside the tooltip rather than a
@@ -3323,7 +3324,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border,
   },
-  autoRowLabel: { flex: 1, fontFamily: font.bodyBold, fontSize: text.small.fontSize, color: colors.inkSoft },
+  autoRowLabel: { flex: 1, fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.inkSoft },
 
   zone: { gap: 8, position: 'relative' },
   // Only while that side is mid-spawn — see spawnSide.
@@ -3331,7 +3332,7 @@ const styles = StyleSheet.create({
   // Scrapyard count, inline in the garage bar — tap to see which vehicles
   // that side has lost. Was a floating badge pinned to the zone's corner.
   garageDead: { flexDirection: 'row', alignItems: 'center', gap: 3, marginLeft: 2 },
-  garageDeadText: { fontFamily: font.stat, fontSize: text.small.fontSize, color: colors.textMuted },
+  garageDeadText: { fontFamily: font.stat, fontSize: text.bodySmall.fontSize, color: colors.textMuted },
   graveyardPanel: {
     width: '100%',
     maxWidth: 340,
@@ -3355,7 +3356,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   graveyardImg: { width: 36, height: 36, borderRadius: 8 },
-  graveyardName: { fontFamily: font.bodyBold, fontSize: text.small.fontSize, color: colors.ink },
+  graveyardName: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.ink },
 
   // No panel and no border by default any more: the bar sits straight on the
   // arena floor. The border is still here but transparent — it turns red only
@@ -3370,12 +3371,12 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   garageTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5 },
-  garageLabel: { fontFamily: font.bodyBold, fontSize: text.small.fontSize, letterSpacing: 0.3 },
+  garageLabel: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, letterSpacing: 0.3 },
   // Hairline dot between the name and the numbers — enough to group them
   // without a full divider.
   garageSep: { width: 3, height: 3, borderRadius: 2, opacity: 0.5, marginHorizontal: 3 },
-  garageFuel: { fontFamily: font.stat, fontSize: text.small.fontSize, color: colors.primaryInk },
-  garageHp: { fontFamily: font.stat, fontSize: text.small.fontSize, color: colors.ink, marginRight: 4 },
+  garageFuel: { fontFamily: font.stat, fontSize: text.bodySmall.fontSize, color: colors.primaryInk },
+  garageHp: { fontFamily: font.stat, fontSize: text.bodySmall.fontSize, color: colors.ink, marginRight: 4 },
   // Translucent ink instead of the theme's opaque `sunken`: the channel now
   // shows the arena through it rather than sitting on a white card.
   hpTrack: {
@@ -3403,7 +3404,7 @@ const styles = StyleSheet.create({
   // instead of a sentence. White-ish for the same reason as handLabel above.
   handEmpty: {
     fontFamily: font.body,
-    fontSize: text.small.fontSize,
+    fontSize: text.bodySmall.fontSize,
     color: 'rgba(255,255,255,0.78)',
     paddingVertical: 20,
   },
@@ -3475,7 +3476,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     backgroundColor: 'rgba(0,0,0,0.42)',
   },
-  bvName: { fontFamily: font.headingSm, fontSize: 10, color: '#FFFFFF' },
+  bvName: { fontFamily: font.headingSm, fontSize: 12, color: '#FFFFFF' },
   // Chips (icon + number), close to the card's own corner radius rather than
   // a stretched pill — zap/red = attack power, shield = durability.
   bvPow: {
@@ -3490,7 +3491,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: colors.danger,
   },
-  bvPowText: { fontFamily: font.stat, fontSize: 13, color: '#FFFFFF' },
+  bvPowText: { fontFamily: font.stat, fontSize: 14, color: '#FFFFFF' },
   bvHp: {
     position: 'absolute',
     bottom: 6,
@@ -3502,7 +3503,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 10,
   },
-  bvHpText: { fontFamily: font.stat, fontSize: 13, color: '#FFFFFF' },
+  bvHpText: { fontFamily: font.stat, fontSize: 14, color: '#FFFFFF' },
 
   resultScrim: {
     position: 'absolute',
@@ -3541,14 +3542,14 @@ const styles = StyleSheet.create({
   guestMissedText: {
     flex: 1,
     fontFamily: font.bodyBold,
-    fontSize: text.small.fontSize,
-    lineHeight: text.small.lineHeight,
+    fontSize: text.bodySmall.fontSize,
+    lineHeight: text.bodySmall.lineHeight,
     color: colors.inkSoft,
   },
   guestSkip: { height: 40, alignItems: 'center', justifyContent: 'center' },
   guestSkipText: { fontFamily: font.bodyBold, fontSize: text.body.fontSize, color: colors.textMuted },
   resultOffline: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  resultOfflineText: { fontFamily: font.bodyBold, fontSize: text.caption.fontSize, color: colors.textMuted },
+  resultOfflineText: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.textMuted },
   resultBtn: {
     paddingHorizontal: 20,
     paddingVertical: 12,
@@ -3664,7 +3665,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     backgroundColor: 'rgba(16,18,28,0.55)',
   },
-  turnBannerChipText: { fontFamily: font.bodyBold, fontSize: text.caption.fontSize, color: '#FFFFFF', letterSpacing: 0.5 },
+  turnBannerChipText: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: '#FFFFFF', letterSpacing: 0.5 },
 
   drawRevealWrap: {
     position: 'absolute',
@@ -3696,7 +3697,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(16,18,28,0.55)',
     color: '#FFFFFF',
     fontFamily: font.bodyBold,
-    fontSize: text.micro.fontSize,
+    fontSize: text.bodySmall.fontSize,
     letterSpacing: 0.5,
     zIndex: 1,
     overflow: 'hidden',
@@ -3735,7 +3736,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: colors.sunken,
   },
-  chatMsgText: { fontFamily: font.bodyBold, fontSize: text.caption.fontSize, color: colors.ink, textAlign: 'center' },
+  chatMsgText: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.ink, textAlign: 'center' },
 
   // Vertically centred on its own board row (top/bottom 0 + centre), pinned
   // to the edge it slides in from, above the cards it overlaps.
@@ -3765,7 +3766,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: radius.lg,
     borderBottomLeftRadius: 4,
   },
-  chatToastText: { fontFamily: font.bodyBold, fontSize: text.caption.fontSize, color: '#FFFFFF' },
+  chatToastText: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: '#FFFFFF' },
 
   inspectScrim: {
     position: 'absolute',
@@ -3811,7 +3812,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: radius.pill,
   },
-  inspectPillText: { fontFamily: font.bodyBold, fontSize: text.caption.fontSize, letterSpacing: 0.4 },
+  inspectPillText: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, letterSpacing: 0.4 },
   inspectStatRow: { flexDirection: 'row', gap: 6 },
   inspectStat: {
     flex: 1,
@@ -3833,7 +3834,7 @@ const styles = StyleSheet.create({
   inspectAbilityRow: { flexDirection: 'row', gap: 9, alignItems: 'flex-start', padding: 12 },
   inspectAbilityDivider: { borderBottomWidth: 1, borderBottomColor: colors.border },
   inspectDot: { width: 6, height: 6, marginTop: 6, borderRadius: 3, backgroundColor: colors.accent },
-  inspectLine: { flex: 1, fontFamily: font.body, fontSize: text.small.fontSize, lineHeight: text.small.lineHeight, color: colors.inkSoft },
+  inspectLine: { flex: 1, fontFamily: font.body, fontSize: text.bodySmall.fontSize, lineHeight: text.bodySmall.lineHeight, color: colors.inkSoft },
   inspectLabel: { fontFamily: font.bodyBold, color: colors.ink },
   inspectNone: { fontFamily: font.body, fontSize: text.body.fontSize, color: colors.textFaint },
 
@@ -3890,7 +3891,7 @@ const styles = StyleSheet.create({
   },
   handLabel: {
     fontFamily: font.bodyBold,
-    fontSize: text.caption.fontSize,
+    fontSize: text.bodySmall.fontSize,
     color: 'rgba(255,255,255,0.78)',
   },
   handRowClip: { overflow: 'hidden' },
@@ -3919,7 +3920,7 @@ const styles = StyleSheet.create({
     right: 0,
     textAlign: 'center',
     fontFamily: font.bodyBlack,
-    fontSize: text.caption.fontSize,
+    fontSize: text.bodySmall.fontSize,
     color: colors.primary,
     zIndex: 5,
   },
@@ -3947,7 +3948,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 9,
   },
-  hcCostText: { fontFamily: font.stat, fontSize: text.micro.fontSize, color: colors.ink },
+  hcCostText: { fontFamily: font.stat, fontSize: text.bodySmall.fontSize, color: colors.ink },
   // Pills (icon + number), same idea as the board cards: zap = power, shield = durability.
   hcPow: {
     position: 'absolute',
@@ -3961,7 +3962,7 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     backgroundColor: colors.danger,
   },
-  hcPowText: { fontFamily: font.stat, fontSize: text.micro.fontSize, color: '#FFFFFF' },
+  hcPowText: { fontFamily: font.stat, fontSize: text.bodySmall.fontSize, color: '#FFFFFF' },
   hcDur: {
     position: 'absolute',
     bottom: 3,
@@ -3974,7 +3975,7 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     backgroundColor: colors.success,
   },
-  hcDurText: { fontFamily: font.stat, fontSize: text.micro.fontSize, color: '#FFFFFF' },
+  hcDurText: { fontFamily: font.stat, fontSize: text.bodySmall.fontSize, color: '#FFFFFF' },
 
   // Pit Ekibi (support) cards — same footprint as a vehicle HandCard
   // (styles.handCard) but a totally different face: no art, no cost/power

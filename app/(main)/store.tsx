@@ -1,13 +1,14 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { storeApi } from '@/api/endpoints';
 import type { PackDto, Rarity } from '@/api/types';
 import { ChunkyButton } from '@/components/ChunkyButton';
 import { CurrencyTag, WalletPill } from '@/components/Currency';
+import { BottomSheet } from '@/components/overlay/BottomSheet';
 import { colors, font, NAV_CLEARANCE, radius, rarity as rarityTheme, shadow, space, text } from '@/constants/theme';
 import { useSessionStore } from '@/store/sessionStore';
 import { useWallet } from '@/store/useWallet';
@@ -169,10 +170,8 @@ function PackCard({ pack, onOdds, onBuy }: { pack: PackDto; onOdds: () => void; 
 
 function OddsModal({ pack, onClose }: { pack: PackDto | null; onClose: () => void }) {
   return (
-    <Modal visible={pack !== null} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.scrim} onPress={onClose} />
-      <View style={styles.sheet}>
-        <View style={styles.grabber} />
+    <BottomSheet visible={pack !== null} onClose={onClose}>
+      <>
         {pack && (
           <>
             <View style={styles.sheetHead}>
@@ -222,8 +221,8 @@ function OddsModal({ pack, onClose }: { pack: PackDto | null; onClose: () => voi
             <ChunkyButton variant="secondary" label="Anladım" onPress={onClose} style={{ marginTop: space.md }} />
           </>
         )}
-      </View>
-    </Modal>
+      </>
+    </BottomSheet>
   );
 }
 
@@ -242,10 +241,8 @@ function ShortOnRimsSheet({
   const pct = pack ? Math.min(100, Math.round((rims / pack.price.rim) * 100)) : 0;
 
   return (
-    <Modal visible={pack !== null} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.scrim} onPress={onClose} />
-      <View style={styles.sheet}>
-        <View style={styles.grabber} />
+    <BottomSheet visible={pack !== null} onClose={onClose}>
+      <>
         {pack && (
           <>
             <View style={styles.shortHead}>
@@ -285,8 +282,8 @@ function ShortOnRimsSheet({
             />
           </>
         )}
-      </View>
-    </Modal>
+      </>
+    </BottomSheet>
   );
 }
 
@@ -300,7 +297,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   back: { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  backText: { fontFamily: font.bodyBold, fontSize: text.small.fontSize, color: colors.textMuted },
+  backText: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.textMuted },
   title: {
     fontFamily: font.heading,
     fontSize: 26,
@@ -311,8 +308,8 @@ const styles = StyleSheet.create({
   },
   help: {
     fontFamily: font.body,
-    fontSize: text.small.fontSize,
-    lineHeight: text.small.lineHeight,
+    fontSize: text.bodySmall.fontSize,
+    lineHeight: text.bodySmall.lineHeight,
     color: colors.textMuted,
     paddingHorizontal: space.md,
     marginTop: 2,
@@ -330,8 +327,8 @@ const styles = StyleSheet.create({
   },
   offlineText: {
     fontFamily: font.body,
-    fontSize: text.small.fontSize,
-    lineHeight: text.small.lineHeight,
+    fontSize: text.bodySmall.fontSize,
+    lineHeight: text.bodySmall.lineHeight,
     color: colors.textMuted,
     textAlign: 'center',
   },
@@ -353,28 +350,28 @@ const styles = StyleSheet.create({
   packName: { fontFamily: font.headingSm, fontSize: 18, lineHeight: 22, color: colors.ink },
   packBlurb: {
     fontFamily: font.body,
-    fontSize: text.small.fontSize,
-    lineHeight: text.small.lineHeight,
+    fontSize: text.bodySmall.fontSize,
+    lineHeight: text.bodySmall.lineHeight,
     color: colors.textMuted,
   },
 
   oddsHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 4 },
   oddsLabel: {
     fontFamily: font.bodyBold,
-    fontSize: text.caption.fontSize,
+    fontSize: text.bodySmall.fontSize,
     letterSpacing: 0.4,
     color: colors.textMuted,
   },
   oddsDetail: { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  oddsDetailText: { fontFamily: font.bodyBold, fontSize: text.small.fontSize, color: colors.primaryInk },
+  oddsDetailText: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.primaryInk },
   oddsRow: { flexDirection: 'row', gap: 5 },
   oddsChip: { flex: 1, paddingVertical: 6, borderRadius: radius.sm, alignItems: 'center' },
   oddsPct: { fontFamily: font.stat, fontSize: 15, lineHeight: 18 },
-  oddsName: { fontFamily: font.bodyBold, fontSize: text.micro.fontSize, lineHeight: text.micro.lineHeight },
+  oddsName: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, lineHeight: text.bodySmall.lineHeight },
 
   buyInner: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  buyLabel: { fontFamily: font.bodyBlack, fontSize: text.bodyLg.fontSize, color: '#FFFFFF' },
-  battleLabel: { fontFamily: font.bodyBlack, fontSize: text.bodyLg.fontSize, color: colors.ink },
+  buyLabel: { fontFamily: font.bodyBlack, fontSize: text.bodyBig.fontSize, color: '#FFFFFF' },
+  battleLabel: { fontFamily: font.bodyBlack, fontSize: text.bodyBig.fontSize, color: colors.ink },
 
   refundBanner: {
     flexDirection: 'row',
@@ -387,33 +384,12 @@ const styles = StyleSheet.create({
   refundText: {
     flex: 1,
     fontFamily: font.body,
-    fontSize: text.small.fontSize,
-    lineHeight: text.small.lineHeight,
+    fontSize: text.bodySmall.fontSize,
+    lineHeight: text.bodySmall.lineHeight,
     color: colors.ink,
   },
   refundStrong: { fontFamily: font.bodyBlack },
 
-  scrim: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: 'rgba(16,18,28,0.5)' },
-  sheet: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: radius.xxl,
-    borderTopRightRadius: radius.xxl,
-    padding: space.md,
-    paddingTop: 12,
-    paddingBottom: space.xl,
-  },
-  grabber: {
-    width: 44,
-    height: 4,
-    borderRadius: radius.pill,
-    backgroundColor: colors.border,
-    alignSelf: 'center',
-    marginBottom: space.md,
-  },
   sheetHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   sheetTitle: { fontFamily: font.heading, fontSize: 22, lineHeight: 28, color: colors.ink },
   pricePill: {
@@ -424,8 +400,8 @@ const styles = StyleSheet.create({
   },
   sheetHelp: {
     fontFamily: font.body,
-    fontSize: text.small.fontSize,
-    lineHeight: text.small.lineHeight,
+    fontSize: text.bodySmall.fontSize,
+    lineHeight: text.bodySmall.lineHeight,
     color: colors.textMuted,
     marginTop: 2,
     marginBottom: space.md,
@@ -438,8 +414,8 @@ const styles = StyleSheet.create({
   barFill: { height: '100%', borderRadius: radius.pill },
   footnote: {
     fontFamily: font.body,
-    fontSize: text.caption.fontSize,
-    lineHeight: text.caption.lineHeight,
+    fontSize: text.bodySmall.fontSize,
+    lineHeight: text.bodySmall.lineHeight,
     color: colors.textFaint,
     textAlign: 'center',
     marginTop: 12,
@@ -457,12 +433,12 @@ const styles = StyleSheet.create({
   shortTitle: { fontFamily: font.heading, fontSize: 22, lineHeight: 28, color: colors.ink },
   shortHelp: {
     fontFamily: font.body,
-    fontSize: text.small.fontSize,
-    lineHeight: text.small.lineHeight,
+    fontSize: text.bodySmall.fontSize,
+    lineHeight: text.bodySmall.lineHeight,
     color: colors.textMuted,
     textAlign: 'center',
   },
   progressBox: { marginTop: space.md, padding: 14, backgroundColor: colors.sunken, borderRadius: radius.md, gap: 9 },
-  progressLabel: { fontFamily: font.bodyBold, fontSize: text.small.fontSize, color: colors.inkSoft },
+  progressLabel: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.inkSoft },
   progressValue: { fontFamily: font.stat, fontSize: text.body.fontSize, color: colors.ink },
 });

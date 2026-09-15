@@ -1,16 +1,21 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { CurrencyCode } from '@/api/types';
 import { CardInspectPanel } from '@/components/CardInspectPanel';
+import { ChunkyButton } from '@/components/ChunkyButton';
+import { BottomSheet } from '@/components/overlay/BottomSheet';
+import { EmptySlot, SquadSlot } from '@/components/SquadSlot';
+import { SUPPORT_ICON } from '@/data/supportIcons';
 import { CategoryTabs } from '@/components/CategoryTabs';
 import { CurrencyTag } from '@/components/Currency';
+import { useDialog, type DialogOptions } from '@/components/overlay/DialogProvider';
 import { GameCard } from '@/components/GameCard';
-import { colors, font, NAV_CLEARANCE, radius, rarity, shadow, space, text } from '@/constants/theme';
-import { CARDS, CLASS_LABEL, getCard } from '@/data/cards';
+import { colors, font, LONG_PRESS_MS, NAV_CLEARANCE, radius, shadow, space, text } from '@/constants/theme';
+import { CARDS, CLASS_LABEL } from '@/data/cards';
 import { SUPPORT_CARDS } from '@/data/supportCards';
 import { supportCardEffectText } from '@/game/supportAbilities';
 import { LOADOUT_TOTAL, MAX_SUPPORT, MIN_VEHICLES, useGameStore } from '@/store/gameStore';
@@ -19,13 +24,26 @@ import { useSupportCollection, useVehicleCollection } from '@/store/useCollectio
 import { useWallet } from '@/store/useWallet';
 import { VEHICLE_CLASSES, type Card, type SupportCard, type VehicleClass } from '@/types';
 
-/** 'pit' araç kategorileriyle aynı çip sırasında duruyor: ayrı bir segment
- *  düğmesi "iki ayrı ekran" hissini geri getirirdi. */
-type Filter = 'all' | VehicleClass | 'pit';
+type Filter = 'all' | VehicleClass;
+type Segment = 'vehicles' | 'pit';
 
 const CHIPS: { key: Filter; label: string }[] = [
   { key: 'all', label: 'Tümü' },
   ...VEHICLE_CLASSES.map((c) => ({ key: c as Filter, label: CLASS_LABEL[c] })),
+];
+
+/**
+ * Saha Ekibi / Pit Ekibi ayrımı SEGMENT olarak duruyor, filtre çipi olarak
+ * değil.
+ *
+ * Bir ara çipler arasına konmuştu ("tek ekran" hissi için) ama iki havuz
+ * gerçekten farklı: kartların anatomisi ayrı (araçta stat var, pitte etki
+ * metni), kadro sınırları ayrı (en az 3 araç, en fazla 5 pit) ve kategori
+ * filtreleri yalnızca araçlara ait. Aynı sırada durmaları, ilgisiz iki şeyi
+ * eşitmiş gibi gösteriyordu.
+ */
+const SEGMENTS: { key: Segment; label: string }[] = [
+  { key: 'vehicles', label: 'Saha Ekibi' },
   { key: 'pit', label: 'Pit Ekibi' },
 ];
 
@@ -42,6 +60,7 @@ const CHIPS: { key: Filter; label: string }[] = [
  */
 export default function GarageScreen() {
   const router = useRouter();
+  const dialog = useDialog();
   const loadout = useGameStore((s) => s.loadout);
   const supportLoadout = useGameStore((s) => s.supportLoadout);
   const toggle = useGameStore((s) => s.toggleLoadout);
@@ -51,8 +70,10 @@ export default function GarageScreen() {
   const unlock = useSessionStore((s) => s.unlockCard);
   const { rims, coins, fromServer: online } = useWallet();
 
+  const [segment, setSegment] = useState<Segment>('vehicles');
   const [filter, setFilter] = useState<Filter>('all');
   const [inspect, setInspect] = useState<Card | null>(null);
+  const [inspectPit, setInspectPit] = useState<SupportCard | null>(null);
   const scrollRef = useRef<ScrollView>(null);
 
   // Filtre değişince başa dön: kısa bir listeden uzun bir listeye (ya da
@@ -60,15 +81,15 @@ export default function GarageScreen() {
   // ScrollView kendi başına geçerli bir yere zıplıyor.
   useEffect(() => {
     scrollRef.current?.scrollTo({ y: 0, animated: false });
-  }, [filter]);
+  }, [filter, segment]);
 
   const total = loadout.length + supportLoadout.length;
-  const showPit = filter === 'pit';
+  const showPit = segment === 'pit';
 
   const vehicleList = useMemo(() => {
-    const list = filter === 'all' || filter === 'pit' ? CARDS : CARDS.filter((c) => c.class === filter);
+    const list = filter === 'all' ? CARDS : CARDS.filter((c) => c.class === filter);
     return [...list].sort((a, b) => a.cost - b.cost || a.name.localeCompare(b.name));
-  }, [filter]);
+  }, [filter, segment]);
 
   function onVehiclePress(card: Card) {
     // Sahip olunan kart kadroya girer/çıkar; kilitli kart satın alma
@@ -78,7 +99,11 @@ export default function GarageScreen() {
       return;
     }
     if (!loadout.includes(card.id) && total >= LOADOUT_TOTAL) {
-      Alert.alert('Kadro dolu', `Kadroda ${LOADOUT_TOTAL} kart var. Önce birini çıkar.`);
+      dialog.show({
+        title: 'Kadro dolu',
+        message: `Kadroda ${LOADOUT_TOTAL} kart var. Önce birini çıkar.`,
+        actions: [{ label: 'Tamam', variant: 'primary' }],
+      });
       return;
     }
     toggle(card.id);
@@ -86,16 +111,24 @@ export default function GarageScreen() {
 
   function onSupportPress(card: SupportCard) {
     if (!support.has(card.id)) {
-      void unlockSupport(card, { rims, coins }, online, unlock);
+      void unlockSupport(card, { rims, coins }, online, unlock, dialog.show);
       return;
     }
     const inSquad = supportLoadout.includes(card.id);
     if (!inSquad && supportLoadout.length >= MAX_SUPPORT) {
-      Alert.alert('Pit Ekibi dolu', `En fazla ${MAX_SUPPORT} Pit Ekibi kartı taşıyabilirsin.`);
+      dialog.show({
+        title: 'Pit Ekibi dolu',
+        message: `En fazla ${MAX_SUPPORT} Pit Ekibi kartı taşıyabilirsin.`,
+        actions: [{ label: 'Tamam', variant: 'primary' }],
+      });
       return;
     }
     if (!inSquad && total >= LOADOUT_TOTAL) {
-      Alert.alert('Kadro dolu', `Kadroda ${LOADOUT_TOTAL} kart var. Önce birini çıkar.`);
+      dialog.show({
+        title: 'Kadro dolu',
+        message: `Kadroda ${LOADOUT_TOTAL} kart var. Önce birini çıkar.`,
+        actions: [{ label: 'Tamam', variant: 'primary' }],
+      });
       return;
     }
     toggleSupport(card.id);
@@ -124,45 +157,40 @@ export default function GarageScreen() {
         </View>
 
         <View style={styles.squadStrip}>
-          {loadout.map((id) => {
-            const tint = rarity[getCard(id).rarity];
-            return (
-              <Pressable
-                key={id}
-                style={[styles.slot, { backgroundColor: tint.art, borderColor: tint.border }]}
-                onPress={() => toggle(id)}
-              >
-                <View style={styles.slotRemove}>
-                  <MaterialCommunityIcons name="minus" size={9} color="#FFFFFF" />
-                </View>
-              </Pressable>
-            );
-          })}
-          {loadout.length < MIN_VEHICLES && (
-            <View style={styles.slotEmpty}>
-              <MaterialCommunityIcons name="plus" size={14} color={colors.textFaint} />
-            </View>
-          )}
-
+          {loadout.map((id) => (
+            <SquadSlot key={id} cardId={id} onRemove={() => toggle(id)} />
+          ))}
           {supportLoadout.length > 0 && <View style={styles.divider} />}
           {supportLoadout.map((id) => (
-            <Pressable
-              key={id}
-              style={[styles.slot, styles.pitSlot]}
-              onPress={() => toggleSupport(id)}
-            >
-              <MaterialCommunityIcons name="wrench" size={15} color={colors.bubble} />
-              <View style={styles.slotRemove}>
-                <MaterialCommunityIcons name="minus" size={9} color="#FFFFFF" />
-              </View>
-            </Pressable>
+            <SquadSlot key={id} cardId={id} kind="support" onRemove={() => toggleSupport(id)} />
+          ))}
+          {Array.from({ length: Math.max(0, LOADOUT_TOTAL - total) }).map((_, i) => (
+            <EmptySlot key={`empty-${i}`} />
           ))}
         </View>
       </View>
 
-      <View style={styles.chips}>
-        <CategoryTabs options={CHIPS} value={filter} onChange={setFilter} />
+      <View style={styles.segments}>
+        {SEGMENTS.map((s) => {
+          const on = segment === s.key;
+          return (
+            <Pressable
+              key={s.key}
+              style={[styles.segment, on && styles.segmentOn]}
+              onPress={() => setSegment(s.key)}
+            >
+              <Text style={[styles.segmentText, on && styles.segmentTextOn]}>{s.label}</Text>
+            </Pressable>
+          );
+        })}
       </View>
+
+      {/* Kategori filtreleri yalnızca araçlara ait; pit havuzunda karşılığı yok. */}
+      {!showPit && (
+        <View style={styles.chips}>
+          <CategoryTabs options={CHIPS} value={filter} onChange={setFilter} />
+        </View>
+      )}
 
       <ScrollView ref={scrollRef} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.grid}>
@@ -174,6 +202,7 @@ export default function GarageScreen() {
                     owned={support.has(card.id)}
                     inSquad={supportLoadout.includes(card.id)}
                     onPress={() => onSupportPress(card)}
+                    onLongPress={() => setInspectPit(card)}
                   />
                 </View>
               ))
@@ -200,6 +229,9 @@ export default function GarageScreen() {
       </ScrollView>
 
       {inspect && <CardInspectPanel card={inspect} onClose={() => setInspect(null)} />}
+      {/* Pit kartının etki metni ızgarada iki satıra sığmıyor; basılı tutmak
+          araç kartlarındaki gibi tamamını açıyor. */}
+      <SupportInspectSheet card={inspectPit} onClose={() => setInspectPit(null)} />
     </SafeAreaView>
   );
 }
@@ -211,19 +243,25 @@ function PitCard({
   owned,
   inSquad,
   onPress,
+  onLongPress,
 }: {
   card: SupportCard;
   owned: boolean;
   inSquad: boolean;
   onPress: () => void;
+  onLongPress: () => void;
 }) {
   return (
     <Pressable
       style={[styles.pit, inSquad && styles.pitOn, !owned && styles.pitLocked]}
       onPress={onPress}
+      onLongPress={onLongPress}
+      delayLongPress={LONG_PRESS_MS}
     >
+      {/* İkon yeteneğin TÜRÜNE bağlı: hepsi aynı anahtar ikonuyken kartlar
+          birbirinden yalnızca adlarıyla ayrılıyordu. */}
       <View style={styles.pitIcon}>
-        <MaterialCommunityIcons name="wrench" size={20} color={colors.bubble} />
+        <MaterialCommunityIcons name={SUPPORT_ICON[card.kind]} size={20} color={colors.bubble} />
       </View>
       <Text style={styles.pitName} numberOfLines={1}>
         {card.name}
@@ -257,35 +295,136 @@ async function unlockSupport(
   wallet: { rims: number; coins: number },
   online: boolean,
   unlock: (cardId: string, currency: CurrencyCode) => Promise<string | null>,
+  show: (options: DialogOptions) => void,
 ) {
   if (!online) {
-    Alert.alert(card.name, 'Kart açmak için internet bağlantısı gerekiyor.');
+    show({
+      title: card.name,
+      message: 'Kart açmak için internet bağlantısı gerekiyor.',
+      actions: [{ label: 'Tamam', variant: 'primary' }],
+    });
     return;
   }
 
   const withRim = card.price.rim > 0 && wallet.rims >= card.price.rim;
   const withCoin = card.price.coin > 0 && wallet.coins >= card.price.coin;
   if (!withRim && !withCoin) {
-    Alert.alert(
-      card.name,
-      `Bu kart için ${card.price.rim} jant gerekiyor. Elinde ${wallet.rims} jant var.`,
-    );
+    show({
+      title: card.name,
+      message: `Bu kart için ${card.price.rim} jant gerekiyor. Elinde ${wallet.rims} jant var.`,
+      actions: [{ label: 'Tamam', variant: 'primary' }],
+    });
     return;
   }
 
   const buy = async (currency: CurrencyCode) => {
     const error = await unlock(card.id, currency);
-    if (error) Alert.alert(card.name, error);
+    if (error) show({ title: card.name, message: error, actions: [{ label: 'Tamam', variant: 'primary' }] });
   };
 
-  Alert.alert(card.name, 'Bu Pit Ekibi kartının kilidini nasıl açalım?', [
-    { text: 'Vazgeç', style: 'cancel' },
-    ...(withRim ? [{ text: `${card.price.rim} jant`, onPress: () => void buy('RIM') }] : []),
-    ...(withCoin ? [{ text: `${card.price.coin} coin`, onPress: () => void buy('COIN') }] : []),
-  ]);
+  show({
+    title: card.name,
+    message: 'Bu Pit Ekibi kartının kilidini nasıl açalım?',
+    actions: [
+      ...(withRim
+        ? [{ label: `${card.price.rim} jant`, variant: 'primary' as const, onPress: () => void buy('RIM') }]
+        : []),
+      ...(withCoin ? [{ label: `${card.price.coin} coin`, onPress: () => void buy('COIN') }] : []),
+      { label: 'Vazgeç' },
+    ],
+  });
+}
+
+/** Pit kartının tam etkisi — ızgarada iki satıra sığmıyor. */
+function SupportInspectSheet({ card, onClose }: { card: SupportCard | null; onClose: () => void }) {
+  return (
+    <BottomSheet visible={card !== null} onClose={onClose}>
+      <>
+        {card && (
+          <>
+            <View style={styles.inspectHead}>
+              <View style={styles.inspectIcon}>
+                <MaterialCommunityIcons name={SUPPORT_ICON[card.kind]} size={28} color={colors.bubble} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.inspectName}>{card.name}</Text>
+                <Text style={styles.inspectPower}>Güç seviyesi {card.power}</Text>
+              </View>
+              <View style={styles.inspectPrice}>
+                <CurrencyTag currency="rim" amount={card.price.rim} size={14} />
+              </View>
+            </View>
+            <Text style={styles.inspectEffect}>{supportCardEffectText(card)}</Text>
+            <View style={styles.inspectNote}>
+              <MaterialCommunityIcons name="information-outline" size={17} color={colors.accentDark} />
+              <Text style={styles.inspectNoteText}>
+                Pit Ekibi kartları sahaya çıkmaz ve yakıt harcamaz — turda en fazla bir tane
+                oynayabilirsin.
+              </Text>
+            </View>
+            <ChunkyButton variant="secondary" label="Kapat" onPress={onClose} style={{ marginTop: space.md }} />
+          </>
+        )}
+      </>
+    </BottomSheet>
+  );
 }
 
 const styles = StyleSheet.create({
+  inspectHead: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
+  inspectIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: '#FFE4EE',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  inspectName: { fontFamily: font.heading, fontSize: 20, lineHeight: 26, color: colors.ink },
+  inspectPower: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.textMuted },
+  inspectPrice: {
+    paddingHorizontal: 11,
+    paddingVertical: 6,
+    borderRadius: radius.pill,
+    backgroundColor: colors.sunken,
+  },
+  inspectEffect: {
+    fontFamily: font.body,
+    fontSize: text.body.fontSize,
+    lineHeight: text.body.lineHeight,
+    color: colors.ink,
+  },
+  inspectNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
+    marginTop: 14,
+    padding: 12,
+    backgroundColor: colors.accentSoft,
+    borderRadius: radius.md,
+  },
+  inspectNoteText: {
+    flex: 1,
+    fontFamily: font.body,
+    fontSize: text.bodySmall.fontSize,
+    lineHeight: text.bodySmall.lineHeight,
+    color: colors.ink,
+  },
+
+  segments: { flexDirection: 'row', gap: 6, paddingHorizontal: 16, paddingTop: 16 },
+  segment: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 14,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+  },
+  segmentOn: { backgroundColor: colors.primarySoft, borderWidth: 2, borderColor: colors.primary },
+  segmentText: { fontFamily: font.bodyBold, fontSize: text.body.fontSize, color: colors.textMuted },
+  segmentTextOn: { fontFamily: font.bodyBlack, color: colors.primaryInk },
+
   fill: { flex: 1, backgroundColor: colors.bg },
   header: {
     flexDirection: 'row',
@@ -308,13 +447,13 @@ const styles = StyleSheet.create({
   squadHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
   squadLabel: {
     fontFamily: font.bodyBold,
-    fontSize: text.caption.fontSize,
+    fontSize: text.bodySmall.fontSize,
     letterSpacing: 0.4,
     color: colors.textMuted,
   },
-  squadCount: { fontFamily: font.bodyBlack, fontSize: text.small.fontSize, color: colors.successInk },
+  squadCount: { fontFamily: font.bodyBlack, fontSize: text.bodySmall.fontSize, color: colors.successInk },
   squadCountWarn: { color: colors.accentDark },
-  squadDetail: { fontFamily: font.bodyBold, fontSize: text.caption.fontSize, color: colors.textFaint },
+  squadDetail: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.textFaint },
   squadStrip: {
     flexDirection: 'row',
     gap: 5,
@@ -356,7 +495,10 @@ const styles = StyleSheet.create({
   chips: { paddingTop: space.md },
   scroll: { paddingHorizontal: space.md, paddingTop: 12, paddingBottom: NAV_CLEARANCE },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 9 },
-  cell: { width: '31.5%', aspectRatio: 0.72 },
+  /** İKİ sütun. Üç sütunda kart 108 px kalıyordu ve içindeki üç stat kutusu
+   *  (Güç/Dayanıklılık/Hız) taşıp okunmaz hale geliyordu — kartın taşıdığı
+   *  asıl bilgi görünmüyordu. */
+  cell: { width: '48.5%', aspectRatio: 0.78 },
 
   pit: {
     flex: 1,
@@ -381,8 +523,8 @@ const styles = StyleSheet.create({
   pitName: { fontFamily: font.headingSm, fontSize: 12, lineHeight: 15, color: colors.ink },
   pitEffect: {
     fontFamily: font.body,
-    fontSize: text.micro.fontSize,
-    lineHeight: text.micro.lineHeight,
+    fontSize: text.bodySmall.fontSize,
+    lineHeight: text.bodySmall.lineHeight,
     color: colors.textMuted,
   },
   badge: {
@@ -421,8 +563,8 @@ const styles = StyleSheet.create({
   hintText: {
     flex: 1,
     fontFamily: font.body,
-    fontSize: text.caption.fontSize,
-    lineHeight: text.caption.lineHeight,
+    fontSize: text.bodySmall.fontSize,
+    lineHeight: text.bodySmall.lineHeight,
     color: colors.ink,
   },
 });
