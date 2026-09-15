@@ -42,9 +42,17 @@ const CHIPS: { key: Filter; label: string }[] = [
  * filtreleri yalnızca araçlara ait. Aynı sırada durmaları, ilgisiz iki şeyi
  * eşitmiş gibi gösteriyordu.
  */
-const SEGMENTS: { key: Segment; label: string }[] = [
-  { key: 'vehicles', label: 'Saha Ekibi' },
-  { key: 'pit', label: 'Pit Ekibi' },
+const SEGMENTS: {
+  key: Segment;
+  label: string;
+  icon: 'truck' | 'wrench';
+  /** Aktifken dolgu rengi: araçlar mavi, pit mor. Renk havuzun kimliği —
+   *  kartların kenarı da aynı rengi kullanıyor. */
+  fill: string;
+  tint: string;
+}[] = [
+  { key: 'vehicles', label: 'Saha Ekibi', icon: 'truck', fill: colors.primary, tint: colors.textMuted },
+  { key: 'pit', label: 'Pit Ekibi', icon: 'wrench', fill: colors.grape, tint: colors.grapeInk },
 ];
 
 /**
@@ -156,7 +164,15 @@ export default function GarageScreen() {
           </Text>
         </View>
 
-        <View style={styles.squadStrip}>
+        {/* Yatay kaydırma: 8 yuva + ayraç 402 px ekrana sığmıyor ve kadro
+            sınırı ileride değişebilir. Sabit genişliğe sıkıştırmak yuvaları
+            okunmaz hale getirirdi. */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.squadStrip}
+          style={styles.squadStripOuter}
+        >
           {loadout.map((id) => (
             <SquadSlot key={id} cardId={id} onRemove={() => toggle(id)} />
           ))}
@@ -167,19 +183,23 @@ export default function GarageScreen() {
           {Array.from({ length: Math.max(0, LOADOUT_TOTAL - total) }).map((_, i) => (
             <EmptySlot key={`empty-${i}`} />
           ))}
-        </View>
+        </ScrollView>
       </View>
 
       <View style={styles.segments}>
         {SEGMENTS.map((s) => {
           const on = segment === s.key;
+          const count = s.key === 'vehicles' ? loadout.length : supportLoadout.length;
           return (
             <Pressable
               key={s.key}
-              style={[styles.segment, on && styles.segmentOn]}
+              style={[styles.segment, on && { backgroundColor: s.fill }]}
               onPress={() => setSegment(s.key)}
             >
-              <Text style={[styles.segmentText, on && styles.segmentTextOn]}>{s.label}</Text>
+              <MaterialCommunityIcons name={s.icon} size={16} color={on ? '#FFFFFF' : s.tint} />
+              <Text style={[styles.segmentText, on && styles.segmentTextOn]}>
+                {s.label} <Text style={styles.segmentCount}>({count})</Text>
+              </Text>
             </Pressable>
           );
         })}
@@ -236,8 +256,16 @@ export default function GarageScreen() {
   );
 }
 
-/** Pit kartı — araç kartıyla aynı anatomiye sahip değil (stat yok, etki
- *  metni var), o yüzden ayrı ama aynı üç durumu gösteriyor. */
+/**
+ * Pit kartı.
+ *
+ * Araç kartıyla aynı anatomiye sahip değil ve olmamalı: araçta stat var,
+ * pitte etki metni. Yerleşim ikon → ad → etki → güç noktaları şeklinde,
+ * yani okuma sırası "ne bu / ne yapar / ne kadar güçlü".
+ *
+ * Rengi MOR (grape), araçların mavisinden ayrı: iki havuz farklı ve renk
+ * bunu kart seviyesinde de söylüyor.
+ */
 function PitCard({
   card,
   owned,
@@ -260,25 +288,39 @@ function PitCard({
     >
       {/* İkon yeteneğin TÜRÜNE bağlı: hepsi aynı anahtar ikonuyken kartlar
           birbirinden yalnızca adlarıyla ayrılıyordu. */}
-      <View style={styles.pitIcon}>
-        <MaterialCommunityIcons name={SUPPORT_ICON[card.kind]} size={20} color={colors.bubble} />
-      </View>
+      <MaterialCommunityIcons name={SUPPORT_ICON[card.kind]} size={22} color={colors.grapeInk} />
       <Text style={styles.pitName} numberOfLines={1}>
         {card.name}
       </Text>
-      <Text style={styles.pitEffect} numberOfLines={2}>
+      <Text style={styles.pitEffect} numberOfLines={3}>
         {supportCardEffectText(card)}
       </Text>
-      {owned ? (
-        <View style={[styles.badge, inSquad && styles.badgeOn]}>
-          {inSquad && <MaterialCommunityIcons name="check" size={11} color="#FFFFFF" />}
+      <View style={styles.pitFoot}>
+        <PowerDots power={card.power} />
+        {!owned && <CurrencyTag currency="rim" amount={card.price.rim} size={14} />}
+      </View>
+
+      {inSquad ? (
+        <View style={styles.pitCheck}>
+          <MaterialCommunityIcons name="check-bold" size={12} color="#FFFFFF" />
         </View>
-      ) : (
-        <View style={styles.priceBadge}>
-          <CurrencyTag currency="rim" amount={card.price.rim} size={10} />
+      ) : !owned ? (
+        <View style={styles.pitLock}>
+          <MaterialCommunityIcons name="lock" size={12} color={colors.ink} />
         </View>
-      )}
+      ) : null}
     </Pressable>
+  );
+}
+
+/** Güç seviyesi — pit kartlarında nadirlik yok, onun yerine bu. */
+function PowerDots({ power }: { power: number }) {
+  return (
+    <View style={styles.dots}>
+      {[1, 2, 3, 4].map((i) => (
+        <View key={i} style={[styles.dot, i <= power && styles.dotOn]} />
+      ))}
+    </View>
   );
 }
 
@@ -286,7 +328,7 @@ function PitCard({
  * Pit kartının kilidini açar.
  *
  * Kart detayı ekranı yalnızca araçlar için var; pit kartının ayrı bir sayfası
- * olmadığı için satın alma burada bir uyarıyla sorulup sunucuya gidiyor.
+ * olmadığı için satın alma burada bir diyalogla sorulup sunucuya gidiyor.
  * Gösterilen fiyat bilgi amaçlı — gerçek kontrol ve tahsilat sunucuda tek
  * transaction içinde.
  */
@@ -344,7 +386,7 @@ function SupportInspectSheet({ card, onClose }: { card: SupportCard | null; onCl
           <>
             <View style={styles.inspectHead}>
               <View style={styles.inspectIcon}>
-                <MaterialCommunityIcons name={SUPPORT_ICON[card.kind]} size={28} color={colors.bubble} />
+                <MaterialCommunityIcons name={SUPPORT_ICON[card.kind]} size={28} color={colors.grapeInk} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.inspectName}>{card.name}</Text>
@@ -376,7 +418,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 14,
-    backgroundColor: '#FFE4EE',
+    backgroundColor: colors.grapeSoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -411,19 +453,20 @@ const styles = StyleSheet.create({
     color: colors.ink,
   },
 
-  segments: { flexDirection: 'row', gap: 6, paddingHorizontal: 16, paddingTop: 16 },
+  segments: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingTop: 16 },
   segment: {
     flex: 1,
-    paddingVertical: 10,
-    borderRadius: 14,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 11,
+    borderRadius: radius.lg,
+    backgroundColor: colors.sunken,
   },
-  segmentOn: { backgroundColor: colors.primarySoft, borderWidth: 2, borderColor: colors.primary },
   segmentText: { fontFamily: font.bodyBold, fontSize: text.body.fontSize, color: colors.textMuted },
-  segmentTextOn: { fontFamily: font.bodyBlack, color: colors.primaryInk },
+  segmentCount: { fontFamily: font.body, fontSize: text.bodySmall.fontSize },
+  segmentTextOn: { color: '#FFFFFF' },
 
   fill: { flex: 1, backgroundColor: colors.bg },
   header: {
@@ -454,18 +497,15 @@ const styles = StyleSheet.create({
   squadCount: { fontFamily: font.bodyBlack, fontSize: text.bodySmall.fontSize, color: colors.successInk },
   squadCountWarn: { color: colors.accentDark },
   squadDetail: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.textFaint },
-  squadStrip: {
-    flexDirection: 'row',
-    gap: 5,
-    padding: 10,
+  squadStripOuter: {
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 18,
     ...shadow.card,
   },
+  squadStrip: { flexDirection: 'row', gap: 5, padding: 10, alignItems: 'center' },
   slot: { width: 40, height: 54, borderRadius: 9, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-  pitSlot: { backgroundColor: '#FFE4EE', borderColor: colors.bubble },
   slotEmpty: {
     width: 40,
     height: 54,
@@ -502,53 +542,48 @@ const styles = StyleSheet.create({
 
   pit: {
     flex: 1,
-    padding: 8,
-    gap: 4,
+    gap: 5,
+    padding: 11,
     backgroundColor: colors.surface,
     borderWidth: 2,
     borderColor: colors.border,
     borderRadius: radius.md,
     ...shadow.card,
   },
-  pitOn: { borderColor: colors.bubble },
-  pitLocked: { opacity: 0.72 },
-  pitIcon: {
-    width: 30,
-    height: 30,
-    borderRadius: 10,
-    backgroundColor: '#FFE4EE',
+  pitOn: { borderColor: colors.grape, backgroundColor: colors.grapeSoft },
+  pitLocked: { opacity: 0.62 },
+  pitFoot: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' },
+  dots: { flexDirection: 'row', gap: 3 },
+  dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.border },
+  dotOn: { backgroundColor: colors.grape },
+  pitCheck: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 20,
+    height: 20,
+    borderRadius: radius.pill,
+    backgroundColor: colors.grape,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  pitName: { fontFamily: font.headingSm, fontSize: 12, lineHeight: 15, color: colors.ink },
+  pitLock: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 20,
+    height: 20,
+    borderRadius: radius.pill,
+    backgroundColor: colors.accentSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pitName: { fontFamily: font.bodyBlack, fontSize: text.bodySmall.fontSize, color: colors.ink },
   pitEffect: {
     fontFamily: font.body,
     fontSize: text.bodySmall.fontSize,
     lineHeight: text.bodySmall.lineHeight,
     color: colors.textMuted,
-  },
-  badge: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-    width: 20,
-    height: 20,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surface,
-    borderWidth: 2,
-    borderColor: colors.borderStrong,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  badgeOn: { backgroundColor: colors.bubble, borderColor: colors.surface },
-  priceBadge: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surface,
   },
 
   hint: {

@@ -127,8 +127,10 @@ function TabButton({
 const styles = StyleSheet.create({
   bar: {
     position: 'relative',
-    height: 78,
-    paddingTop: 10,
+    // 78 → 88: sekme etiketleri ekranın alt kenarına yapışık duruyordu ve
+    // fontlar büyüyünce iyice sıkıştı.
+    height: 88,
+    paddingTop: 12,
     flexDirection: 'row',
     alignItems: 'flex-start',
     backgroundColor: colors.surface,

@@ -49,6 +49,18 @@ Etiket öneki: `app-v`.
 
 ### Düzeltildi
 
+- **Pit Ekibi kartları eski tasarımına döndü**: mor (pembe değil), ikon →
+  ad → etki → güç noktaları sırasıyla, köşede kilit/seçim rozetiyle.
+  Sekmelerin ikonu ve kadro sayacı da geri geldi.
+- **Kadro şeridi ekrana sığmıyordu** (8 yuva + ayraç 402 px'i aşıyor); artık
+  yatay kayıyor. Sabit genişliğe sıkıştırmak yuvaları okunmaz hale getirirdi.
+- **Kadrodan kart çıkarma işareti** köşedeki kırmızı rozetten kartın tam
+  ortasındaki soluk daireye taşındı — rozet karttan çok dikkat çekiyordu ve
+  şerit bir "sil" düğmeleri dizisi gibi duruyordu.
+- "Savaşa Başla" yazısı hâlâ ortalı değildi ve üstten kırpılıyordu: elle
+  verilen `lineHeight` Baloo 2'nin kendi satır dengesini bozuyor. Değer
+  tamamen kaldırıldı.
+- Alt gezinme çubuğu ekranın alt kenarına yapışık duruyordu (78 → 88 px).
 - **Tipografi büyütüldü.** Gövde ölçeği beş basamaktan (11·12·13·14·15) üçe
   indi: `bodySmall` 14 · `body` 16 · `bodyBig` 18. En küçüğü artık 14 —
   eskiden rozet rakamları, nadirlik etiketleri ve ipucu metinleri telefonda

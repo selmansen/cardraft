@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ChunkyButton } from '@/components/ChunkyButton';
@@ -142,7 +142,11 @@ export default function PlayScreen() {
               <MaterialCommunityIcons name="chevron-right" size={15} color={colors.primaryInk} />
             </View>
           </View>
-          <View style={styles.squadRow}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.squadRow}
+          >
             {loadout.map((id) => (
               <SquadSlot key={id} cardId={id} />
             ))}
@@ -154,7 +158,7 @@ export default function PlayScreen() {
             {Array.from({ length: Math.max(0, LOADOUT_TOTAL - total) }).map((_, i) => (
               <EmptySlot key={`empty-${i}`} />
             ))}
-          </View>
+          </ScrollView>
         </Pressable>
 
         <ChunkyButton variant="accent" height={76} onPress={() => router.push('/battle')} disabled={!ready}>
@@ -273,20 +277,24 @@ const styles = StyleSheet.create({
   squadLink: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   squadCount: { fontFamily: font.bodyBlack, fontSize: text.bodySmall.fontSize, color: colors.successInk },
   squadCountWarn: { color: colors.accentDark },
-  squadRow: { flexDirection: 'row', gap: 5, alignItems: 'stretch' },
+  squadRow: { flexDirection: 'row', gap: 5, alignItems: 'center' },
 
   playInner: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  /** `lineHeight` bilerek font boyutuna eşit: Baloo 2'nin kendi iç boşluğu
-   *  üstte fazla yer bırakıyor ve satır yüksekliği büyüdükçe yazı düğmenin
-   *  içinde yukarı kayıyordu. `includeFontPadding` Android'de aynı sorunu
-   *  ayrıca üretiyor, o yüzden o da kapalı. */
+  /**
+   * `lineHeight` VERİLMİYOR — bilerek.
+   *
+   * Baloo 2'nin doğal satır kutusu yazıyı kendi içinde dengeliyor; elle bir
+   * satır yüksekliği vermek o dengeyi bozuyordu. Font boyutuna eşit verince
+   * (26/26) üstten kırpıldı, büyük verince (26/30) yukarı kaydı. Değeri
+   * belirtmeyince RN fontun kendi metriğini kullanıyor ve düğme içinde
+   * ortalanıyor. `includeFontPadding` Android'de ayrıca üstte boşluk
+   * eklediği için kapalı.
+   */
   playText: {
     fontFamily: font.display,
     fontSize: 26,
-    lineHeight: 26,
     color: colors.ink,
     includeFontPadding: false,
-    textAlignVertical: 'center',
   },
   notReady: {
     fontFamily: font.body,

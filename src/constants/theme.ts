@@ -110,7 +110,7 @@ export const shadow = {
 } as const;
 
 /** Space the docked bottom nav reserves at the bottom of scroll content. */
-export const NAV_CLEARANCE = 112;
+export const NAV_CLEARANCE = 122;
 
 /** How long a press-and-hold takes to open a card's info panel — the same
  *  duration everywhere it's used (battle hand/board cards, Squad's vehicle

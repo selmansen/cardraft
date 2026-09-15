@@ -38,20 +38,26 @@ export function SquadSlot({
       style={[
         styles.slot,
         support
-          ? { backgroundColor: '#FFE4EE', borderColor: colors.bubble }
+          ? { backgroundColor: colors.grapeSoft, borderColor: colors.grape }
           : { backgroundColor: tint!.art, borderColor: tint!.border },
       ]}
       onPress={onRemove}
       disabled={!onRemove}
     >
       {support ? (
-        <MaterialCommunityIcons name={icon!} size={18} color={colors.bubble} />
+        <MaterialCommunityIcons name={icon!} size={18} color={colors.grapeInk} />
       ) : (
         <Image source={carImage(cardId)} style={styles.image} resizeMode="cover" />
       )}
+      {/* Çıkarma işareti kartın TAM ORTASINDA ve soluk.
+          Köşedeki kırmızı rozet, kartın kendisinden daha çok dikkat çekiyordu
+          ve kadro şeridi bir "sil" düğmeleri dizisi gibi görünüyordu. Ortada
+          ve saydam olunca kartın üstünde bir eylem ipucu olarak duruyor. */}
       {onRemove && (
-        <View style={styles.remove}>
-          <MaterialCommunityIcons name="minus" size={10} color="#FFFFFF" />
+        <View style={styles.removeOverlay}>
+          <View style={styles.removeCircle}>
+            <MaterialCommunityIcons name="minus" size={14} color="#FFFFFF" />
+          </View>
         </View>
       )}
     </Pressable>
@@ -82,16 +88,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   image: { width: '100%', height: '100%' },
-  remove: {
+  removeOverlay: {
     position: 'absolute',
-    top: -2,
-    right: -2,
-    width: 17,
-    height: 17,
-    borderRadius: radius.pill,
-    backgroundColor: colors.danger,
-    borderWidth: 2,
-    borderColor: colors.surface,
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  removeCircle: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: 'rgba(30,36,54,0.45)',
     alignItems: 'center',
     justifyContent: 'center',
   },
