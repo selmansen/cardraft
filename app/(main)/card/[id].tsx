@@ -59,15 +59,24 @@ export default function CardDetail() {
         <View style={styles.crumbRow}>
           <Pressable style={styles.back} onPress={() => router.back()}>
             <MaterialCommunityIcons name="chevron-left" size={16} color={colors.textMuted} />
-            <Text style={styles.backText}>Koleksiyon</Text>
+            <Text style={styles.backText}>Garaj</Text>
           </Pressable>
           <WalletPill rims={rims} coins={coins} />
         </View>
 
         <View style={[styles.hero, { backgroundColor: r.art }, !owned && styles.dim]}>
           <Image source={carImage(card.id)} style={styles.heroImg} resizeMode="cover" />
+          {/* Kilitli durum YAZIYLA değil ikonla: kilit simgesi koleksiyonun
+              her yerinde aynı anlamı taşıyor (ızgaradaki rozet, pit kartı) ve
+              okunmadan anlaşılıyor. "SAHİPSİN" yazı olarak kalıyor — onun
+              karşılığı olan bir simge yok ve olumlu durumun görünür olması
+              kilidin görünür olmasından daha az acele bir bilgi. */}
           <View style={styles.levelPill}>
-            <Text style={styles.levelPillText}>{owned ? 'SAHİPSİN' : 'KİLİTLİ'}</Text>
+            {owned ? (
+              <Text style={styles.levelPillText}>SAHİPSİN</Text>
+            ) : (
+              <MaterialCommunityIcons name="lock" size={16} color={colors.ink} />
+            )}
           </View>
         </View>
 
