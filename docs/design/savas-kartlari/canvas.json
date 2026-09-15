@@ -1,0 +1,39 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 920, "h": 650, "title": "Rozet dili + el kartı" },
+    { "file": "Oynanabilirlik.dc.html", "x": 1040, "y": 0, "w": 1000, "h": 590, "title": "Oynanabilirlik — A / B / C" },
+    { "file": "SahaKarti.dc.html", "x": 0, "y": 790, "w": 960, "h": 620, "title": "Saha kartı" },
+    { "file": "SavasEkrani.dc.html", "x": 1080, "y": 730, "w": 402, "h": 874, "title": "Savaş ekranı — bağlam" }
+  ],
+  "annotations": [
+    {
+      "id": "ozet",
+      "x": 0,
+      "y": -200,
+      "w": 920,
+      "text": "SAVAŞ KARTLARI v4\nNadirlik artık savaşta da görünüyor: kenar, ad şeridi ve yıldızlar sıradan/nadir/efsanevi/destansı renklerini alıyor.\nEl kartı: ad ÜSTTE, yakıt SOL ALTTA ve her zaman lacivert — yetmediğinde griye dönmüyor.\nStat renkleri kart detayından: güç turuncu · hız mavi · dayanıklılık yeşil · yakıt lacivert. ELDE yalnızca yakıt · SAHADA güç, hız, dayanıklılık."
+    },
+    {
+      "id": "karar",
+      "x": 2100,
+      "y": 0,
+      "w": 330,
+      "text": "KARAR BEKLEYEN\nOynanabilir kartı ne gösterecek? A (yeşil halka) · B (rozette eksik yakıt) · C (tarama dokusu).\nÖnerim A: yeşil hem elde 'oynayabilirsin' hem sahada 'saldırabilir' demek oluyor — tek dil."
+    },
+    {
+      "id": "kenar",
+      "x": 2100,
+      "y": 260,
+      "w": 330,
+      "text": "KENAR NE ANLATIYOR?\nEskiden saha kartının kenarı taraf/durum taşıyordu (yeşil: saldırabilir, kırmızı: rakip).\nArtık kenar NADİRLİK. Durum dış halkada, taraf ise sahadaki şeritten (üst rakip, alt sen) ve mat renginden.\nCihazda bakılmalı: taraf ayrımı yetersiz gelirse rakip matı biraz koyulaştırılır."
+    },
+    {
+      "id": "kontrol",
+      "x": 2100,
+      "y": 560,
+      "w": 330,
+      "text": "CİHAZDA BAKILACAK\nFiligran ikon rozetin tamamını dolduruyor, %30 opaklıkta; rakamın arkasında gürültü yaparsa %22'ye inebilir.\nAd şeridi 12 px: uzun adlar (Apex Meridian) taşarsa şeritte tek satır kısaltma gerekir."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

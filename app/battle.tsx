@@ -84,9 +84,22 @@ import { LOADOUT_TOTAL, useGameStore } from '@/store/gameStore';
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const PLAY_THRESHOLD = -64;
-const HC_W = 72;
-const HC_H = 98;
-const HAND_ROW_HEIGHT = 110; // expanded height of the hand drawer's card row
+const HC_W = 88;
+const HC_H = 120;
+const HAND_ROW_HEIGHT = 134; // expanded height of the hand drawer's card row
+// How far each hand card steps from the one before it. The cards overlap, so
+// the step is smaller than the card: at HAND_STEP_MAX five cards sit side by
+// side comfortably, and a fuller hand squeezes the step down (never below
+// HAND_STEP_MIN, where the fuel badge would start disappearing) so the fan
+// always fits the screen instead of running off its right edge.
+const HAND_STEP_MAX = 58;
+const HAND_STEP_MIN = 30;
+
+function handStep(count: number, screenWidth: number): number {
+  if (count <= 1) return HAND_STEP_MAX;
+  const fit = (screenWidth - space.md * 2 - HC_W) / (count - 1);
+  return Math.max(HAND_STEP_MIN, Math.min(HAND_STEP_MAX, Math.floor(fit)));
+}
 
 // Board cards (not the hand) size themselves to the screen: always exactly 3
 // per row. They stay inside the same side padding as everything else (never
@@ -110,10 +123,22 @@ function boardCardSize(screenWidth: number): { width: number; height: number } {
   return { width, height };
 }
 
-/** Card "usability" is shown with a border colour, never opacity — a dimmed
- *  card reads as broken/loading, a coloured border reads as a game state. */
-const READY_BORDER = colors.success; // can act right now
-const SPENT_BORDER = colors.ink; // already used / not usable this turn
+/**
+ * Kart durumu kenarda DEĞİL, kartın dışındaki halkada gösteriliyor.
+ *
+ * Kenar artık kalıcı olarak nadirliğin rengi — oyuncu koleksiyonda ne
+ * görüyorsa savaşta da onu görüyor, "elimde destansı var" diyebiliyor.
+ * "Şu an ne yapabilirsin" bilgisi ise dış halkada duruyor ve yeşil savaş
+ * ekranının her yerinde aynı şeyi söylüyor: elde "bunu oynayabilirsin",
+ * sahada "bu araç saldırabilir".
+ *
+ * Soluklaştırma yok: soluk kart bozuk/yükleniyor gibi okunuyor, üstelik
+ * nadirlik rengini de söndürüyordu. Oynanamayan karta dokunulduğunda zaten
+ * nedenini söyleyen bir uyarı çıkıyor.
+ */
+const READY_RING = colors.success; // oynanabilir / saldırabilir
+const ARMED_RING = colors.primary; // bırakılırsa oynanacak / sürükleniyor
+const TARGET_RING = colors.danger; // sürüklenen kartın geçerli hedefi
 
 // Arena proportions. The table is an ellipse wider than the screen, so its
 // left/right edges are always off-screen and only the top/bottom curves show
@@ -197,6 +222,80 @@ function hpColor(pct: number) {
 }
 function rarOf(cardId: string) {
   return RAR[getCard(cardId).rarity];
+}
+
+/** Nadirlik şeridinin üstündeki mürekkep. Tasarım sisteminin kuralı:
+ *  turuncu ve açık dolguların üstüne KOYU, koyu dolguların üstüne beyaz —
+ *  destansı (turuncu) ve sıradan (açık gri) üzerinde beyaz 4.5:1'in altında
+ *  kalıyor. GameCard'daki tik rengiyle aynı karar. */
+function rarityInk(key: RarityKey): string {
+  return key === 'legendary' || key === 'common' ? colors.ink : '#FFFFFF';
+}
+
+/**
+ * Yuvarlak stat rozeti: ikon rozetin TAMAMINI dolduran bir filigran, rakam
+ * onun üstünde gölgeli.
+ *
+ * Savaş kartında ikonla rakamı yan yana koyacak yer yok — 30 px'lik bir
+ * rozette ikon küçülünce de okunmuyordu. Üst üste koyunca ikon dokuya
+ * dönüşüyor, rakam tam boy kalıyor ve renk (güç turuncu, hız mavi,
+ * dayanıklılık yeşil, yakıt lacivert) kart detay sayfasındakiyle birebir
+ * aynı oluyor. Gölge, parlak dolgu üzerindeki beyaz rakamı okunur tutuyor.
+ */
+function StatBadge({
+  icon,
+  tint,
+  value,
+  size,
+  ring,
+}: {
+  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  tint: string;
+  value: number | string;
+  size: number;
+  /** Sağlık rozetinde "az kaldı" uyarısı — dolgu rengi stat kimliği olduğu
+   *  için değişmiyor, uyarı ince bir çerçeveyle veriliyor. */
+  ring?: string;
+}) {
+  // İki katman: gölge dışta, kırpma içte. iOS'ta aynı View'de hem
+  // overflow:'hidden' hem gölge olunca gölge çizilmiyor — filigran ikonun
+  // daireye kırpılması da şart, o yüzden ikisi ayrıldı.
+  return (
+    <View style={[styles.statBadgeShadow, { width: size, height: size, borderRadius: size / 2 }]}>
+      <View
+        style={[
+          styles.statBadge,
+          { width: size, height: size, borderRadius: size / 2, backgroundColor: tint },
+          ring ? { borderWidth: 2, borderColor: ring } : null,
+        ]}
+      >
+        <MaterialCommunityIcons
+          name={icon}
+          size={Math.round(size * 1.05)}
+          color="#FFFFFF"
+          style={styles.statBadgeMark}
+        />
+        <Text style={[styles.statBadgeText, { fontSize: Math.round(size * 0.5) }]}>{value}</Text>
+      </View>
+    </View>
+  );
+}
+
+/** Kartın üstündeki ad şeridi — zemini nadirliğin rengi, altında yıldızları.
+ *  Hem eldeki hem sahadaki kartta aynı; nadirliği savaş boyunca görünür
+ *  tutan asıl şey bu şerit. */
+function CardNameBar({ cardId, name, fontSize }: { cardId: string; name: string; fontSize: number }) {
+  const key = getCard(cardId).rarity;
+  const r = RAR[key];
+  const ink = rarityInk(key);
+  return (
+    <View style={[styles.nameBar, { backgroundColor: r.border }]}>
+      <Text style={[styles.nameBarText, { color: ink, fontSize }]} numberOfLines={1}>
+        {name}
+      </Text>
+      <RarityStars count={r.stars} color={ink} size={8} />
+    </View>
+  );
 }
 
 /** "Just got hit" feedback for a card or garage bar: a quick shake + red
@@ -315,12 +414,12 @@ function useSpawnDrop(dramatic: boolean): {
       const total = dramatic ? SPAWN_TOTAL_MS : 380;
       p.value = dramatic
         ? withSequence(
-            withTiming(1, { duration: SPAWN_GROW_MS, easing: Easing.out(Easing.cubic) }),
-            withDelay(
-              SPAWN_HOLD_MS,
-              withTiming(2, { duration: SPAWN_SETTLE_MS, easing: Easing.inOut(Easing.cubic) }),
-            ),
-          )
+          withTiming(1, { duration: SPAWN_GROW_MS, easing: Easing.out(Easing.cubic) }),
+          withDelay(
+            SPAWN_HOLD_MS,
+            withTiming(2, { duration: SPAWN_SETTLE_MS, easing: Easing.inOut(Easing.cubic) }),
+          ),
+        )
         : withTiming(2, { duration: total, easing: Easing.out(Easing.cubic) });
       setTimeout(() => setElevated(false), total + 40);
     },
@@ -1586,7 +1685,10 @@ export default function BattleScreen() {
                   const off = i - mid;
                   const rot = Math.round(off * 6);
                   const lift = Math.round(Math.abs(off) * Math.abs(off) * 2.5);
-                  const overlap = i === 0 ? 0 : -30;
+                  // Kartlar 72'den 88 px'e büyüdü, o yüzden üst üste binme
+                  // artık sabit değil: el kalabalıklaştıkça adım daralıyor ki
+                  // yelpaze ekranın sağından taşmasın.
+                  const overlap = i === 0 ? 0 : handStep(player.hand.length, screenWidth) - HC_W;
 
                   if (c.kind === 'support') {
                     return (
@@ -1724,7 +1826,7 @@ export default function BattleScreen() {
                   </View>
                   <ChunkyButton
                     variant="primary"
-                    label="Giriş yap ve kazan"
+                    label="Giriş Yap ve Kazan"
                     onPress={() => {
                       stopResultSfx();
                       router.push('/sign-in');
@@ -2346,34 +2448,48 @@ function GarageBar(props: GarageBarProps & { registerRect?: (r: Rect) => void; m
 
 /** Shared visual body (image + name band + power/hp badges) for the player
  *  card and its drag ghost, so they stay pixel-identical. */
+/**
+ * Sahadaki kartın yüzü: ad üstte nadirlik şeridinde, altta tek sıra hâlinde
+ * güç · hız · dayanıklılık.
+ *
+ * Yakıt burada YOK: kart sahaya çıktığı anda maliyeti ödendi ve bir daha
+ * hiçbir kararı etkilemiyor. Dörtten üçe inince rozetler 23'ten 30 px'e
+ * çıktı — en dar ekranda (84 px kart) bile 26 px kalıyor, dört rozetle
+ * 20 px'e düşüyordu ve iki haneli sayılar sıkışıyordu.
+ */
 function VehicleFace({
   cardId,
   name,
   attack,
+  speed,
   health,
-  hpTint,
+  hurt,
+  width,
 }: {
   cardId: string;
   name: string;
   attack: number;
+  speed: number;
   health: number;
-  hpTint: string;
+  /** Dayanıklılığı üçte birin altına düşmüş: rozetin rengi değil, çerçevesi uyarıyor. */
+  hurt: boolean;
+  width: number;
 }) {
+  const badge = Math.max(24, Math.round(width * 0.27));
   return (
     <>
       <Image source={carImage(cardId)} style={styles.bvImg} resizeMode="cover" />
-      <View style={styles.bvNameWrap}>
-        <Text style={styles.bvName} numberOfLines={1}>
-          {name}
-        </Text>
-      </View>
-      <View style={styles.bvPow}>
-        <MaterialCommunityIcons name="lightning-bolt" size={11} color="#FFFFFF" />
-        <Text style={styles.bvPowText}>{attack}</Text>
-      </View>
-      <View style={[styles.bvHp, { backgroundColor: hpTint }]}>
-        <MaterialCommunityIcons name="shield" size={11} color="#FFFFFF" />
-        <Text style={styles.bvHpText}>{health}</Text>
+      <CardNameBar cardId={cardId} name={name} fontSize={12} />
+      <View style={styles.bvStatRow}>
+        <StatBadge icon="lightning-bolt" tint={colors.accent} value={attack} size={badge} />
+        <StatBadge icon="chevron-double-right" tint={colors.primary} value={speed} size={badge} />
+        <StatBadge
+          icon="shield"
+          tint={colors.success}
+          value={health}
+          size={badge}
+          ring={hurt ? colors.danger : undefined}
+        />
       </View>
     </>
   );
@@ -2450,9 +2566,11 @@ function EnemyVehicleCard({
   const showShine = rarityKey !== 'common';
   const auraSparks = spawnSparkCount(rarityKey);
 
-  let borderColor = r.border;
-  if (targetable) borderColor = colors.danger;
-  else if (blocked) borderColor = SPENT_BORDER;
+  // Kenar her zaman nadirlik. Sürüklenen kartın geçerli hedefiyse dışına
+  // kırmızı halka çıkıyor; geçersizse kartın üstü hafifçe karartılıyor
+  // (styles.cardDim) — o karartma anlık bir sürükleme geri bildirimi,
+  // kartın kalıcı durumu değil.
+  const ringColor = targetable ? TARGET_RING : null;
 
   const measure = useCallback(() => {
     ref.current?.measureInWindow((x, y, w, h) => {
@@ -2480,9 +2598,17 @@ function EnemyVehicleCard({
         <Pressable
           onLongPress={onInspect}
           delayLongPress={LONG_PRESS_MS}
-          style={[styles.bv, size, { borderColor, backgroundColor: r.art }]}
+          style={[styles.bv, size, { borderColor: r.border, backgroundColor: r.art }]}
         >
-          <VehicleFace cardId={v.cardId} name={v.name} attack={atk} health={v.health} hpTint={hpColor(pct)} />
+          <VehicleFace
+            cardId={v.cardId}
+            name={v.name}
+            attack={atk}
+            speed={v.speed}
+            health={v.health}
+            hurt={pct <= 33}
+            width={size.width}
+          />
           {/* Attack-mode, not a valid target: dim locally instead of the old
               full-screen overlay — no coordinates to keep in sync, and it
               scrolls naturally since it's a normal child of the card. */}
@@ -2491,6 +2617,7 @@ function EnemyVehicleCard({
           <Animated.View pointerEvents="none" style={[styles.cardFlash, flashStyle]} />
           {showShine ? <CardShine /> : null}
         </Pressable>
+        {ringColor ? <View pointerEvents="none" style={[styles.stateRing, { borderColor: ringColor }]} /> : null}
       </Animated.View>
     </View>
   );
@@ -2616,9 +2743,14 @@ function PlayerVehicleCard({
     opacity: dragging.value ? 0 : 1, // the ghost takes over while dragging
   }));
 
-  let borderColor: string = isDragging ? colors.primary : canAttack ? READY_BORDER : SPENT_BORDER;
-  if (targetable) borderColor = colors.danger;
-  else if (blocked) borderColor = SPENT_BORDER;
+  // Kenar nadirlikten geliyor; "bu araç bu tur saldırabilir" bilgisi dış
+  // yeşil halkada. Sürüklenirken mavi, bir pit kartının geçerli hedefiyse
+  // kırmızı oluyor — üçü de aynı halkayı kullanıyor, kartın kimliği hiç
+  // değişmiyor.
+  let ringColor: string | null = null;
+  if (isDragging) ringColor = ARMED_RING;
+  else if (targetable) ringColor = TARGET_RING;
+  else if (canAttack) ringColor = READY_RING;
 
   return (
     <View ref={ref} collapsable={false} onLayout={measure} style={spawn.elevated && styles.spawning}>
@@ -2627,8 +2759,16 @@ function PlayerVehicleCard({
           <SpawnAura tint={r.border} size={size} sparks={auraSparks} />
         ) : null}
         <GestureDetector gesture={gesture}>
-          <Animated.View style={[styles.bv, size, { borderColor, backgroundColor: r.art }, aStyle]}>
-            <VehicleFace cardId={v.cardId} name={v.name} attack={atk} health={v.health} hpTint={hpColor(pct)} />
+          <Animated.View style={[styles.bv, size, { borderColor: r.border, backgroundColor: r.art }, aStyle]}>
+            <VehicleFace
+              cardId={v.cardId}
+              name={v.name}
+              attack={atk}
+              speed={v.speed}
+              health={v.health}
+              hurt={pct <= 33}
+              width={size.width}
+            />
             {/* Pit Ekibi drag in progress, not a legal target: dim locally,
                 same as EnemyVehicleCard does for an attack drag. */}
             {blocked ? <View pointerEvents="none" style={styles.cardDim} /> : null}
@@ -2637,6 +2777,9 @@ function PlayerVehicleCard({
             {showShine ? <CardShine /> : null}
           </Animated.View>
         </GestureDetector>
+        {ringColor ? (
+          <Animated.View pointerEvents="none" style={[styles.stateRing, { borderColor: ringColor }, aStyle]} />
+        ) : null}
       </Animated.View>
     </View>
   );
@@ -2669,14 +2812,16 @@ function DragGhost({
   return (
     <Animated.View
       pointerEvents="none"
-      style={[styles.bv, styles.ghost, size, { borderColor: colors.primary, backgroundColor: r.art }, style]}
+      style={[styles.bv, styles.ghost, size, { borderColor: r.border, backgroundColor: r.art }, style]}
     >
       <VehicleFace
         cardId={v.cardId}
         name={v.name}
         attack={v.attack + v.tempAttack}
+        speed={v.speed}
         health={v.health}
-        hpTint={hpColor(pct)}
+        hurt={pct <= 33}
+        width={size.width}
       />
     </Animated.View>
   );
@@ -2922,33 +3067,29 @@ function HandCard({
     ],
     zIndex: active.value ? 60 : 1,
   }));
-  // Green border = ready to play, black = not affordable right now. No opacity dimming.
-  const borderStyle = useAnimatedStyle(() => ({
-    borderColor: arm.value ? colors.primary : affordable ? READY_BORDER : SPENT_BORDER,
+  // Yeşil halka = şimdi oynanabilir, mavi = bırakılırsa oynanacak. Halka
+  // kartın dışında duruyor, kenar nadirliğin rengi olarak kalıyor.
+  const ringStyle = useAnimatedStyle(() => ({
+    opacity: arm.value || affordable ? 1 : 0,
+    borderColor: arm.value ? ARMED_RING : READY_RING,
   }));
   const labelStyle = useAnimatedStyle(() => ({ opacity: arm.value }));
 
   return (
     <GestureDetector gesture={gesture}>
-      <Animated.View style={[styles.handCard, { marginLeft: overlap, backgroundColor: r.art }, aStyle, borderStyle]}>
+      <Animated.View style={[styles.handCardWrap, { marginLeft: overlap }, aStyle]}>
         <Animated.Text style={[styles.handPlayHint, labelStyle]}>BIRAK</Animated.Text>
-        <Image source={carImage(card.cardId)} style={styles.bvImg} resizeMode="cover" />
-        <View style={styles.hcNameWrap}>
-          <Text style={styles.hcName} numberOfLines={1}>
-            {card.name}
-          </Text>
-        </View>
-        <View style={[styles.hcCost, { backgroundColor: affordable ? colors.accent : colors.borderStrong }]}>
-          <MaterialCommunityIcons name="water" size={8} color={colors.ink} />
-          <Text style={styles.hcCostText}>{card.cost}</Text>
-        </View>
-        <View style={styles.hcPow}>
-          <MaterialCommunityIcons name="lightning-bolt" size={8} color="#FFFFFF" />
-          <Text style={styles.hcPowText}>{card.attack}</Text>
-        </View>
-        <View style={styles.hcDur}>
-          <MaterialCommunityIcons name="shield" size={8} color="#FFFFFF" />
-          <Text style={styles.hcDurText}>{card.health}</Text>
+        <Animated.View pointerEvents="none" style={[styles.stateRing, ringStyle]} />
+        <View style={[styles.handCard, { borderColor: r.border, backgroundColor: r.art }]}>
+          <Image source={carImage(card.cardId)} style={styles.bvImg} resizeMode="cover" />
+          <CardNameBar cardId={card.cardId} name={card.name} fontSize={12} />
+          {/* Elde tek soru var: bunu şimdi oynayabilir miyim? Cevabını yakıt
+              veriyor, o yüzden elde başka rozet yok — ve yakıt rozeti yetersiz
+              yakıtta griye DÖNMÜYOR: aynı sayının iki renkte görünmesi
+              "kartın yakıtı değişti" gibi okunuyordu. */}
+          <View style={styles.hcCost}>
+            <StatBadge icon="water" tint={colors.primaryInk} value={card.cost} size={32} />
+          </View>
         </View>
       </Animated.View>
     </GestureDetector>
@@ -3085,24 +3226,28 @@ function SupportHandCard({
     zIndex: active.value ? 60 : 1,
     opacity: dragging.value ? 0 : 1, // the ghost takes over while dragging
   }));
-  const borderStyle = useAnimatedStyle(() => ({
-    borderColor: arm.value ? colors.primary : usable ? READY_BORDER : SPENT_BORDER,
+  // Vehicle HandCard ile aynı dil: kenar kartın kendi kimliği (pit kartları
+  // için mor), yeşil halka "şimdi kullanabilirsin".
+  const ringStyle = useAnimatedStyle(() => ({
+    opacity: arm.value || usable ? 1 : 0,
+    borderColor: arm.value ? ARMED_RING : READY_RING,
   }));
   const labelStyle = useAnimatedStyle(() => ({ opacity: arm.value }));
 
   return (
     <GestureDetector gesture={gesture}>
-      <Animated.View
-        style={[styles.handCard, styles.supportHandCard, { marginLeft: overlap }, aStyle, borderStyle]}
-      >
+      <Animated.View style={[styles.handCardWrap, { marginLeft: overlap }, aStyle]}>
         <Animated.Text style={[styles.handPlayHint, labelStyle]}>BIRAK</Animated.Text>
-        <Text style={styles.supportEmoji}>{card.emoji}</Text>
-        <Text style={styles.supportName} numberOfLines={1}>
-          {card.name}
-        </Text>
-        <View style={styles.supportBadge}>
-          <MaterialCommunityIcons name="wrench" size={8} color="#FFFFFF" />
-          <Text style={styles.supportBadgeText}>PİT</Text>
+        <Animated.View pointerEvents="none" style={[styles.stateRing, ringStyle]} />
+        <View style={[styles.handCard, styles.supportHandCard, { borderColor: colors.grape }]}>
+          <Text style={styles.supportEmoji}>{card.emoji}</Text>
+          <Text style={styles.supportName} numberOfLines={1}>
+            {card.name}
+          </Text>
+          <View style={styles.supportBadge}>
+            <MaterialCommunityIcons name="wrench" size={8} color="#FFFFFF" />
+            <Text style={styles.supportBadgeText}>PİT</Text>
+          </View>
         </View>
       </Animated.View>
     </GestureDetector>
@@ -3132,7 +3277,7 @@ function SupportDragGhost({
   return (
     <Animated.View
       pointerEvents="none"
-      style={[styles.handCard, styles.supportHandCard, styles.ghost, { borderColor: colors.primary }, style]}
+      style={[styles.handCard, styles.supportHandCard, styles.ghost, { borderColor: colors.grape }, style]}
     >
       <Text style={styles.supportEmoji}>{card.emoji}</Text>
       <Text style={styles.supportName} numberOfLines={1}>
@@ -3433,7 +3578,7 @@ const styles = StyleSheet.create({
 
   bv: {
     // width/height come from the responsive `size` prop, not this static sheet.
-    borderWidth: 2.5,
+    borderWidth: 3,
     borderRadius: 14,
     overflow: 'hidden',
     position: 'relative',
@@ -3467,43 +3612,62 @@ const styles = StyleSheet.create({
     zIndex: 5,
   },
   bvImg: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%' },
-  bvNameWrap: {
+  // Ad şeridi: zemini nadirliğin rengi. Eskiden yarı saydam siyahtı ve
+  // nadirlik yalnızca ince kenardan okunuyordu — savaşta hiç görülmüyordu.
+  nameBar: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    paddingHorizontal: 6,
-    paddingVertical: 4,
-    backgroundColor: 'rgba(0,0,0,0.42)',
-  },
-  bvName: { fontFamily: font.headingSm, fontSize: 12, color: '#FFFFFF' },
-  // Chips (icon + number), close to the card's own corner radius rather than
-  // a stretched pill — zap/red = attack power, shield = durability.
-  bvPow: {
-    position: 'absolute',
-    bottom: 6,
-    left: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
     paddingHorizontal: 5,
-    paddingVertical: 3,
-    borderRadius: 10,
-    backgroundColor: colors.danger,
-  },
-  bvPowText: { fontFamily: font.stat, fontSize: 14, color: '#FFFFFF' },
-  bvHp: {
-    position: 'absolute',
-    bottom: 6,
-    right: 6,
-    flexDirection: 'row',
+    paddingTop: 3,
+    paddingBottom: 2,
     alignItems: 'center',
-    gap: 2,
-    paddingHorizontal: 5,
-    paddingVertical: 3,
-    borderRadius: 10,
+    gap: 1,
   },
-  bvHpText: { fontFamily: font.stat, fontSize: 14, color: '#FFFFFF' },
+  nameBarText: { fontFamily: font.headingSm, includeFontPadding: false },
+  bvStatRow: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 6,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  // Rozet: ikon filigran olarak arkada (%30), rakam üstünde gölgeli.
+  statBadgeShadow: {
+    shadowColor: '#000000',
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+  },
+  statBadge: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  statBadgeMark: { position: 'absolute', opacity: 0.3 },
+  statBadgeText: {
+    fontFamily: font.stat,
+    color: '#FFFFFF',
+    includeFontPadding: false,
+    textShadowColor: 'rgba(0,0,0,0.55)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  // "Şu an bunu yapabilirsin" halkası — kartın 3 px dışında, kartın kendi
+  // kenarına (nadirlik) dokunmadan.
+  stateRing: {
+    position: 'absolute',
+    top: -4,
+    left: -4,
+    right: -4,
+    bottom: -4,
+    borderWidth: 3,
+    borderRadius: 18,
+  },
 
   resultScrim: {
     position: 'absolute',
@@ -3902,14 +4066,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'flex-end',
-    minHeight: 100,
+    minHeight: HC_H + 6,
     paddingHorizontal: 8,
+  },
+  // Kartın kendisi değil, onu taşıyan kap: dönüş/ölçek/zIndex burada, yeşil
+  // halka da burada — halka kartın DIŞINA taşıyor, kart ise overflow:hidden
+  // olduğu için kendi içinde onu kırpardı.
+  handCardWrap: {
+    width: HC_W,
+    height: HC_H,
+    position: 'relative',
   },
   handCard: {
     width: HC_W,
     height: HC_H,
-    borderWidth: 2.5,
-    borderRadius: 12,
+    borderWidth: 3,
+    borderRadius: 14,
     overflow: 'hidden',
     position: 'relative',
   },
@@ -3924,58 +4096,7 @@ const styles = StyleSheet.create({
     color: colors.primary,
     zIndex: 5,
   },
-  hcNameWrap: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 4,
-    paddingVertical: 3,
-    backgroundColor: 'rgba(0,0,0,0.42)',
-  },
-  hcName: { fontFamily: font.headingSm, fontSize: 9, color: '#FFFFFF' },
-  // Widened from a plain round number badge to a pill (icon + number), same
-  // shape as hcPow/hcDur below — the fuel cost used to be just a bare digit,
-  // nothing on the card said what unit it was in.
-  hcCost: {
-    position: 'absolute',
-    top: 4,
-    left: 4,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    paddingHorizontal: 4,
-    paddingVertical: 2,
-    borderRadius: 9,
-  },
-  hcCostText: { fontFamily: font.stat, fontSize: text.bodySmall.fontSize, color: colors.ink },
-  // Pills (icon + number), same idea as the board cards: zap = power, shield = durability.
-  hcPow: {
-    position: 'absolute',
-    bottom: 3,
-    left: 3,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    paddingHorizontal: 4,
-    paddingVertical: 2,
-    borderRadius: 9,
-    backgroundColor: colors.danger,
-  },
-  hcPowText: { fontFamily: font.stat, fontSize: text.bodySmall.fontSize, color: '#FFFFFF' },
-  hcDur: {
-    position: 'absolute',
-    bottom: 3,
-    right: 3,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    paddingHorizontal: 4,
-    paddingVertical: 2,
-    borderRadius: 9,
-    backgroundColor: colors.success,
-  },
-  hcDurText: { fontFamily: font.stat, fontSize: text.bodySmall.fontSize, color: '#FFFFFF' },
+  hcCost: { position: 'absolute', bottom: 6, left: 6 },
 
   // Pit Ekibi (support) cards — same footprint as a vehicle HandCard
   // (styles.handCard) but a totally different face: no art, no cost/power
@@ -3988,12 +4109,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     gap: 6,
   },
-  supportEmoji: { fontSize: 26 },
-  // Dark text on the light grapeSoft background — hcName is white-on-photo,
-  // wrong here.
+  supportEmoji: { fontSize: 34 },
+  // Dark text on the light grapeSoft background — the vehicle card's name bar
+  // is ink-or-white on the rarity colour, which is wrong here.
   supportName: {
     fontFamily: font.headingSm,
-    fontSize: 9,
+    fontSize: 12,
     color: colors.grapeInk,
     textAlign: 'center',
   },
