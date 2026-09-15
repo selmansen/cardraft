@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700;900&display=swap">
+  <style>
+    body { margin: 0; background: #FBF7F0; }
+    a { color: #2E62C8; } a:hover { color: #1E4FB0; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div style="width: 402px; height: 874px; background: #FBF7F0; font-family: Nunito, system-ui, sans-serif; color: #1E2436; display: flex; flex-direction: column; overflow: hidden;">
+
+  <!-- ÜST: kimlik + cüzdan. Misafirken cüzdan yerine giriş çağrısı var. -->
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 0 16px;">
+    <div style="display: flex; align-items: center; gap: 9px;">
+      <div style="width: 38px; height: 38px; border-radius: 999px; background: #DCE9FF; border: 2px solid #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(30,36,54,0.05);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2E62C8" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"></path></svg>
+      </div>
+      <div>
+        <div style="font: 700 15px/19px 'Baloo 2', sans-serif;">Sürücü</div>
+        <div style="font: 700 12px/16px Nunito, sans-serif; color: #6B7285;">12 galibiyet · 3 seri</div>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 9px; padding: 7px 12px; background: #FFFFFF; border: 1px solid #EBE3D6; border-radius: 999px; box-shadow: 0 4px 12px rgba(30,36,54,0.05);">
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2E62C8" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3.5"></circle></svg>
+        <span style="font: 800 14px/1 'Baloo 2', sans-serif;">1240</span>
+      </div>
+      <div style="width: 1px; height: 14px; background: #EBE3D6;"></div>
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B35C00" stroke-width="2"><circle cx="9.5" cy="9.5" r="6"></circle><circle cx="15" cy="15" r="6"></circle></svg>
+        <span style="font: 800 14px/1 'Baloo 2', sans-serif;">0</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px; padding: 0 16px;">
+
+    <!-- Zorluk seçimi ekranın kendisinde: ayrı bir ekrana gitmeyi gerektirecek
+         kadar ağır bir karar değil ve savaşa çıkmadan önce görülmesi gereken
+         tek bilgi bu. -->
+    <div>
+      <div style="font: 700 12px/16px Nunito, sans-serif; letter-spacing: 0.4px; color: #6B7285; margin-bottom: 7px;">ZORLUK</div>
+      <div style="display: flex; gap: 6px;">
+        <div style="flex-grow: 1; padding: 10px 0; border-radius: 14px; background: #FFFFFF; border: 1px solid #EBE3D6; text-align: center;">
+          <span style="font: 700 14px/19px Nunito, sans-serif; color: #6B7285;">Kolay</span>
+        </div>
+        <div style="flex-grow: 1; padding: 10px 0; border-radius: 14px; background: #DCE9FF; border: 2px solid #3A7BF0; text-align: center;">
+          <span style="font: 900 14px/19px Nunito, sans-serif; color: #2E62C8;">Normal</span>
+        </div>
+        <div style="flex-grow: 1; padding: 10px 0; border-radius: 14px; background: #FFFFFF; border: 1px solid #EBE3D6; text-align: center;">
+          <span style="font: 700 14px/19px Nunito, sans-serif; color: #6B7285;">Zor</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kadro özeti: dokununca Garaj'a. Savaşa çıkmadan önce "hazır mıyım"
+         sorusunun cevabı burada görünüyor. -->
+    <div style="background: #FFFFFF; border: 1px solid #EBE3D6; border-radius: 20px; padding: 14px; box-shadow: 0 4px 12px rgba(30,36,54,0.05);">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 11px;">
+        <span style="font: 700 15px/19px 'Baloo 2', sans-serif;">Kadron</span>
+        <div style="display: flex; align-items: center; gap: 2px;">
+          <span style="font: 700 13px/18px Nunito, sans-serif; color: #2E62C8;">Düzenle</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2E62C8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </div>
+      </div>
+      <div style="display: flex; gap: 5px;">
+        <div style="width: 38px; height: 50px; border-radius: 8px; background: #EFF1F5; border: 2px solid #AFB5C2;"></div>
+        <div style="width: 38px; height: 50px; border-radius: 8px; background: #DCE9FF; border: 2px solid #3A7BF0;"></div>
+        <div style="width: 38px; height: 50px; border-radius: 8px; background: #F3E9FF; border: 2px solid #A15CF5;"></div>
+        <div style="width: 38px; height: 50px; border-radius: 8px; background: #EFF1F5; border: 2px solid #AFB5C2;"></div>
+        <div style="width: 38px; height: 50px; border-radius: 8px; background: #FFF0DC; border: 2px solid #FF9522;"></div>
+        <div style="flex-grow: 1; height: 50px; border-radius: 8px; background: #F3EEE4; display: flex; align-items: center; justify-content: center; gap: 4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7285" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+          <span style="font: 700 13px/18px Nunito, sans-serif; color: #6B7285;">3 pit</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ekranın tek büyük eylemi. Başka hiçbir şey bu ağırlıkta değil. -->
+    <div style="background: #B35C00; border-radius: 999px; margin-top: 4px;">
+      <div style="height: 76px; margin-bottom: 4px; background: #FF9522; border-radius: 999px; display: flex; align-items: center; justify-content: center; gap: 12px;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1E2436" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8z"></path></svg>
+        <span style="font: 800 26px/30px 'Baloo 2', sans-serif; color: #1E2436;">SAVAŞA BAŞLA</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALT MENÜ — beş yuva, merkez oyunun kendisi -->
+  <div style="position: relative; height: 78px; background: #FFFFFF; border-top: 1px solid #EBE3D6; display: flex; align-items: flex-start; padding-top: 10px;">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A0A6B5" stroke-width="2" stroke-linejoin="round"><path d="M3 10l3-5h12l3 5v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"></path><path d="M3 10h18"></path><circle cx="8" cy="15" r="1.5"></circle></svg>
+      <span style="font: 700 11px/14px Nunito, sans-serif; color: #A0A6B5;">Garaj</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A0A6B5" stroke-width="2" stroke-linejoin="round"><path d="M4 8h16l-1.2 11a1 1 0 0 1-1 .9H6.2a1 1 0 0 1-1-.9z"></path><path d="M9 8V6a3 3 0 0 1 6 0v2"></path></svg>
+      <span style="font: 700 11px/14px Nunito, sans-serif; color: #A0A6B5;">Mağaza</span>
+    </div>
+    <div style="width: 84px;"></div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; position: relative;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A0A6B5" stroke-width="2" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0z"></path><path d="M7 6H4v2a3 3 0 0 0 3 3"></path><path d="M17 6h3v2a3 3 0 0 1-3 3"></path><path d="M12 14v4"></path><path d="M8.5 20h7"></path></svg>
+      <span style="font: 700 11px/14px Nunito, sans-serif; color: #A0A6B5;">Lig</span>
+      <div style="position: absolute; top: -3px; right: 16px; padding: 1px 5px; border-radius: 999px; background: #F3EEE4;">
+        <span style="font: 900 8px/12px Nunito, sans-serif; letter-spacing: 0.3px; color: #A0A6B5;">YAKINDA</span>
+      </div>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A0A6B5" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"></path></svg>
+      <span style="font: 700 11px/14px Nunito, sans-serif; color: #A0A6B5;">Profil</span>
+    </div>
+
+    <!-- Merkez: oyunun kendisi. Uygulama burada açılıyor, bu yüzden hem
+         "ana ekran" hem "oyna" — ikisini ayırmak gereksiz bir sekme demekti. -->
+    <div style="position: absolute; left: 50%; top: -16px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 3px;">
+      <div style="background: #1E4FB0; border-radius: 999px;">
+        <div style="width: 62px; height: 62px; margin-bottom: 4px; border-radius: 999px; background: #3A7BF0; border: 3px solid #FFFFFF; display: flex; align-items: center; justify-content: center;">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8z"></path></svg>
+        </div>
+      </div>
+      <span style="font: 900 11px/14px Nunito, sans-serif; color: #2E62C8;">OYNA</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

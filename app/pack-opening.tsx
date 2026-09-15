@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     backgroundColor: 'rgba(255,255,255,0.12)',
   },
-  errorText: { flex: 1, fontFamily: font.body, fontSize: text.small.fontSize, color: '#FFFFFF' },
+  errorText: { flex: 1, fontFamily: font.body, fontSize: text.bodySmall.fontSize, color: '#FFFFFF' },
   balancePill: {
     alignSelf: 'center',
     flexDirection: 'row',
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   resultBody: { flex: 1, alignItems: 'center', paddingHorizontal: space.md, paddingTop: 40 },
   resultHead: { alignItems: 'center', gap: 5 },
   badge: { paddingHorizontal: 13, paddingVertical: 5, borderRadius: radius.pill },
-  badgeText: { fontFamily: font.bodyBlack, fontSize: text.caption.fontSize, letterSpacing: 0.6 },
+  badgeText: { fontFamily: font.bodyBlack, fontSize: text.bodySmall.fontSize, letterSpacing: 0.6 },
   resultTitle: { fontFamily: font.heading, fontSize: 26, lineHeight: 32, color: colors.ink },
 
   card: {
@@ -298,15 +298,15 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     backgroundColor: colors.surface,
   },
-  costText: { fontFamily: font.stat, fontSize: 13, color: colors.ink },
+  costText: { fontFamily: font.stat, fontSize: 14, color: colors.ink },
   cardBody: { padding: 12, gap: 9 },
   cardName: { fontFamily: font.headingSm, fontSize: 19, lineHeight: 23, color: colors.ink },
   rarityRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  rarityText: { fontFamily: font.bodyBold, fontSize: text.caption.fontSize, letterSpacing: 0.5 },
+  rarityText: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, letterSpacing: 0.5 },
   stats: { flexDirection: 'row', gap: 5 },
   stat: { flex: 1, paddingVertical: 7, borderRadius: radius.sm, backgroundColor: colors.sunken, alignItems: 'center' },
   statValue: { fontFamily: font.stat, fontSize: 17, lineHeight: 20 },
-  statLabel: { fontFamily: font.bodyBold, fontSize: text.micro.fontSize, color: colors.textMuted },
+  statLabel: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.textMuted },
 
   refundBox: {
     marginTop: 24,
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
   },
   refundAmount: { flexDirection: 'row', alignItems: 'center', gap: 7 },
   refundNumber: { fontFamily: font.stat, fontSize: 34, lineHeight: 38, color: colors.successInk },
-  refundNote: { fontFamily: font.bodyBold, fontSize: text.small.fontSize, color: colors.textMuted },
+  refundNote: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.textMuted },
 
   abilityBox: {
     marginTop: space.md,
@@ -339,8 +339,8 @@ const styles = StyleSheet.create({
   abilityText: {
     flex: 1,
     fontFamily: font.body,
-    fontSize: text.small.fontSize,
-    lineHeight: text.small.lineHeight,
+    fontSize: text.bodySmall.fontSize,
+    lineHeight: text.bodySmall.lineHeight,
     color: colors.inkSoft,
   },
 
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.sunken,
     borderRadius: radius.md,
   },
-  balanceLabel: { fontFamily: font.bodyBold, fontSize: text.small.fontSize, color: colors.inkSoft },
+  balanceLabel: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.inkSoft },
 
   actions: { padding: space.md, paddingBottom: space.lg },
 });

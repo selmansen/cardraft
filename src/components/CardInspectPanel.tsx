@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: radius.pill,
   },
-  pillText: { fontFamily: font.bodyBold, fontSize: text.caption.fontSize, letterSpacing: 0.4 },
+  pillText: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, letterSpacing: 0.4 },
   statRow: { flexDirection: 'row', gap: 6 },
   stat: {
     flex: 1,
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   abilityRow: { flexDirection: 'row', gap: 9, alignItems: 'flex-start', padding: 12 },
   abilityDivider: { borderBottomWidth: 1, borderBottomColor: colors.border },
   dot: { width: 6, height: 6, marginTop: 6, borderRadius: 3, backgroundColor: colors.accent },
-  line: { flex: 1, fontFamily: font.body, fontSize: text.small.fontSize, lineHeight: text.small.lineHeight, color: colors.inkSoft },
+  line: { flex: 1, fontFamily: font.body, fontSize: text.bodySmall.fontSize, lineHeight: text.bodySmall.lineHeight, color: colors.inkSoft },
   label: { fontFamily: font.bodyBold, color: colors.ink },
   none: { fontFamily: font.body, fontSize: text.body.fontSize, color: colors.textFaint },
 });

@@ -25,19 +25,13 @@ import { CurrencyCode, LedgerReason } from '../../generated/prisma/enums.js';
  */
 
 /**
- * Hoş geldin hediyesi — hesap BAĞLANDIĞINDA veriliyor, misafir açılışında değil.
+ * Hoş geldin hediyesi — motordan geliyor, burada YAZILI DEĞİL.
  *
- * Misafir oyuncunun cüzdanı 0: misafirlik bir deneme, ilerleme değil. Bu,
- * "giriş yapmazsan ne kaybedersin" sorusunu da ortadan kaldırıyor — kaybedecek
- * bir şey birikmiyor, dolayısıyla hesap devralma çakışması diye bir durum da
- * yok.
- *
- * Tutar Temel paketin fiyatına EŞİT (350). Değerlendirme ekranı oyuncuya
- * "paketler aç" diye söz veriyorsa, giriş yaptıktan sonra ilk yapabileceği şey
- * o olmalı — vaat ile deneyim aynı anda tutmalı. 300 olsaydı oyuncu girer
- * girmez pakete 50 jant yetiştiremezdi.
+ * Giriş ekranı da aynı rakamı gösteriyor ("350 jant hediye"); iki yerde
+ * tutulsaydı biri değişip diğeri geride kalır ve oyuncuya söz verilen tutarla
+ * cüzdanına yazılan tutar ayrışırdı. Gerekçeler `game/difficulty.ts`'te.
  */
-export const SIGNUP_BONUS_RIM = 350;
+export { SIGNUP_BONUS_RIM } from '../../game-engine/game/difficulty.js';
 
 export interface BattleRewardOutcome {
   amount: number;

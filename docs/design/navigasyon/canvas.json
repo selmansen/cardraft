@@ -1,0 +1,92 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 402,
+      "h": 874,
+      "title": "Oyna — bağlı hesap"
+    },
+    {
+      "file": "OynaMisafir.dc.html",
+      "x": 502,
+      "y": 0,
+      "w": 402,
+      "h": 874,
+      "title": "Oyna — misafir"
+    },
+    {
+      "file": "Profil.dc.html",
+      "x": 1004,
+      "y": 0,
+      "w": 402,
+      "h": 874,
+      "title": "Profil"
+    },
+    {
+      "file": "Garaj.dc.html",
+      "x": 1506,
+      "y": 0,
+      "w": 402,
+      "h": 874,
+      "title": "Garaj — kadro + koleksiyon"
+    },
+    {
+      "file": "MacSonu.dc.html",
+      "x": 0,
+      "y": 1000,
+      "w": 402,
+      "h": 874,
+      "title": "Maç sonu — misafir"
+    },
+    {
+      "file": "GirisEkrani.dc.html",
+      "x": 502,
+      "y": 1000,
+      "w": 402,
+      "h": 874,
+      "title": "Giriş ekranı"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "nav",
+      "x": 0,
+      "y": -190,
+      "w": 1400,
+      "text": "ALT MENÜ — Garaj · Mağaza · [OYNA] · Lig · Profil\nMerkez düğme oyunun kendisi: uygulama orada açılıyor, yani \"ana ekran\" ile \"oyna\" ayrı iki sekme olmuyor.\nKoleksiyon + Kadro → tek GARAJ ekranı. Nasıl Oynanır + ayarlar → Profil'e taşındı.\nSOSYAL → Lig sekmesinin içinde, iki bölüm: Sıralama ve Arkadaşlar. Profil'de kaybolurdu, ayrı sekme altıncı yuva demekti.\nMisafirde Mağaza ve Lig kilitli görünüyor (gizlenmiyor: oyuncu neyi kaçırdığını görmeli)."
+    },
+    {
+      "id": "teklif",
+      "x": 0,
+      "y": 1930,
+      "w": 900,
+      "text": "GİRİŞ TEKLİFİNİN ÇIKTIĞI YERLER\n5. maç sonu diyaloğu · jant/coin göstergesine dokunma · kilitli kart detayı · kilitli sekmeler · Oyna ekranındaki şerit\nHepsi aynı Giriş ekranına götürüyor. \"Misafir olarak devam et\" bir kez seçilirse maç sonu diyaloğu bir daha çıkmıyor."
+    },
+    {
+      "id": "lig",
+      "x": 1460,
+      "y": 0,
+      "w": 300,
+      "text": "LİG SEKMESİ ŞİMDİDEN VAR\nFaz 3'te gelecek ama yeri ayrıldı ve \"yakında\" olarak görünüyor. Gerekçe: sekme sonradan eklenirse alt menü yeniden düzenlenir ve oyuncunun kas hafızası bozulur. Boş sekme yerine ne geleceğini anlatan bir ekran konabilir."
+    },
+    {
+      "id": "acik",
+      "x": 1010,
+      "y": 1000,
+      "w": 390,
+      "text": "MESAJLAŞMA ŞİMDİLİK YOK\nKarar: yalnızca karşılıklı arkadaş olanlar arasında olacak, tanımadığına mesaj gönderilemeyecek. Ama şimdilik hiç konmuyor — projenin sabit kısıtı \"hiçbir yerde serbest metin yok\" ve mesajlaşma o kısıtı açan ilk şey olur. Açıldığında moderasyon ve bildirme akışı da gerekecek."
+    },
+    {
+      "id": "garaj-notu",
+      "x": 1960,
+      "y": 0,
+      "w": 330,
+      "text": "GARAJ NEDEN TEK EKRAN\nEskiden Koleksiyon ve Kadro ayrı iki ekrandı: oyuncu koleksiyonda kart seçerken kadrosunu görmüyordu, yani körlemesine deste kuruyordu.\n\nŞimdi kadro üstte SABİT, koleksiyon altında kayıyor.\n\nÜç kart durumu, üç farklı görünüm:\n· kadroda → mavi tik (dokun: çıkar)\n· sahip, kadroda değil → boş daire (dokun: ekle)\n· kilitli → fiyat rozeti + soluk (dokun: kart detayı, satın al)\n\nAynı görünüp farklı davranmak kafa karıştırırdı."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}

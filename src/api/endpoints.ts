@@ -104,6 +104,12 @@ export const matchApi = {
     api.post<SubmitMatchResponse>(`/matches/${matchId}/submit`, { turns }),
 };
 
+export const statsApi = {
+  /** Oyuncunun kendi istatistikleri — sayaçlar yalnızca doğrulanmış maç
+   *  sonucuyla arttığı için bunlar sunucunun bildiği gerçek rakamlar. */
+  me: () => api.get<PlayerStats>('/stats/me'),
+};
+
 export const deviceApi = {
   register: (body: DeviceInfo & { fcmToken?: string }) => api.post<unknown>('/devices', body),
 };

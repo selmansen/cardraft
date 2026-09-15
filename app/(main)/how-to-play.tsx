@@ -44,10 +44,16 @@ export default function HowToPlay() {
   const router = useRouter();
   const markSeen = useGameStore((s) => s.markHowToPlaySeen);
 
-  // replace('/') rather than back(): on first launch the menu auto-opens this
-  // screen, so back() could land on another copy of it further down the stack
-  // — which read as "the button only works the second time". Replacing always
-  // lands on the menu in one tap, whatever the stack looks like.
+  /**
+   * `replace` kullanılıyor, `back()` değil: ilk açılışta bu ekran Oyna
+   * ekranından otomatik açılıyor ve `back()` yığında aşağıda kalmış başka bir
+   * kopyaya düşebiliyordu — "düğme ancak ikinci basışta çalışıyor" gibi
+   * okunuyordu. `replace` yığın nasıl olursa olsun tek dokunuşta çıkarıyor.
+   *
+   * Hedef OYNA ekranı, Profil değil: öğreticiyi ilk kez gören oyuncu
+   * ayarlar sayfasına değil oyuna düşmeli. Profil'den gelen oyuncu da
+   * oradan tek dokunuşla geri dönebiliyor.
+   */
   const done = () => {
     markSeen();
     router.replace('/');
@@ -61,7 +67,7 @@ export default function HowToPlay() {
       <ScrollView contentContainerStyle={styles.content}>
         <Pressable style={styles.back} onPress={leave}>
           <MaterialCommunityIcons name="chevron-left" size={16} color={colors.textMuted} />
-          <Text style={styles.backText}>Menü</Text>
+          <Text style={styles.backText}>Oyna</Text>
         </Pressable>
 
         <Text style={styles.h1}>Nasıl Oynanır?</Text>
@@ -126,7 +132,7 @@ const styles = StyleSheet.create({
   fill: { flex: 1, backgroundColor: colors.bg },
   content: { padding: space.md, gap: 12, paddingBottom: NAV_CLEARANCE + space.lg },
   back: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', paddingVertical: 4 },
-  backText: { fontFamily: font.bodyBold, fontSize: text.small.fontSize, color: colors.textMuted },
+  backText: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.textMuted },
   h1: { fontFamily: font.display, fontSize: 24, color: colors.ink },
   h2: { fontFamily: font.headingSm, fontSize: 16, color: colors.ink, marginTop: space.xs },
   lead: { fontFamily: font.body, fontSize: text.body.fontSize, lineHeight: text.body.lineHeight + 2, color: colors.inkSoft },
@@ -149,14 +155,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 1,
   },
-  legendK: { fontFamily: font.bodyBold, fontSize: text.caption.fontSize, letterSpacing: 0.5, color: colors.ink },
-  legendV: { fontFamily: font.body, fontSize: text.small.fontSize, lineHeight: text.small.lineHeight, color: colors.textMuted },
-  stepTitle: { fontFamily: font.bodyBold, fontSize: text.bodyLg.fontSize, color: colors.accentInk },
-  stepText: { fontFamily: font.body, fontSize: text.small.fontSize, lineHeight: text.small.lineHeight + 3, color: colors.inkSoft },
+  legendK: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, letterSpacing: 0.5, color: colors.ink },
+  legendV: { fontFamily: font.body, fontSize: text.bodySmall.fontSize, lineHeight: text.bodySmall.lineHeight, color: colors.textMuted },
+  stepTitle: { fontFamily: font.bodyBold, fontSize: text.bodyBig.fontSize, color: colors.accentInk },
+  stepText: { fontFamily: font.body, fontSize: text.bodySmall.fontSize, lineHeight: text.bodySmall.lineHeight + 3, color: colors.inkSoft },
   abilityRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-start', paddingBottom: 10 },
   abilityDivider: { borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: 0 },
   abilityDot: { width: 7, height: 7, marginTop: 6, borderRadius: 4, backgroundColor: colors.accent },
-  abilityText: { flex: 1, fontFamily: font.body, fontSize: text.small.fontSize, lineHeight: text.small.lineHeight + 3, color: colors.inkSoft },
+  abilityText: { flex: 1, fontFamily: font.body, fontSize: text.bodySmall.fontSize, lineHeight: text.bodySmall.lineHeight + 3, color: colors.inkSoft },
   abilityLabel: { fontFamily: font.bodyBold, color: colors.ink },
-  bullet: { fontFamily: font.body, fontSize: text.small.fontSize, lineHeight: text.small.lineHeight + 3, color: colors.inkSoft },
+  bullet: { fontFamily: font.body, fontSize: text.bodySmall.fontSize, lineHeight: text.bodySmall.lineHeight + 3, color: colors.inkSoft },
 });

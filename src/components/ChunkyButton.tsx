@@ -79,6 +79,6 @@ const styles = StyleSheet.create({
   // flexDirection must be 'row': a column face gives `flex:1` custom children
   // no width to fill, which is what broke internal space-between layouts.
   face: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 18 },
-  label: { fontFamily: font.bodyBlack, fontSize: text.bodyLg.fontSize, lineHeight: text.bodyLg.lineHeight, letterSpacing: 0.2 },
+  label: { fontFamily: font.bodyBlack, fontSize: text.bodyBig.fontSize, lineHeight: text.bodyBig.lineHeight, letterSpacing: 0.2 },
   disabled: { opacity: 0.45 },
 });

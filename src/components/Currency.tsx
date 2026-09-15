@@ -70,5 +70,5 @@ const styles = StyleSheet.create({
     ...shadow.card,
   },
   walletSep: { width: 1, height: 14, backgroundColor: colors.border },
-  caption: { fontFamily: font.body, fontSize: text.caption.fontSize },
+  caption: { fontFamily: font.body, fontSize: text.bodySmall.fontSize },
 });

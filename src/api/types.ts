@@ -17,6 +17,9 @@ export interface AuthUser {
   email: string | null;
   displayName: string | null;
   isGuest: boolean;
+  /** Hesaba bağlı giriş yolları. `/auth/me` dolduruyor; giriş yanıtlarında
+   *  gelmiyor (orada zaten hangi sağlayıcıyla girildiği biliniyor). */
+  providers?: IdentityProvider[];
 }
 
 export interface AuthTokens {

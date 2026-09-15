@@ -13,7 +13,31 @@ Etiket öneki: `app-v`.
 
 ## [Yayınlanmamış]
 
+### Değiştirildi
+
+- **Alt menü ve ana ekran oyun olarak yeniden kurgulandı:**
+  `Garaj · Mağaza · [OYNA] · Lig · Profil`. Merkez düğme oyunun kendisi —
+  uygulama orada açılıyor, yani "ana ekran" ile "oyna" ayrı iki sekme değil.
+  Eski "Menü" sekmesi içi başka sekmelere giden satırlardan ibaret bir ara
+  katmandı.
+- **Koleksiyon ve Kadro tek Garaj ekranında birleşti.** Ayrıyken oyuncu
+  koleksiyonda kart seçerken kadrosunu görmüyordu, yani körlemesine deste
+  kuruyordu. Kadro artık üstte sabit, koleksiyon altında kayıyor.
+- Zorluk seçimi Oyna ekranına taşındı (ayrı ekran kaldırıldı); "Nasıl
+  oynanır" ve ayarlar Profil'e taşındı.
+
 ### Eklendi
+
+- **Profil ekranı**: hesap durumu, sunucudan okunan istatistikler, ses ve
+  otomatik tur ayarları, çıkış ve hesap silme.
+- **Giriş ekranı**: misafire ne kazanacağını anlatan dört vaat ve Apple /
+  Google düğmeleri. Bir duvar değil bir teklif — "şimdilik misafir kal" her
+  zaman açık.
+- **Maç sonunda misafire kaçırdığı ödül** gösteriliyor: rakam gerçek (aynı
+  formül sunucuda çalışıyor), üstü çizili ve gri. "Misafir olarak devam et"
+  bir kez seçilirse teklif bir daha çıkmıyor.
+- **Lig sekmesi** yerini şimdiden aldı ("yakında"): sonradan eklenirse alt
+  menü yeniden düzenlenir ve oyuncunun kas hafızası bozulurdu.
 
 - Dal, sürüm ve yayın akışı: `develop`/`main` ayrımı, GitHub Actions CI,
   etiketle tetiklenen yayın. Bkz. `docs/gelistirme-akisi.md`.
@@ -24,6 +48,90 @@ Etiket öneki: `app-v`.
   iadesi). Oranlar istemcide sabit yazılı değil, sunucudan geliyor.
 
 ### Düzeltildi
+
+- **Seçili araç kartının kenarı maviye dönüyordu ve kartın nadirlik kimliğini
+  siliyordu** — destansı turuncu, nadir mavi, efsanevi mor diye kurulmuş bir
+  sistem varken seçim anında hepsi aynı renge geliyordu. Kenar artık hiç
+  değişmiyor; seçimi tik ve yükseltilmiş gölge anlatıyor, tik de kartın kendi
+  renginde.
+- **Kadroya alınan araç kartında hiçbir değişiklik olmuyordu.** `GameCard`
+  seçimi `selected` prop'undan okuyordu ama çağıran `inSquad` gönderiyordu —
+  iki prop aynı şeyi anlatıyor, biri seçim kipinde diğeri gezinme kipinde
+  okunuyordu. Tek prop'a indirildi.
+- Kadro şeridinde Pit Ekibi ikonu küçüktü ve çıkarma dairesi tamamını
+  kapatıyordu; oyuncu hangi kartı çıkardığını göremiyordu.
+- **Araç ve Pit kartlarının seçim işareti aynılaştı**: sağ üstte tik, seçili
+  kenar rengi (araçta mavi, pitte mor). Araç kartında tik sol üstteydi ve
+  seçilmemiş kartta da boş bir daire duruyordu — ızgaradaki her kartın üstünde
+  bir işaret gözü yoruyordu.
+- **Koleksiyon ızgarasında basılı tutma neredeyse anında tetikleniyor**
+  (450 → 180 ms) ve ekranın altındaki "karta basılı tut / kilitli karta dokun"
+  ipucu kaldırıldı — jest kendini anlatacak kadar hızlı olunca yazıya gerek
+  kalmıyor. Savaş ekranı 450 ms'te kaldı: orada basılı tutma sürüklemeyle
+  yarışıyor ve kısa eşik, kartı sürüklemek isteyen oyuncuya inceleme açardı.
+- Pit kartında güç seviyesi noktayla gösteriliyordu; araç kartlarında nadirlik
+  zaten yıldızla gösterildiği için o da mor yıldıza döndü — iki havuzun "ne
+  kadar iyi" göstergesi aynı dili konuşuyor.
+- Pit kartında kilit ve fiyat ayrı duruyordu (köşede kilit, altta rakam);
+  araç kartındaki gibi tek rozette ve aynı yerde (sol üst) birleşti.
+- Pit kartının içeriği iki eksende de ortalandı — pit kartında araç görseli
+  gibi alanı dolduran bir öğe yok, üste yaslanınca kartın altı boş kalıp
+  yarım görünüyordu.
+- Pit kartının içeriği ortalandı, ikonu iki kat büyüdü: pit kartının nadirlik
+  rengi ya da aracı yok, tanınmasını sağlayan tek görsel işaret o.
+- **Pit kartının hızlı bilgisi de ortada açılıyor.** Alt sayfadan geliyordu;
+  araç kartının aynı jesti (basılı tut) ortalı bir panel açıyor ve ikisinin
+  farklı davranması iki ayrı mekanizma varmış gibi hissettiriyordu.
+- **Pit Ekibi kartları eski tasarımına döndü**: mor (pembe değil), ikon →
+  ad → etki → güç noktaları sırasıyla, köşede kilit/seçim rozetiyle.
+  Sekmelerin ikonu ve kadro sayacı da geri geldi.
+- **Oyna ekranında kadro şeridi kaydırılamıyordu**: kutunun tamamı Garaj'a
+  giden bir dokunma alanıydı ve yatay kaydırmayı yutuyordu — oyuncu kaydırmaya
+  çalışınca Garaj açılıyordu. Gezinme artık yalnızca başlık satırında
+  ("Düzenle ›"), şerit serbestçe kayıyor.
+- **Kadro şeridi ekrana sığmıyordu** (8 yuva + ayraç 402 px'i aşıyor); artık
+  yatay kayıyor. Sabit genişliğe sıkıştırmak yuvaları okunmaz hale getirirdi.
+- **Kadrodan kart çıkarma işareti** köşedeki kırmızı rozetten kartın tam
+  ortasındaki daireye taşındı (kırmızı, hafif saydam) — köşedeki rozet
+  karttan çok dikkat çekiyordu ve şerit bir "sil" düğmeleri dizisi gibi
+  duruyordu.
+- "Savaşa Başla" yazısı hâlâ ortalı değildi ve üstten kırpılıyordu: elle
+  verilen `lineHeight` Baloo 2'nin kendi satır dengesini bozuyor. Değer
+  tamamen kaldırıldı.
+- Alt gezinme çubuğu ekranın alt kenarına yapışık duruyordu (78 → 88 px).
+- **Tipografi büyütüldü.** Gövde ölçeği beş basamaktan (11·12·13·14·15) üçe
+  indi: `bodySmall` 14 · `body` 16 · `bodyBig` 18. En küçüğü artık 14 —
+  eskiden rozet rakamları, nadirlik etiketleri ve ipucu metinleri telefonda
+  okunmuyordu ve 11-12-13 arasındaki fark hiyerarşi kurmuyordu, sadece
+  tutarsızlık üretiyordu.
+- **Koleksiyon ızgarası iki sütuna indi.** Üç sütunda kart 108 px kalıyordu ve
+  içindeki dört stat kutusu taşıp okunmaz oluyordu — kartın taşıdığı asıl
+  bilgi görünmüyordu.
+- **Kadro şeritlerinde kart görselleri yoktu** (Oyna ve Garaj), yalnızca
+  nadirlik rengi vardı; oyuncu hangi aracı seçtiğini göremiyordu. İki ekran
+  artık aynı bileşeni kullanıyor.
+- **Saha Ekibi / Pit Ekibi ayrımı segment olarak geri geldi.** Filtre çipleri
+  arasına konmuştu ama iki havuz gerçekten farklı: kart anatomisi, kadro
+  sınırları ve kategori filtreleri ayrı.
+- **Pit Ekibi kartlarının hepsi aynı anahtar ikonuyla gösteriliyordu**; artık
+  yeteneğin türüne göre farklı ikon alıyorlar. Basılı tutunca da tam etkiyi
+  gösteren alt sayfa açılıyor (ızgarada iki satıra sığmıyordu).
+- Ana ekranda kadro "3 pit" yazısıyla bitiyordu; pit kartları da yuva olarak
+  diziliyor.
+- "Savaşa Başla" yazısı düğme içinde yukarı kayıyordu (Baloo 2'nin iç boşluğu).
+- **Uygulama artık "nasıl oynanır" ekranıyla açılmıyor.** Oynamaya gelen
+  oyuncuyu okumaya zorluyordu; kurallar Oyna ekranındaki bir satırda ve
+  Profil'de duruyor.
+
+### Değiştirildi (görünüm)
+
+- **Diyaloglar uygulamanın kendi tasarımında.** `Alert.alert` işletim
+  sisteminin diyaloğunu açıyordu: iOS'ta sistem fontu ve mavi düğmeler —
+  oyunun ortasında başka bir uygulama açılmış gibi duruyordu. Beş ekrandaki
+  tüm onaylar artık `DialogProvider` üzerinden.
+- **Alt sayfaların animasyonu düzeldi.** Karartma panelle birlikte aşağıdan
+  yukarı kayıyordu (ekranın altından siyah bir blok geliyormuş gibi); artık
+  karartma soluyor, panel kayıyor.
 
 - **Çevrimdışıyken bakiye ekrandan ekrana farklı görünüyordu.** Menü yerel
   bakiyeyi gösteriyor, Kadro / kart detayı / mağaza ise doğrudan sunucu

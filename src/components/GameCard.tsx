@@ -3,16 +3,24 @@ import { memo } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { CurrencyTag } from '@/components/Currency';
-import { colors, font, LONG_PRESS_MS, radius, rarity as RARITY, shadow, text } from '@/constants/theme';
+import { colors, font, CARD_INSPECT_MS, radius, rarity as RARITY, shadow, text } from '@/constants/theme';
 import { carImage } from '@/data/carImages';
 import type { Card } from '@/types';
 
 interface Props {
   card: Card;
   owned: boolean;
-  /** 'browse' (Collection: tap opens detail) or 'select' (Squad: tap toggles). */
+  /** 'browse' (dokunma detayı açar) ya da 'select' (dokunma kadroya alır). */
   mode?: 'browse' | 'select';
-  selected?: boolean;
+  /**
+   * Kart kadroda mı?
+   *
+   * Tek prop — eskiden `selected` ve `inSquad` diye İKİSİ vardı ve aynı şeyi
+   * anlatıyorlardı: biri seçim kipinde, diğeri gezinme kipinde okunuyordu.
+   * Çağıran yalnızca `inSquad` gönderdiği için seçim kipinde kart hiç
+   * değişmiyordu — oyuncu karta basıyor, kadroya giriyor ama kartta hiçbir
+   * şey olmuyordu. İki isim, tek gerçek.
+   */
   inSquad?: boolean;
   onPress: () => void;
   /** Press-and-hold to see full stats/abilities without triggering onPress
@@ -28,7 +36,7 @@ interface Props {
  * detail page. The only difference is behavioural: 'select' mode adds a
  * check-circle and toggles instead of navigating.
  */
-function GameCardBase({ card, owned, mode = 'browse', selected, inSquad, onPress, onLongPress }: Props) {
+function GameCardBase({ card, owned, mode = 'browse', inSquad, onPress, onLongPress }: Props) {
   const r = RARITY[card.rarity];
   const isSelect = mode === 'select';
 
@@ -36,11 +44,19 @@ function GameCardBase({ card, owned, mode = 'browse', selected, inSquad, onPress
     <Pressable
       onPress={onPress}
       onLongPress={onLongPress}
-      delayLongPress={onLongPress ? LONG_PRESS_MS : undefined}
+      delayLongPress={onLongPress ? CARD_INSPECT_MS : undefined}
       style={[
         styles.card,
-        { borderColor: isSelect && selected ? colors.primary : r.border },
-        isSelect && selected ? shadow.raised : shadow.card,
+        /**
+         * Kenar HER ZAMAN nadirlik rengi — seçilince değişmiyor.
+         *
+         * Seçili kartın kenarını maviye çevirmek, kartın kimliğini siliyordu:
+         * destansı turuncu, nadir mavi, efsanevi mor diye kurulmuş bir sistem
+         * varken seçim anında hepsi aynı renge dönüyordu. Seçimi anlatan şey
+         * artık yalnızca tik ve yükseltilmiş gölge.
+         */
+        { borderColor: r.border },
+        isSelect && inSquad ? shadow.raised : shadow.card,
         !owned && styles.locked,
       ]}
     >
@@ -53,15 +69,19 @@ function GameCardBase({ card, owned, mode = 'browse', selected, inSquad, onPress
           // takip ettiği para birimi jant.
           <View style={styles.lockBadge}>
             <MaterialCommunityIcons name="lock" size={11} color={colors.ink} />
-            <CurrencyTag currency="rim" amount={card.price.rim} size={text.micro.fontSize} />
+            <CurrencyTag currency="rim" amount={card.price.rim} size={text.bodySmall.fontSize} />
           </View>
         )}
 
-        {isSelect ? (
-          <View style={[styles.check, selected && styles.checkOn]}>
-            {selected ? <MaterialCommunityIcons name="check-bold" size={14} color="#FFFFFF" /> : null}
+        {/* Seçim işareti SAĞ ÜSTTE ve yalnızca seçiliyken — Pit Ekibi
+            kartlarıyla aynı dil. Seçilmemiş kartta boş bir daire durması,
+            ızgaradaki her kartın üstüne bir işaret koyup gözü yoruyordu;
+            kilit rozeti zaten sol üstte, çakışma da yok. */}
+        {isSelect && inSquad ? (
+          <View style={[styles.check, { backgroundColor: r.border }]}>
+            <MaterialCommunityIcons name="check-bold" size={14} color={checkInk(card.rarity)} />
           </View>
-        ) : inSquad ? (
+        ) : !isSelect && inSquad ? (
           <View style={styles.squadTag}>
             <Text style={styles.squadTagText}>KADRODA</Text>
           </View>
@@ -93,10 +113,21 @@ function GameCardBase({ card, owned, mode = 'browse', selected, inSquad, onPress
 function Stat({ icon, tint, v }: { icon: keyof typeof MaterialCommunityIcons.glyphMap; tint: string; v: number }) {
   return (
     <View style={styles.stat}>
-      <MaterialCommunityIcons name={icon} size={12} color={tint} />
+      <MaterialCommunityIcons name={icon} size={14} color={tint} />
       <Text style={styles.statV}>{v}</Text>
     </View>
   );
+}
+
+/**
+ * Tik ikonunun rengi — dolgunun üstünde okunabilir olan.
+ *
+ * Tasarım sisteminin kuralı: turuncu ve açık dolguların üzerine KOYU mürekkep,
+ * koyu dolguların üzerine beyaz. Destansı (turuncu) ve sıradan (açık gri)
+ * üzerine beyaz tik 4.5:1'in altında kalıyor.
+ */
+function checkInk(rarity: Card['rarity']): string {
+  return rarity === 'legendary' || rarity === 'common' ? colors.ink : '#FFFFFF';
 }
 
 /**
@@ -123,7 +154,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   locked: { opacity: 0.6 },
-  art: { position: 'relative', width: '100%', height: 88 },
+  art: { position: 'relative', width: '100%', height: 104 },
   artImg: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%' },
   lockBadge: {
     position: 'absolute',
@@ -140,18 +171,16 @@ const styles = StyleSheet.create({
   check: {
     position: 'absolute',
     top: 6,
-    left: 6,
+    right: 6,
     width: 24,
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
     borderColor: colors.surface,
-    backgroundColor: colors.borderStrong,
     alignItems: 'center',
     justifyContent: 'center',
     ...shadow.card,
   },
-  checkOn: { backgroundColor: colors.primary },
   squadTag: {
     position: 'absolute',
     bottom: 6,
@@ -161,14 +190,14 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     backgroundColor: colors.bubble,
   },
-  squadTagText: { fontFamily: font.bodyBold, fontSize: text.micro.fontSize, color: colors.ink, letterSpacing: 0.4 },
+  squadTagText: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.ink, letterSpacing: 0.4 },
   body: { padding: 10, paddingBottom: 11, gap: 7 },
-  name: { fontFamily: font.headingSm, fontSize: 15, color: colors.ink },
+  name: { fontFamily: font.headingSm, fontSize: 16, color: colors.ink },
   rarityRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   rarityText: {
     fontFamily: font.bodyBold,
-    fontSize: text.caption.fontSize,
-    lineHeight: text.caption.lineHeight,
+    fontSize: text.bodySmall.fontSize,
+    lineHeight: text.bodySmall.lineHeight,
     letterSpacing: 0.5,
     color: colors.textMuted,
   },
@@ -181,7 +210,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.sunken,
     borderRadius: 8,
   },
-  statV: { fontFamily: font.stat, fontSize: 13, color: colors.ink },
+  statV: { fontFamily: font.stat, fontSize: 15, color: colors.ink },
 });
 
 export const GameCard = memo(GameCardBase);

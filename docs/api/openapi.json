@@ -470,6 +470,34 @@
         ]
       }
     },
+    "/api/stats/me": {
+      "get": {
+        "operationId": "StatsController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Oyuncunun kendi istatistikleri.",
+        "tags": [
+          "İstatistik"
+        ],
+        "description": "Sayaçlar yalnızca DOĞRULANMIŞ maç sonucuyla artıyor (bkz. ADR 0008), yani\nbu rakamlar istemcinin bildirdiği bir şey değil. Profil ekranı burayı\nokuyor; yerel sayaçlar yalnızca çevrimdışı oynanan maçları biliyor ve\nonları göstermek bağlı oyuncuya yanlış rakam söylemek olurdu."
+      }
+    },
     "/api/store/packs": {
       "get": {
         "operationId": "StoreController_packs",
