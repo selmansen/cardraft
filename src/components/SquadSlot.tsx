@@ -45,7 +45,11 @@ export function SquadSlot({
       disabled={!onRemove}
     >
       {support ? (
-        <MaterialCommunityIcons name={icon!} size={18} color={colors.grapeInk} />
+        /* İkon yuvayı DOLDURUYOR: 18 px'te çıkarma dairesi (22 px) ikonun
+           tamamını kapatıyordu ve oyuncu hangi pit kartını çıkardığını
+           göremiyordu. Büyük ikonda daire ortada dursa da kenarları
+           görünüyor. */
+        <MaterialCommunityIcons name={icon!} size={34} color={colors.grapeInk} />
       ) : (
         <Image source={carImage(cardId)} style={styles.image} resizeMode="cover" />
       )}

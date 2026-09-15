@@ -10,9 +10,17 @@ import type { Card } from '@/types';
 interface Props {
   card: Card;
   owned: boolean;
-  /** 'browse' (Collection: tap opens detail) or 'select' (Squad: tap toggles). */
+  /** 'browse' (dokunma detayı açar) ya da 'select' (dokunma kadroya alır). */
   mode?: 'browse' | 'select';
-  selected?: boolean;
+  /**
+   * Kart kadroda mı?
+   *
+   * Tek prop — eskiden `selected` ve `inSquad` diye İKİSİ vardı ve aynı şeyi
+   * anlatıyorlardı: biri seçim kipinde, diğeri gezinme kipinde okunuyordu.
+   * Çağıran yalnızca `inSquad` gönderdiği için seçim kipinde kart hiç
+   * değişmiyordu — oyuncu karta basıyor, kadroya giriyor ama kartta hiçbir
+   * şey olmuyordu. İki isim, tek gerçek.
+   */
   inSquad?: boolean;
   onPress: () => void;
   /** Press-and-hold to see full stats/abilities without triggering onPress
@@ -28,7 +36,7 @@ interface Props {
  * detail page. The only difference is behavioural: 'select' mode adds a
  * check-circle and toggles instead of navigating.
  */
-function GameCardBase({ card, owned, mode = 'browse', selected, inSquad, onPress, onLongPress }: Props) {
+function GameCardBase({ card, owned, mode = 'browse', inSquad, onPress, onLongPress }: Props) {
   const r = RARITY[card.rarity];
   const isSelect = mode === 'select';
 
@@ -39,8 +47,8 @@ function GameCardBase({ card, owned, mode = 'browse', selected, inSquad, onPress
       delayLongPress={onLongPress ? LONG_PRESS_MS : undefined}
       style={[
         styles.card,
-        { borderColor: isSelect && selected ? colors.primary : r.border },
-        isSelect && selected ? shadow.raised : shadow.card,
+        { borderColor: isSelect && inSquad ? colors.primary : r.border },
+        isSelect && inSquad ? shadow.raised : shadow.card,
         !owned && styles.locked,
       ]}
     >
@@ -61,7 +69,7 @@ function GameCardBase({ card, owned, mode = 'browse', selected, inSquad, onPress
             kartlarıyla aynı dil. Seçilmemiş kartta boş bir daire durması,
             ızgaradaki her kartın üstüne bir işaret koyup gözü yoruyordu;
             kilit rozeti zaten sol üstte, çakışma da yok. */}
-        {isSelect && selected ? (
+        {isSelect && inSquad ? (
           <View style={styles.check}>
             <MaterialCommunityIcons name="check-bold" size={14} color="#FFFFFF" />
           </View>

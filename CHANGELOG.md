@@ -49,6 +49,12 @@ Etiket öneki: `app-v`.
 
 ### Düzeltildi
 
+- **Kadroya alınan araç kartında hiçbir değişiklik olmuyordu.** `GameCard`
+  seçimi `selected` prop'undan okuyordu ama çağıran `inSquad` gönderiyordu —
+  iki prop aynı şeyi anlatıyor, biri seçim kipinde diğeri gezinme kipinde
+  okunuyordu. Tek prop'a indirildi.
+- Kadro şeridinde Pit Ekibi ikonu küçüktü ve çıkarma dairesi tamamını
+  kapatıyordu; oyuncu hangi kartı çıkardığını göremiyordu.
 - **Araç ve Pit kartlarının seçim işareti aynılaştı**: sağ üstte tik, seçili
   kenar rengi (araçta mavi, pitte mor). Araç kartında tik sol üstteydi ve
   seçilmemiş kartta da boş bir daire duruyordu — ızgaradaki her kartın üstünde
