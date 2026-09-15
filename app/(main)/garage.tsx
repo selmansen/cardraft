@@ -155,7 +155,7 @@ export default function GarageScreen() {
         <View style={styles.squadHead}>
           <Text style={styles.squadLabel}>Kadron</Text>
           <Text style={[styles.squadCount, total !== LOADOUT_TOTAL && styles.squadCountWarn]}>
-            {total} / {LOADOUT_TOTAL}
+            {total}/{LOADOUT_TOTAL}
             <Text style={styles.squadDetail}>
               {'  '}· {loadout.length} araç · {supportLoadout.length} pit
             </Text>
@@ -580,6 +580,8 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 6,
     padding: 11,
+    // Altta yıldızlara ayrılan yer: ortalanan içerik onların üstüne binmesin.
+    paddingBottom: 30,
     // İçerik iki eksende de ortalı: pit kartında araç görseli gibi alanı
     // dolduran bir öğe yok, o yüzden üste yaslanınca kartın altı boş
     // kalıyordu ve kart yarım görünüyordu.
@@ -593,7 +595,24 @@ const styles = StyleSheet.create({
   },
   pitOn: { borderColor: colors.grape, backgroundColor: colors.grapeSoft },
   pitLocked: { opacity: 0.62 },
-  pitFoot: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 },
+  /**
+   * Yıldızlar kartın DİBİNDE ve ortada — akışın içinde değil.
+   *
+   * Akışta bırakılınca ortalanan bloğun parçası oluyor ve her kartta farklı
+   * bir yükseklikte duruyordu (etki metni bir, iki ya da üç satır olabiliyor),
+   * yani ızgarada göz için bir hizaya oturmuyordu. Mutlak konumlanınca bütün
+   * kartlarda aynı yerde. Kartın alt dolgusu da onlara yer açıyor.
+   */
+  pitFoot: {
+    position: 'absolute',
+    bottom: 10,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
   dots: { flexDirection: 'row', gap: 2 },
   pitCheck: {
     position: 'absolute',
