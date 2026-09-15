@@ -112,8 +112,23 @@ export const shadow = {
 /** Space the docked bottom nav reserves at the bottom of scroll content. */
 export const NAV_CLEARANCE = 122;
 
-/** How long a press-and-hold takes to open a card's info panel — the same
- *  duration everywhere it's used (battle hand/board cards, Squad's vehicle
- *  grid) so it reads as one consistent app-wide gesture, not a per-screen
- *  quirk. Was 800ms, felt slow once it became a habit players reach for. */
+/**
+ * Savaş ekranında basılı tutma süresi.
+ *
+ * Burada uzun basma SÜRÜKLEMEYLE yarışıyor: oyuncu kartı sahaya sürüklerken
+ * parmağını bir an sabit tutuyor ve süre kısa olursa sürükleme yerine
+ * inceleme açılıyor. 450 ms o çakışmayı önlerken hâlâ "basılı tuttum" hissini
+ * veriyor (800'dü, alışkanlık hâline gelince yavaş geliyordu).
+ */
 export const LONG_PRESS_MS = 450;
+
+/**
+ * Koleksiyon ızgarasında basılı tutma süresi — belirgin şekilde daha kısa.
+ *
+ * Orada yarışan bir sürükleme jesti YOK: kart ya dokunmayla kadroya giriyor
+ * ya da basılı tutmayla detayı açılıyor. Uzun bir eşik, oyuncuya "acaba
+ * çalışmıyor mu" dedirtiyordu ve ekranın altına "karta basılı tut" diye bir
+ * ipucu yazmayı gerektiriyordu. Jest kendini anlatacak kadar hızlı olunca o
+ * ipucuna da gerek kalmıyor.
+ */
+export const CARD_INSPECT_MS = 180;

@@ -64,6 +64,14 @@ Etiket öneki: `app-v`.
   kenar rengi (araçta mavi, pitte mor). Araç kartında tik sol üstteydi ve
   seçilmemiş kartta da boş bir daire duruyordu — ızgaradaki her kartın üstünde
   bir işaret gözü yoruyordu.
+- **Koleksiyon ızgarasında basılı tutma neredeyse anında tetikleniyor**
+  (450 → 180 ms) ve ekranın altındaki "karta basılı tut / kilitli karta dokun"
+  ipucu kaldırıldı — jest kendini anlatacak kadar hızlı olunca yazıya gerek
+  kalmıyor. Savaş ekranı 450 ms'te kaldı: orada basılı tutma sürüklemeyle
+  yarışıyor ve kısa eşik, kartı sürüklemek isteyen oyuncuya inceleme açardı.
+- Pit kartında güç seviyesi noktayla gösteriliyordu; araç kartlarında nadirlik
+  zaten yıldızla gösterildiği için o da mor yıldıza döndü — iki havuzun "ne
+  kadar iyi" göstergesi aynı dili konuşuyor.
 - Pit kartında kilit ve fiyat ayrı duruyordu (köşede kilit, altta rakam);
   araç kartındaki gibi tek rozette ve aynı yerde (sol üst) birleşti.
 - Pit kartının içeriği iki eksende de ortalandı — pit kartında araç görseli

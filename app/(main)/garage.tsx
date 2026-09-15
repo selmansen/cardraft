@@ -12,7 +12,7 @@ import { CategoryTabs } from '@/components/CategoryTabs';
 import { CurrencyTag } from '@/components/Currency';
 import { useDialog, type DialogOptions } from '@/components/overlay/DialogProvider';
 import { GameCard } from '@/components/GameCard';
-import { colors, font, LONG_PRESS_MS, NAV_CLEARANCE, radius, shadow, space, text } from '@/constants/theme';
+import { CARD_INSPECT_MS, colors, font, NAV_CLEARANCE, radius, shadow, space, text } from '@/constants/theme';
 import { CARDS, CLASS_LABEL } from '@/data/cards';
 import { SUPPORT_CARDS } from '@/data/supportCards';
 import { supportCardEffectText } from '@/game/supportAbilities';
@@ -49,9 +49,9 @@ const SEGMENTS: {
   fill: string;
   tint: string;
 }[] = [
-  { key: 'vehicles', label: 'Saha Ekibi', icon: 'truck', fill: colors.primary, tint: colors.textMuted },
-  { key: 'pit', label: 'Pit Ekibi', icon: 'wrench', fill: colors.grape, tint: colors.grapeInk },
-];
+    { key: 'vehicles', label: 'Saha Ekibi', icon: 'truck', fill: colors.primary, tint: colors.textMuted },
+    { key: 'pit', label: 'Pit Ekibi', icon: 'wrench', fill: colors.grape, tint: colors.grapeInk },
+  ];
 
 /**
  * GARAJ — kadro ve koleksiyon tek ekranda.
@@ -153,7 +153,7 @@ export default function GarageScreen() {
           kurmak demek; bu yüzden kaydırmayla yukarı kaçmıyor. */}
       <View style={styles.squadBlock}>
         <View style={styles.squadHead}>
-          <Text style={styles.squadLabel}>KADRON</Text>
+          <Text style={styles.squadLabel}>Kadron</Text>
           <Text style={[styles.squadCount, total !== LOADOUT_TOTAL && styles.squadCountWarn]}>
             {total} / {LOADOUT_TOTAL}
             <Text style={styles.squadDetail}>
@@ -214,35 +214,28 @@ export default function GarageScreen() {
         <View style={styles.grid}>
           {showPit
             ? SUPPORT_CARDS.map((card) => (
-                <View key={card.id} style={styles.cell}>
-                  <PitCard
-                    card={card}
-                    owned={support.has(card.id)}
-                    inSquad={supportLoadout.includes(card.id)}
-                    onPress={() => onSupportPress(card)}
-                    onLongPress={() => setInspectPit(card)}
-                  />
-                </View>
-              ))
+              <View key={card.id} style={styles.cell}>
+                <PitCard
+                  card={card}
+                  owned={support.has(card.id)}
+                  inSquad={supportLoadout.includes(card.id)}
+                  onPress={() => onSupportPress(card)}
+                  onLongPress={() => setInspectPit(card)}
+                />
+              </View>
+            ))
             : vehicleList.map((card) => (
-                <View key={card.id} style={styles.cell}>
-                  <GameCard
-                    card={card}
-                    owned={vehicles.has(card.id)}
-                    mode="select"
-                    inSquad={loadout.includes(card.id)}
-                    onPress={() => onVehiclePress(card)}
-                    onLongPress={() => setInspect(card)}
-                  />
-                </View>
-              ))}
-        </View>
-
-        <View style={styles.hint}>
-          <MaterialCommunityIcons name="information-outline" size={17} color={colors.accentDark} />
-          <Text style={styles.hintText}>
-            Karta basılı tut: özelliklerini gör. Kilitli karta dokun: satın al.
-          </Text>
+              <View key={card.id} style={styles.cell}>
+                <GameCard
+                  card={card}
+                  owned={vehicles.has(card.id)}
+                  mode="select"
+                  inSquad={loadout.includes(card.id)}
+                  onPress={() => onVehiclePress(card)}
+                  onLongPress={() => setInspect(card)}
+                />
+              </View>
+            ))}
         </View>
       </ScrollView>
 
@@ -282,7 +275,7 @@ function PitCard({
       style={[styles.pit, inSquad && styles.pitOn, !owned && styles.pitLocked]}
       onPress={onPress}
       onLongPress={onLongPress}
-      delayLongPress={LONG_PRESS_MS}
+      delayLongPress={CARD_INSPECT_MS}
     >
       {/* İkon yeteneğin TÜRÜNE bağlı: hepsi aynı anahtar ikonuyken kartlar
           birbirinden yalnızca adlarıyla ayrılıyordu. */}
@@ -296,7 +289,7 @@ function PitCard({
         {supportCardEffectText(card)}
       </Text>
       <View style={styles.pitFoot}>
-        <PowerDots power={card.power} />
+        <PowerStars power={card.power} />
       </View>
 
       {/* Kilit ve fiyat TEK rozette, araç kartındaki yerin aynısında (sol üst).
@@ -318,12 +311,23 @@ function PitCard({
   );
 }
 
-/** Güç seviyesi — pit kartlarında nadirlik yok, onun yerine bu. */
-function PowerDots({ power }: { power: number }) {
+/**
+ * Güç seviyesi — pit kartlarında nadirlik yok, onun yerine bu.
+ *
+ * Yıldız, nokta değil: araç kartlarında nadirlik zaten yıldızla gösteriliyor
+ * (`RarityStars`) ve iki havuzun "ne kadar iyi" göstergesi aynı dili
+ * konuşmalı. Rengi mor, çünkü pit havuzunun kimliği o.
+ */
+function PowerStars({ power }: { power: number }) {
   return (
     <View style={styles.dots}>
       {[1, 2, 3, 4].map((i) => (
-        <View key={i} style={[styles.dot, i <= power && styles.dotOn]} />
+        <MaterialCommunityIcons
+          key={i}
+          name={i <= power ? 'star' : 'star-outline'}
+          size={14}
+          color={i <= power ? colors.grape : colors.border}
+        />
       ))}
     </View>
   );
@@ -393,7 +397,7 @@ async function unlockSupport(
 function SupportInspectPanel({ card, onClose }: { card: SupportCard; onClose: () => void }) {
   return (
     <Pressable style={styles.inspectScrim} onPress={onClose}>
-      <Pressable style={styles.inspectPanel} onPress={() => {}}>
+      <Pressable style={styles.inspectPanel} onPress={() => { }}>
         <View style={styles.inspectHero}>
           <MaterialCommunityIcons name={SUPPORT_ICON[card.kind]} size={64} color={colors.grapeInk} />
           <Pressable style={styles.inspectClose} onPress={onClose}>
@@ -404,7 +408,7 @@ function SupportInspectPanel({ card, onClose }: { card: SupportCard; onClose: ()
         <View style={styles.inspectBody}>
           <Text style={styles.inspectName}>{card.name}</Text>
           <View style={styles.inspectMeta}>
-            <PowerDots power={card.power} />
+            <PowerStars power={card.power} />
             <Text style={styles.inspectPower}>Güç {card.power}</Text>
           </View>
 
@@ -485,7 +489,7 @@ const styles = StyleSheet.create({
     color: colors.ink,
   },
 
-  segments: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingTop: 16 },
+  segments: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingTop: 16, marginBottom: 8 },
   segment: {
     flex: 1,
     flexDirection: 'row',
@@ -564,9 +568,9 @@ const styles = StyleSheet.create({
   },
   divider: { width: 1, backgroundColor: colors.border, marginVertical: 4, marginHorizontal: 3 },
 
-  chips: { paddingTop: space.md },
+  chips: { paddingTop: space.xs, paddingBottom: 0, marginBottom: 0 },
   scroll: { paddingHorizontal: space.md, paddingTop: 12, paddingBottom: NAV_CLEARANCE },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 9 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 9, marginTop: -9 },
   /** İKİ sütun. Üç sütunda kart 108 px kalıyordu ve içindeki üç stat kutusu
    *  (Güç/Dayanıklılık/Hız) taşıp okunmaz hale geliyordu — kartın taşıdığı
    *  asıl bilgi görünmüyordu. */
@@ -590,9 +594,7 @@ const styles = StyleSheet.create({
   pitOn: { borderColor: colors.grape, backgroundColor: colors.grapeSoft },
   pitLocked: { opacity: 0.62 },
   pitFoot: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 },
-  dots: { flexDirection: 'row', gap: 3 },
-  dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.border },
-  dotOn: { backgroundColor: colors.grape },
+  dots: { flexDirection: 'row', gap: 2 },
   pitCheck: {
     position: 'absolute',
     top: 8,
@@ -625,20 +627,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  hint: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 9,
-    marginTop: 12,
-    padding: 11,
-    backgroundColor: colors.accentSoft,
-    borderRadius: radius.md,
-  },
-  hintText: {
-    flex: 1,
-    fontFamily: font.body,
-    fontSize: text.bodySmall.fontSize,
-    lineHeight: text.bodySmall.lineHeight,
-    color: colors.ink,
-  },
 });

@@ -3,7 +3,7 @@ import { memo } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { CurrencyTag } from '@/components/Currency';
-import { colors, font, LONG_PRESS_MS, radius, rarity as RARITY, shadow, text } from '@/constants/theme';
+import { colors, font, CARD_INSPECT_MS, radius, rarity as RARITY, shadow, text } from '@/constants/theme';
 import { carImage } from '@/data/carImages';
 import type { Card } from '@/types';
 
@@ -44,7 +44,7 @@ function GameCardBase({ card, owned, mode = 'browse', inSquad, onPress, onLongPr
     <Pressable
       onPress={onPress}
       onLongPress={onLongPress}
-      delayLongPress={onLongPress ? LONG_PRESS_MS : undefined}
+      delayLongPress={onLongPress ? CARD_INSPECT_MS : undefined}
       style={[
         styles.card,
         /**
