@@ -47,7 +47,15 @@ function GameCardBase({ card, owned, mode = 'browse', inSquad, onPress, onLongPr
       delayLongPress={onLongPress ? LONG_PRESS_MS : undefined}
       style={[
         styles.card,
-        { borderColor: isSelect && inSquad ? colors.primary : r.border },
+        /**
+         * Kenar HER ZAMAN nadirlik rengi — seçilince değişmiyor.
+         *
+         * Seçili kartın kenarını maviye çevirmek, kartın kimliğini siliyordu:
+         * destansı turuncu, nadir mavi, efsanevi mor diye kurulmuş bir sistem
+         * varken seçim anında hepsi aynı renge dönüyordu. Seçimi anlatan şey
+         * artık yalnızca tik ve yükseltilmiş gölge.
+         */
+        { borderColor: r.border },
         isSelect && inSquad ? shadow.raised : shadow.card,
         !owned && styles.locked,
       ]}
@@ -70,8 +78,8 @@ function GameCardBase({ card, owned, mode = 'browse', inSquad, onPress, onLongPr
             ızgaradaki her kartın üstüne bir işaret koyup gözü yoruyordu;
             kilit rozeti zaten sol üstte, çakışma da yok. */}
         {isSelect && inSquad ? (
-          <View style={styles.check}>
-            <MaterialCommunityIcons name="check-bold" size={14} color="#FFFFFF" />
+          <View style={[styles.check, { backgroundColor: r.border }]}>
+            <MaterialCommunityIcons name="check-bold" size={14} color={checkInk(card.rarity)} />
           </View>
         ) : !isSelect && inSquad ? (
           <View style={styles.squadTag}>
@@ -109,6 +117,17 @@ function Stat({ icon, tint, v }: { icon: keyof typeof MaterialCommunityIcons.gly
       <Text style={styles.statV}>{v}</Text>
     </View>
   );
+}
+
+/**
+ * Tik ikonunun rengi — dolgunun üstünde okunabilir olan.
+ *
+ * Tasarım sisteminin kuralı: turuncu ve açık dolguların üzerine KOYU mürekkep,
+ * koyu dolguların üzerine beyaz. Destansı (turuncu) ve sıradan (açık gri)
+ * üzerine beyaz tik 4.5:1'in altında kalıyor.
+ */
+function checkInk(rarity: Card['rarity']): string {
+  return rarity === 'legendary' || rarity === 'common' ? colors.ink : '#FFFFFF';
 }
 
 /**
@@ -158,7 +177,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 2,
     borderColor: colors.surface,
-    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     ...shadow.card,

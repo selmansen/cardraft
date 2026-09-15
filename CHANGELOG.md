@@ -49,6 +49,11 @@ Etiket öneki: `app-v`.
 
 ### Düzeltildi
 
+- **Seçili araç kartının kenarı maviye dönüyordu ve kartın nadirlik kimliğini
+  siliyordu** — destansı turuncu, nadir mavi, efsanevi mor diye kurulmuş bir
+  sistem varken seçim anında hepsi aynı renge geliyordu. Kenar artık hiç
+  değişmiyor; seçimi tik ve yükseltilmiş gölge anlatıyor, tik de kartın kendi
+  renginde.
 - **Kadroya alınan araç kartında hiçbir değişiklik olmuyordu.** `GameCard`
   seçimi `selected` prop'undan okuyordu ama çağıran `inSquad` gönderiyordu —
   iki prop aynı şeyi anlatıyor, biri seçim kipinde diğeri gezinme kipinde
