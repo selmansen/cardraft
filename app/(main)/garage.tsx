@@ -6,8 +6,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { CurrencyCode } from '@/api/types';
 import { CardInspectPanel } from '@/components/CardInspectPanel';
-import { ChunkyButton } from '@/components/ChunkyButton';
-import { BottomSheet } from '@/components/overlay/BottomSheet';
 import { EmptySlot, SquadSlot } from '@/components/SquadSlot';
 import { SUPPORT_ICON } from '@/data/supportIcons';
 import { CategoryTabs } from '@/components/CategoryTabs';
@@ -251,7 +249,7 @@ export default function GarageScreen() {
       {inspect && <CardInspectPanel card={inspect} onClose={() => setInspect(null)} />}
       {/* Pit kartının etki metni ızgarada iki satıra sığmıyor; basılı tutmak
           araç kartlarındaki gibi tamamını açıyor. */}
-      <SupportInspectSheet card={inspectPit} onClose={() => setInspectPit(null)} />
+      {inspectPit && <SupportInspectPanel card={inspectPit} onClose={() => setInspectPit(null)} />}
     </SafeAreaView>
   );
 }
@@ -288,7 +286,9 @@ function PitCard({
     >
       {/* İkon yeteneğin TÜRÜNE bağlı: hepsi aynı anahtar ikonuyken kartlar
           birbirinden yalnızca adlarıyla ayrılıyordu. */}
-      <MaterialCommunityIcons name={SUPPORT_ICON[card.kind]} size={22} color={colors.grapeInk} />
+      {/* İkon iki kat büyük ve ortada: pit kartının nadirlik rengi ya da
+          aracı yok, tanınmasını sağlayan tek görsel işaret bu. */}
+      <MaterialCommunityIcons name={SUPPORT_ICON[card.kind]} size={44} color={colors.grapeInk} />
       <Text style={styles.pitName} numberOfLines={1}>
         {card.name}
       </Text>
@@ -377,59 +377,87 @@ async function unlockSupport(
   });
 }
 
-/** Pit kartının tam etkisi — ızgarada iki satıra sığmıyor. */
-function SupportInspectSheet({ card, onClose }: { card: SupportCard | null; onClose: () => void }) {
+/**
+ * Pit kartının tam etkisi.
+ *
+ * Araç kartının hızlı bilgisi (`CardInspectPanel`) ekranın ORTASINDA açılan
+ * bir panel; bu da öyle. Aynı jestin (basılı tut) iki farklı yerden iki
+ * farklı şekilde açılması, oyuncuya iki ayrı mekanizma varmış gibi
+ * hissettiriyordu.
+ */
+function SupportInspectPanel({ card, onClose }: { card: SupportCard; onClose: () => void }) {
   return (
-    <BottomSheet visible={card !== null} onClose={onClose}>
-      <>
-        {card && (
-          <>
-            <View style={styles.inspectHead}>
-              <View style={styles.inspectIcon}>
-                <MaterialCommunityIcons name={SUPPORT_ICON[card.kind]} size={28} color={colors.grapeInk} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.inspectName}>{card.name}</Text>
-                <Text style={styles.inspectPower}>Güç seviyesi {card.power}</Text>
-              </View>
-              <View style={styles.inspectPrice}>
-                <CurrencyTag currency="rim" amount={card.price.rim} size={14} />
-              </View>
-            </View>
-            <Text style={styles.inspectEffect}>{supportCardEffectText(card)}</Text>
-            <View style={styles.inspectNote}>
-              <MaterialCommunityIcons name="information-outline" size={17} color={colors.accentDark} />
-              <Text style={styles.inspectNoteText}>
-                Pit Ekibi kartları sahaya çıkmaz ve yakıt harcamaz — turda en fazla bir tane
-                oynayabilirsin.
-              </Text>
-            </View>
-            <ChunkyButton variant="secondary" label="Kapat" onPress={onClose} style={{ marginTop: space.md }} />
-          </>
-        )}
-      </>
-    </BottomSheet>
+    <Pressable style={styles.inspectScrim} onPress={onClose}>
+      <Pressable style={styles.inspectPanel} onPress={() => {}}>
+        <View style={styles.inspectHero}>
+          <MaterialCommunityIcons name={SUPPORT_ICON[card.kind]} size={64} color={colors.grapeInk} />
+          <Pressable style={styles.inspectClose} onPress={onClose}>
+            <MaterialCommunityIcons name="close-thick" size={15} color={colors.ink} />
+          </Pressable>
+        </View>
+
+        <View style={styles.inspectBody}>
+          <Text style={styles.inspectName}>{card.name}</Text>
+          <View style={styles.inspectMeta}>
+            <PowerDots power={card.power} />
+            <Text style={styles.inspectPower}>Güç {card.power}</Text>
+          </View>
+
+          <Text style={styles.inspectEffect}>{supportCardEffectText(card)}</Text>
+
+          <View style={styles.inspectNote}>
+            <MaterialCommunityIcons name="information-outline" size={17} color={colors.accentDark} />
+            <Text style={styles.inspectNoteText}>
+              Sahaya çıkmaz, yakıt harcamaz — turda en fazla bir tane oynayabilirsin.
+            </Text>
+          </View>
+        </View>
+      </Pressable>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  inspectHead: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
-  inspectIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
+  inspectScrim: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(16,18,28,0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: space.lg,
+  },
+  inspectPanel: {
+    width: '100%',
+    maxWidth: 340,
+    borderRadius: radius.xl,
+    backgroundColor: colors.surface,
+    overflow: 'hidden',
+    ...shadow.raised,
+  },
+  inspectHero: {
+    height: 130,
     backgroundColor: colors.grapeSoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  inspectName: { fontFamily: font.heading, fontSize: 20, lineHeight: 26, color: colors.ink },
-  inspectPower: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.textMuted },
-  inspectPrice: {
-    paddingHorizontal: 11,
-    paddingVertical: 6,
-    borderRadius: radius.pill,
-    backgroundColor: colors.sunken,
+  inspectClose: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  inspectBody: { padding: space.md, gap: 10 },
+  inspectName: { fontFamily: font.heading, fontSize: 20, lineHeight: 26, color: colors.ink },
+  inspectMeta: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  inspectPower: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, color: colors.grapeInk },
   inspectEffect: {
     fontFamily: font.body,
     fontSize: text.body.fontSize,
@@ -440,7 +468,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 9,
-    marginTop: 14,
     padding: 12,
     backgroundColor: colors.accentSoft,
     borderRadius: radius.md,
@@ -542,8 +569,9 @@ const styles = StyleSheet.create({
 
   pit: {
     flex: 1,
-    gap: 5,
+    gap: 6,
     padding: 11,
+    alignItems: 'center',
     backgroundColor: colors.surface,
     borderWidth: 2,
     borderColor: colors.border,
@@ -552,7 +580,7 @@ const styles = StyleSheet.create({
   },
   pitOn: { borderColor: colors.grape, backgroundColor: colors.grapeSoft },
   pitLocked: { opacity: 0.62 },
-  pitFoot: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' },
+  pitFoot: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 'auto' },
   dots: { flexDirection: 'row', gap: 3 },
   dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.border },
   dotOn: { backgroundColor: colors.grape },
@@ -578,12 +606,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  pitName: { fontFamily: font.bodyBlack, fontSize: text.bodySmall.fontSize, color: colors.ink },
+  pitName: { fontFamily: font.bodyBlack, fontSize: text.bodySmall.fontSize, color: colors.ink, textAlign: 'center' },
   pitEffect: {
     fontFamily: font.body,
     fontSize: text.bodySmall.fontSize,
     lineHeight: text.bodySmall.lineHeight,
     color: colors.textMuted,
+    textAlign: 'center',
   },
 
   hint: {

@@ -49,14 +49,24 @@ Etiket öneki: `app-v`.
 
 ### Düzeltildi
 
+- **Araç ve Pit kartlarının seçim işareti aynılaştı**: sağ üstte tik, seçili
+  kenar rengi (araçta mavi, pitte mor). Araç kartında tik sol üstteydi ve
+  seçilmemiş kartta da boş bir daire duruyordu — ızgaradaki her kartın üstünde
+  bir işaret gözü yoruyordu.
+- Pit kartının içeriği ortalandı, ikonu iki kat büyüdü: pit kartının nadirlik
+  rengi ya da aracı yok, tanınmasını sağlayan tek görsel işaret o.
+- **Pit kartının hızlı bilgisi de ortada açılıyor.** Alt sayfadan geliyordu;
+  araç kartının aynı jesti (basılı tut) ortalı bir panel açıyor ve ikisinin
+  farklı davranması iki ayrı mekanizma varmış gibi hissettiriyordu.
 - **Pit Ekibi kartları eski tasarımına döndü**: mor (pembe değil), ikon →
   ad → etki → güç noktaları sırasıyla, köşede kilit/seçim rozetiyle.
   Sekmelerin ikonu ve kadro sayacı da geri geldi.
 - **Kadro şeridi ekrana sığmıyordu** (8 yuva + ayraç 402 px'i aşıyor); artık
   yatay kayıyor. Sabit genişliğe sıkıştırmak yuvaları okunmaz hale getirirdi.
 - **Kadrodan kart çıkarma işareti** köşedeki kırmızı rozetten kartın tam
-  ortasındaki soluk daireye taşındı — rozet karttan çok dikkat çekiyordu ve
-  şerit bir "sil" düğmeleri dizisi gibi duruyordu.
+  ortasındaki daireye taşındı (kırmızı, hafif saydam) — köşedeki rozet
+  karttan çok dikkat çekiyordu ve şerit bir "sil" düğmeleri dizisi gibi
+  duruyordu.
 - "Savaşa Başla" yazısı hâlâ ortalı değildi ve üstten kırpılıyordu: elle
   verilen `lineHeight` Baloo 2'nin kendi satır dengesini bozuyor. Değer
   tamamen kaldırıldı.

@@ -57,11 +57,15 @@ function GameCardBase({ card, owned, mode = 'browse', selected, inSquad, onPress
           </View>
         )}
 
-        {isSelect ? (
-          <View style={[styles.check, selected && styles.checkOn]}>
-            {selected ? <MaterialCommunityIcons name="check-bold" size={14} color="#FFFFFF" /> : null}
+        {/* Seçim işareti SAĞ ÜSTTE ve yalnızca seçiliyken — Pit Ekibi
+            kartlarıyla aynı dil. Seçilmemiş kartta boş bir daire durması,
+            ızgaradaki her kartın üstüne bir işaret koyup gözü yoruyordu;
+            kilit rozeti zaten sol üstte, çakışma da yok. */}
+        {isSelect && selected ? (
+          <View style={styles.check}>
+            <MaterialCommunityIcons name="check-bold" size={14} color="#FFFFFF" />
           </View>
-        ) : inSquad ? (
+        ) : !isSelect && inSquad ? (
           <View style={styles.squadTag}>
             <Text style={styles.squadTagText}>KADRODA</Text>
           </View>
@@ -140,18 +144,17 @@ const styles = StyleSheet.create({
   check: {
     position: 'absolute',
     top: 6,
-    left: 6,
+    right: 6,
     width: 24,
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
     borderColor: colors.surface,
-    backgroundColor: colors.borderStrong,
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     ...shadow.card,
   },
-  checkOn: { backgroundColor: colors.primary },
   squadTag: {
     position: 'absolute',
     bottom: 6,
