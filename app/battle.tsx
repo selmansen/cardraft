@@ -3106,6 +3106,7 @@ function HandCard({
       <Animated.View style={[styles.handCardWrap, { marginLeft: overlap }, aStyle]}>
         <Animated.Text style={[styles.handPlayHint, labelStyle]}>BIRAK</Animated.Text>
         <Animated.View pointerEvents="none" style={[styles.handRing, ringStyle]} />
+        <View pointerEvents="none" style={styles.handEdge} />
         <View style={[styles.handCard, { borderColor: r.border, backgroundColor: r.art }]}>
           <Image source={carImage(card.cardId)} style={styles.bvImg} resizeMode="cover" />
           <CardNameBar cardId={card.cardId} name={card.name} fontSize={12} stars={false} />
@@ -3265,6 +3266,7 @@ function SupportHandCard({
       <Animated.View style={[styles.handCardWrap, { marginLeft: overlap }, aStyle]}>
         <Animated.Text style={[styles.handPlayHint, labelStyle]}>BIRAK</Animated.Text>
         <Animated.View pointerEvents="none" style={[styles.handRing, ringStyle]} />
+        <View pointerEvents="none" style={styles.handEdge} />
         <View style={[styles.handCard, styles.supportHandCard, { borderColor: colors.grape }]}>
           <Text style={styles.supportEmoji}>{card.emoji}</Text>
           <Text style={styles.supportName} numberOfLines={1}>
@@ -3694,10 +3696,10 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderRadius: 18,
   },
-  // Elde ise kartın kenarına yapışık ve 1 px: eldeki kartların hepsi
-  // çoğunlukla oynanabilir oluyor, kalın halka bütün desteyi yeşile
-  // boyuyordu. İnce çizgi yeterince söylüyor.
-  handRing: {
+  // Eldeki kartlar üst üste biniyor ve aynı nadirlikten iki kart yan yana
+  // gelince tek bir kart gibi okunuyordu. Her kartın en dışında 1 px beyaz
+  // bir çizgi var: kartın nadirlik kenarıyla komşusunun yüzünü ayıran şey bu.
+  handEdge: {
     position: 'absolute',
     top: -1,
     left: -1,
@@ -3705,6 +3707,19 @@ const styles = StyleSheet.create({
     bottom: -1,
     borderWidth: 1,
     borderRadius: 15,
+    borderColor: '#FFFFFF',
+  },
+  // Yeşil halka o beyaz çizginin de dışında, 2 px. Elde kalın bir halka
+  // bütün desteyi yeşile boyuyordu; bu kadarı "oynanabilir" demeye yetiyor
+  // ve ayırıcı beyaz çizgiyle karışmıyor.
+  handRing: {
+    position: 'absolute',
+    top: -3,
+    left: -3,
+    right: -3,
+    bottom: -3,
+    borderWidth: 2,
+    borderRadius: 17,
   },
 
   resultScrim: {
