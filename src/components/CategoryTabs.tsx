@@ -43,8 +43,8 @@ export function CategoryTabs<T extends string>({ options, value, onChange }: Pro
 const TAB_ROW_HEIGHT = 34 + 8 + 8;
 
 const styles = StyleSheet.create({
-  wrap: { flexGrow: 0, height: TAB_ROW_HEIGHT, marginBottom: 4 },
-  row: { gap: 8, paddingHorizontal: 16, paddingVertical: 8 },
+  wrap: { flexGrow: 0, height: TAB_ROW_HEIGHT, marginBottom: 0 },
+  row: { gap: 8, paddingHorizontal: 16, paddingTop: 8 },
   chip: {
     paddingHorizontal: 14,
     height: 34,

@@ -60,7 +60,7 @@ export function SquadSlot({
       {onRemove && (
         <View style={styles.removeOverlay}>
           <View style={styles.removeCircle}>
-            <MaterialCommunityIcons name="minus" size={14} color="#FFFFFF" />
+            <MaterialCommunityIcons name="minus" size={14} weight="bold" color="#FFFFFF" />
           </View>
         </View>
       )}
@@ -105,9 +105,10 @@ const styles = StyleSheet.create({
     // Daire ikondan yalnızca birkaç piksel büyük: daha genişken kartın (ve
     // pit ikonunun) üstünü gereğinden fazla kapatıyordu. İşaretin kendisi
     // aynı boyutta kalıyor, çevresindeki dolgu küçülüyor.
-    width: 18,
-    height: 18,
+    width: 14,
+    height: 14,
     borderRadius: 9,
+    fontWeight: 'bold',
     backgroundColor: 'rgba(240,74,71,0.88)',
     alignItems: 'center',
     justifyContent: 'center',
