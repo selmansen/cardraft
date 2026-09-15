@@ -297,18 +297,23 @@ function PitCard({
       </Text>
       <View style={styles.pitFoot}>
         <PowerDots power={card.power} />
-        {!owned && <CurrencyTag currency="rim" amount={card.price.rim} size={14} />}
       </View>
 
-      {inSquad ? (
+      {/* Kilit ve fiyat TEK rozette, araç kartındaki yerin aynısında (sol üst).
+          Ayrı durduklarında oyuncu aynı bilgiyi iki yerden topluyordu: köşede
+          kilit, altta rakam. */}
+      {!owned && (
+        <View style={styles.pitLock}>
+          <MaterialCommunityIcons name="lock" size={12} color={colors.ink} />
+          <CurrencyTag currency="rim" amount={card.price.rim} size={text.bodySmall.fontSize} />
+        </View>
+      )}
+
+      {inSquad && (
         <View style={styles.pitCheck}>
           <MaterialCommunityIcons name="check-bold" size={12} color="#FFFFFF" />
         </View>
-      ) : !owned ? (
-        <View style={styles.pitLock}>
-          <MaterialCommunityIcons name="lock" size={12} color={colors.ink} />
-        </View>
-      ) : null}
+      )}
     </Pressable>
   );
 }
@@ -571,7 +576,11 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 6,
     padding: 11,
+    // İçerik iki eksende de ortalı: pit kartında araç görseli gibi alanı
+    // dolduran bir öğe yok, o yüzden üste yaslanınca kartın altı boş
+    // kalıyordu ve kart yarım görünüyordu.
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: colors.surface,
     borderWidth: 2,
     borderColor: colors.border,
@@ -580,7 +589,7 @@ const styles = StyleSheet.create({
   },
   pitOn: { borderColor: colors.grape, backgroundColor: colors.grapeSoft },
   pitLocked: { opacity: 0.62 },
-  pitFoot: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 'auto' },
+  pitFoot: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 },
   dots: { flexDirection: 'row', gap: 3 },
   dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.border },
   dotOn: { backgroundColor: colors.grape },
@@ -598,13 +607,14 @@ const styles = StyleSheet.create({
   pitLock: {
     position: 'absolute',
     top: 8,
-    right: 8,
-    width: 20,
-    height: 20,
+    left: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
     borderRadius: radius.pill,
     backgroundColor: colors.accentSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   pitName: { fontFamily: font.bodyBlack, fontSize: text.bodySmall.fontSize, color: colors.ink, textAlign: 'center' },
   pitEffect: {
