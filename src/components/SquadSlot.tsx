@@ -102,9 +102,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   removeCircle: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    // Daire ikondan yalnızca birkaç piksel büyük: daha genişken kartın (ve
+    // pit ikonunun) üstünü gereğinden fazla kapatıyordu. İşaretin kendisi
+    // aynı boyutta kalıyor, çevresindeki dolgu küçülüyor.
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     backgroundColor: 'rgba(240,74,71,0.88)',
     alignItems: 'center',
     justifyContent: 'center',
