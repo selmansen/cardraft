@@ -107,7 +107,9 @@ export default function PlayScreen() {
         {!howToPlaySeen && (
           <Pressable style={styles.tutorialRow} onPress={() => router.push('/how-to-play')}>
             <MaterialCommunityIcons name="school-outline" size={20} color={colors.accentDark} />
-            <Text style={styles.tutorialText}>İlk kez mi oynuyorsun? Kuralları öğren</Text>
+            <Text style={styles.tutorialText}>
+              İlk kez mi oynuyorsun? <Text style={styles.tutorialStrong}>Kuralları öğren</Text>
+            </Text>
             <MaterialCommunityIcons name="chevron-right" size={18} color={colors.accentDark} />
           </Pressable>
         )}
@@ -140,9 +142,9 @@ export default function PlayScreen() {
             <Text style={styles.squadTitle}>{isGuest ? 'Başlangıç kadrosu' : 'Kadron'}</Text>
             <View style={styles.squadLink}>
               <Text style={[styles.squadCount, !ready && styles.squadCountWarn]}>
-                {total} / {LOADOUT_TOTAL}
+                {total}/{LOADOUT_TOTAL}
               </Text>
-              <Text style={styles.squadEdit}>Düzenle</Text>
+              <Text style={[styles.squadCount, !ready && styles.squadCountWarn]}>Düzenle</Text>
               <MaterialCommunityIcons name="chevron-right" size={15} color={colors.primaryInk} />
             </View>
           </Pressable>
@@ -243,10 +245,13 @@ const styles = StyleSheet.create({
   },
   tutorialText: {
     flex: 1,
-    fontFamily: font.bodyBold,
+    fontFamily: font.body,
     fontSize: text.body.fontSize,
     color: colors.accentDark,
   },
+  /** Eylemi taşıyan yarısı kalın: satırın tamamı aynı ağırlıktayken hangi
+   *  kısmın tıklanabilir olduğu belli olmuyordu. */
+  tutorialStrong: { fontFamily: font.bodyBlack },
   sectionLabel: {
     fontFamily: font.bodyBold,
     fontSize: text.bodySmall.fontSize,
