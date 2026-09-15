@@ -33,9 +33,14 @@ etkilemiyor, maliyeti çoktan ödendi. Dörtten üçe inince rozet 23 → 30 px
 büyüdü; en dar ekranda (84 px kart) bile 26 px kalıyor.
 
 **Nadirlik savaşta da görünüyor.**
-Kenar, ad şeridi ve yıldızlar `theme.ts`'teki gerçek nadirlik paletinde.
-Eskiden savaşta kartın ne kadar değerli olduğu hiç okunmuyordu — oysa
-"bunu şimdi harcayayım mı" kararı tam olarak buna bağlı.
+Kenar ve ad şeridi `theme.ts`'teki gerçek nadirlik paletinde. Eskiden
+savaşta kartın ne kadar değerli olduğu hiç okunmuyordu — oysa "bunu şimdi
+harcayayım mı" kararı tam olarak buna bağlı.
+
+**Yıldızlar yalnızca sahada.**
+Elde kart küçük ve orada sorulan tek soru "bunu şimdi oynayabilir miyim";
+nadirliğin tam derecesi değil, şeridin rengi zaten onu söylüyor. Sahada ise
+kartlar yan yana duruyor ve karşılaştırılıyor, yıldız orada iş görüyor.
 
 **Durum kenarda değil, kartın dışındaki halkada.**
 Yeşil halka her yerde aynı şeyi söylüyor: elde "bunu oynayabilirsin",

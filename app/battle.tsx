@@ -290,10 +290,26 @@ function StatBadge({
   );
 }
 
-/** Kartın üstündeki ad şeridi — zemini nadirliğin rengi, altında yıldızları.
- *  Hem eldeki hem sahadaki kartta aynı; nadirliği savaş boyunca görünür
- *  tutan asıl şey bu şerit. */
-function CardNameBar({ cardId, name, fontSize }: { cardId: string; name: string; fontSize: number }) {
+/**
+ * Kartın üstündeki ad şeridi — zemini nadirliğin rengi. Nadirliği savaş
+ * boyunca görünür tutan asıl şey bu şerit.
+ *
+ * Yıldızlar yalnızca sahada: elde kart küçük ve orada sorulan tek soru
+ * "bunu şimdi oynayabilir miyim", nadirliğin tam derecesi değil — şeridin
+ * rengi zaten onu söylüyor. Sahada ise kartlar yan yana duruyor ve
+ * karşılaştırılıyor, yıldız orada iş görüyor.
+ */
+function CardNameBar({
+  cardId,
+  name,
+  fontSize,
+  stars = true,
+}: {
+  cardId: string;
+  name: string;
+  fontSize: number;
+  stars?: boolean;
+}) {
   const key = getCard(cardId).rarity;
   const r = RAR[key];
   const ink = rarityInk(key);
@@ -302,7 +318,7 @@ function CardNameBar({ cardId, name, fontSize }: { cardId: string; name: string;
       <Text style={[styles.nameBarText, { color: ink, fontSize }]} numberOfLines={1}>
         {name}
       </Text>
-      <RarityStars count={r.stars} color={ink} size={8} />
+      {stars ? <RarityStars count={r.stars} color={ink} size={8} /> : null}
     </View>
   );
 }
@@ -3092,7 +3108,7 @@ function HandCard({
         <Animated.View pointerEvents="none" style={[styles.handRing, ringStyle]} />
         <View style={[styles.handCard, { borderColor: r.border, backgroundColor: r.art }]}>
           <Image source={carImage(card.cardId)} style={styles.bvImg} resizeMode="cover" />
-          <CardNameBar cardId={card.cardId} name={card.name} fontSize={12} />
+          <CardNameBar cardId={card.cardId} name={card.name} fontSize={12} stars={false} />
           {/* Elde tek soru var: bunu şimdi oynayabilir miyim? Cevabını yakıt
               veriyor, o yüzden elde başka rozet yok — ve yakıt rozeti yetersiz
               yakıtta griye DÖNMÜYOR: aynı sayının iki renkte görünmesi
