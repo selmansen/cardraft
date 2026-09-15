@@ -84,15 +84,19 @@ import { LOADOUT_TOTAL, useGameStore } from '@/store/gameStore';
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const PLAY_THRESHOLD = -64;
-const HC_W = 88;
-const HC_H = 120;
-const HAND_ROW_HEIGHT = 134; // expanded height of the hand drawer's card row
+const HC_W = 84;
+const HC_H = 114;
+const HAND_ROW_HEIGHT = 128; // expanded height of the hand drawer's card row
 // How far each hand card steps from the one before it. The cards overlap, so
 // the step is smaller than the card: at HAND_STEP_MAX five cards sit side by
 // side comfortably, and a fuller hand squeezes the step down (never below
 // HAND_STEP_MIN, where the fuel badge would start disappearing) so the fan
 // always fits the screen instead of running off its right edge.
-const HAND_STEP_MAX = 58;
+const HAND_STEP_MAX = 56;
+// Eldeki yakıt rozeti, sahadaki rozetlerle aynı ölçüde değil: el kartı daha
+// küçük ve üstünde tek rozet var, sahadaki 110 px'lik kartın 30 px'lik
+// rozetini buraya taşımak kartın dörtte birini rozete veriyordu.
+const HC_BADGE = Math.round(HC_W * 0.31);
 const HAND_STEP_MIN = 30;
 
 function handStep(count: number, screenWidth: number): number {
@@ -248,6 +252,7 @@ function StatBadge({
   value,
   size,
   ring,
+  markInset,
 }: {
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
   tint: string;
@@ -256,6 +261,10 @@ function StatBadge({
   /** Sağlık rozetinde "az kaldı" uyarısı — dolgu rengi stat kimliği olduğu
    *  için değişmiyor, uyarı ince bir çerçeveyle veriliyor. */
   ring?: string;
+  /** Filigranı rozetin kenarından bu kadar içeride tutar. Kalkan ikonu, diğer
+   *  ikonların aksine kendi kutusunu tamamen dolduruyor — boşluksuz
+   *  bırakıldığında rozet daire değil, düz bir kalkan lekesi gibi okunuyor. */
+  markInset?: number;
 }) {
   // İki katman: gölge dışta, kırpma içte. iOS'ta aynı View'de hem
   // overflow:'hidden' hem gölge olunca gölge çizilmiyor — filigran ikonun
@@ -271,7 +280,7 @@ function StatBadge({
       >
         <MaterialCommunityIcons
           name={icon}
-          size={Math.round(size * 1.05)}
+          size={markInset ? Math.round(size - markInset * 2) : Math.round(size * 1.05)}
           color="#FFFFFF"
           style={styles.statBadgeMark}
         />
@@ -2489,6 +2498,7 @@ function VehicleFace({
           value={health}
           size={badge}
           ring={hurt ? colors.danger : undefined}
+          markInset={4}
         />
       </View>
     </>
@@ -3079,7 +3089,7 @@ function HandCard({
     <GestureDetector gesture={gesture}>
       <Animated.View style={[styles.handCardWrap, { marginLeft: overlap }, aStyle]}>
         <Animated.Text style={[styles.handPlayHint, labelStyle]}>BIRAK</Animated.Text>
-        <Animated.View pointerEvents="none" style={[styles.stateRing, ringStyle]} />
+        <Animated.View pointerEvents="none" style={[styles.handRing, ringStyle]} />
         <View style={[styles.handCard, { borderColor: r.border, backgroundColor: r.art }]}>
           <Image source={carImage(card.cardId)} style={styles.bvImg} resizeMode="cover" />
           <CardNameBar cardId={card.cardId} name={card.name} fontSize={12} />
@@ -3088,7 +3098,7 @@ function HandCard({
               yakıtta griye DÖNMÜYOR: aynı sayının iki renkte görünmesi
               "kartın yakıtı değişti" gibi okunuyordu. */}
           <View style={styles.hcCost}>
-            <StatBadge icon="water" tint={colors.primaryInk} value={card.cost} size={32} />
+            <StatBadge icon="water" tint={colors.primaryInk} value={card.cost} size={HC_BADGE} />
           </View>
         </View>
       </Animated.View>
@@ -3238,7 +3248,7 @@ function SupportHandCard({
     <GestureDetector gesture={gesture}>
       <Animated.View style={[styles.handCardWrap, { marginLeft: overlap }, aStyle]}>
         <Animated.Text style={[styles.handPlayHint, labelStyle]}>BIRAK</Animated.Text>
-        <Animated.View pointerEvents="none" style={[styles.stateRing, ringStyle]} />
+        <Animated.View pointerEvents="none" style={[styles.handRing, ringStyle]} />
         <View style={[styles.handCard, styles.supportHandCard, { borderColor: colors.grape }]}>
           <Text style={styles.supportEmoji}>{card.emoji}</Text>
           <Text style={styles.supportName} numberOfLines={1}>
@@ -3657,8 +3667,8 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
-  // "Şu an bunu yapabilirsin" halkası — kartın 3 px dışında, kartın kendi
-  // kenarına (nadirlik) dokunmadan.
+  // "Şu an bunu yapabilirsin" halkası. Sahada kalın ve kartın 3 px dışında:
+  // orada kartlar birbirine değmiyor ve halkanın uzaktan seçilmesi gerekiyor.
   stateRing: {
     position: 'absolute',
     top: -4,
@@ -3667,6 +3677,18 @@ const styles = StyleSheet.create({
     bottom: -4,
     borderWidth: 3,
     borderRadius: 18,
+  },
+  // Elde ise kartın kenarına yapışık ve 1 px: eldeki kartların hepsi
+  // çoğunlukla oynanabilir oluyor, kalın halka bütün desteyi yeşile
+  // boyuyordu. İnce çizgi yeterince söylüyor.
+  handRing: {
+    position: 'absolute',
+    top: -1,
+    left: -1,
+    right: -1,
+    bottom: -1,
+    borderWidth: 1,
+    borderRadius: 15,
   },
 
   resultScrim: {
@@ -4096,7 +4118,7 @@ const styles = StyleSheet.create({
     color: colors.primary,
     zIndex: 5,
   },
-  hcCost: { position: 'absolute', bottom: 6, left: 6 },
+  hcCost: { position: 'absolute', bottom: 5, left: 5 },
 
   // Pit Ekibi (support) cards — same footprint as a vehicle HandCard
   // (styles.handCard) but a totally different face: no art, no cost/power
