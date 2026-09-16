@@ -8,6 +8,8 @@ import type { IdentityProvider } from '@/api/types';
 import { CurrencyTag } from '@/components/Currency';
 import { useDialog } from '@/components/overlay/DialogProvider';
 import { colors, font, radius, shadow, space, text } from '@/constants/theme';
+// GEÇİCİ geliştirme aracı — aşağıdaki __DEV__ bloğuyla birlikte silinecek.
+import { devAdminLogin } from '@/dev/adminLogin';
 import { SIGNUP_BONUS_RIM } from '@/game/difficulty';
 import { CARDS } from '@/data/cards';
 import { useSessionStore } from '@/store/sessionStore';
@@ -65,6 +67,27 @@ export default function SignInScreen() {
   const dialog = useDialog();
   const signIn = useSessionStore((s) => s.signInWithProvider);
   const [busy, setBusy] = useState<IdentityProvider | null>(null);
+  const [devBusy, setDevBusy] = useState(false);
+
+  /**
+   * GEÇİCİ: gerçek Apple/Google girişi için istemci kimlikleri ve geliştirme
+   * derlemesi henüz yok, yani girişe bağlı akışlar (paket, kart, koleksiyon)
+   * cihazda hiç denenemiyor. Bkz. src/dev/adminLogin.ts.
+   */
+  async function onDevLogin() {
+    setDevBusy(true);
+    const result = await devAdminLogin();
+    setDevBusy(false);
+    if (typeof result === 'string') {
+      dialog.show({
+        title: 'Geliştirici girişi başarısız',
+        message: result,
+        actions: [{ label: 'Tamam', variant: 'primary' }],
+      });
+      return;
+    }
+    router.back();
+  }
 
   async function onProvider(provider: IdentityProvider) {
     setBusy(provider);
@@ -157,6 +180,18 @@ export default function SignInScreen() {
         <Pressable style={styles.skip} onPress={() => router.back()}>
           <Text style={styles.skipText}>Şimdilik misafir kal</Text>
         </Pressable>
+
+        {/* GEÇİCİ GELİŞTİRME ARACI — üretim derlemesinde bu blok hiç yok
+            (__DEV__ false olduğunda paketleyici onu tamamen atıyor).
+            Silinirken: bu blok + styles.devLogin + src/dev/adminLogin.ts +
+            server/src/modules/dev/. */}
+        {__DEV__ ? (
+          <Pressable style={styles.skip} onPress={() => void onDevLogin()} disabled={devBusy}>
+            <Text style={styles.devLogin}>
+              {devBusy ? 'Giriliyor…' : 'geliştirici girişi (test hesabı + jant)'}
+            </Text>
+          </Pressable>
+        ) : null}
       </View>
     </SafeAreaView>
   );
@@ -231,4 +266,6 @@ const styles = StyleSheet.create({
   googleText: { fontFamily: font.bodyBlack, fontSize: text.bodyBig.fontSize, color: colors.ink },
   skip: { height: 40, alignItems: 'center', justifyContent: 'center' },
   skipText: { fontFamily: font.bodyBold, fontSize: text.body.fontSize, color: colors.textMuted },
+  // GEÇİCİ geliştirme aracı. Bilerek silik ve küçük: ürünün parçası değil.
+  devLogin: { fontFamily: font.body, fontSize: text.bodySmall.fontSize, color: colors.textFaint },
 });
