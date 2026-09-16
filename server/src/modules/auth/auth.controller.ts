@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
-import { CurrentUser, Public } from '../../common/decorators/auth.decorators.js';
+import { CurrentUser, OptionalAuth, Public } from '../../common/decorators/auth.decorators.js';
 import { RateLimit } from '../../common/decorators/rate-limit.decorator.js';
 import { UsersService } from '../users/users.service.js';
 import { AccountService } from './account.service.js';
@@ -52,24 +52,32 @@ export class AuthController {
   /**
    * Apple ya da Google ile giriş — tek gerçek giriş yolu.
    *
-   * Kimlik doğrulaması ŞART (public değil): çağıran her zaman oturum açmış
-   * durumda, çünkü uygulama açılışta misafir hesap alıyor. Böylece bu tek uç
-   * üç işi birden yapıyor: misafiri yükseltmek, daha önce bağlanmış hesaba
-   * dönmek, ve cihaz değiştiren oyuncunun hesabını geri vermek.
+   * Oturum İSTEĞE BAĞLI (@OptionalAuth). Genelde oturum var — uygulama
+   * açılışta misafir hesap alıyor — ve o zaman bu uç misafiri yükseltiyor ya
+   * da kimliğin sahibi olan hesaba geçiriyor.
+   *
+   * Ama oturumun olmadığı gerçek bir durum var ve zorunlu kılmak orada
+   * KİLİTLENMEYE yol açıyordu: cihaz bir hesaba bağlandıktan sonra saklanan
+   * oturum geçersizleşirse (yenileme jetonunun süresi dolar, sunucu
+   * sıfırlanır), misafir girişi bilerek reddediliyor — "cihazı eline geçiren
+   * biri gerçek hesaba misafir kapısından girmesin" kuralı. Oyuncunun tek
+   * çıkışı Apple/Google ile girmek; o da oturum isterse hiçbir çıkış kalmıyor
+   * ve hesap kalıcı olarak erişilemez oluyordu.
    *
    * Onay diyaloğu YOK: misafir hesapta cüzdan 0 ve koleksiyon yalnızca
    * başlangıç kartları, yani geride bırakılan bir şey yok. Misafirin hiçbir
    * şey biriktirmemesi kararının doğrudan kazancı bu.
    */
   @RateLimit(20, 60)
+  @OptionalAuth()
   @ApiBearerAuth('access-token')
   @Post('identity')
   @HttpCode(HttpStatus.OK)
   signInWithProvider(
-    @CurrentUser() user: AccessTokenPayload,
+    @CurrentUser() user: AccessTokenPayload | undefined,
     @Body() dto: ProviderSignInDto,
   ): Promise<AuthTokensDto> {
-    return this.identity.signIn(user.sub, dto.provider, dto.idToken, dto);
+    return this.identity.signIn(user?.sub ?? null, dto.provider, dto.idToken, dto);
   }
 
   /**

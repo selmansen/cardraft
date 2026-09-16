@@ -95,6 +95,28 @@ function platform(): DevicePlatform {
   return Platform.OS === 'android' ? 'ANDROID' : 'IOS';
 }
 
+/**
+ * Misafir oturumu açar, jetonları ve kurulum kimliğini saklar.
+ *
+ * Store'un dışında: iki yerden çağrılıyor (açılış ve giriş öncesi) ve ikisi
+ * de aynı garantiye ihtiyaç duyuyor — "bu noktadan sonra bir oturum var".
+ */
+async function createGuestSession(): Promise<AuthUser> {
+  const stored = await installationId();
+  const result = await authApi.guest({
+    installationId: stored,
+    platform: platform(),
+    appVersion: '0.1.0',
+  });
+  await setTokens({ accessToken: result.accessToken, refreshToken: result.refreshToken });
+  // Sunucunun ürettiği kimliği saklıyoruz: bir dahaki açılışta aynı misafir
+  // hesaba dönmenin tek yolu bu.
+  if (result.installationId) {
+    await AsyncStorage.setItem(INSTALL_KEY, result.installationId);
+  }
+  return result.user;
+}
+
 export const useSessionStore = create<SessionState>()((set, get) => ({
   user: null,
   connection: 'unknown',
@@ -113,35 +135,43 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
    * açan oyuncu sonsuza kadar açılış ekranında kalırdı.
    */
   bootstrap: async () => {
+    const guestLogin = async () => {
+      set({ user: await createGuestSession(), connection: 'online' });
+    };
+
     try {
       if (await hasSession()) {
-        const user = await authApi.me();
-        set({ user, connection: 'online' });
-      } else {
-        const stored = await installationId();
-        const result = await authApi.guest({
-          installationId: stored,
-          platform: platform(),
-          appVersion: '0.1.0',
-        });
-        await setTokens({
-          accessToken: result.accessToken,
-          refreshToken: result.refreshToken,
-        });
-        // Sunucunun ürettiği kimliği saklıyoruz: bir dahaki açılışta aynı
-        // misafir hesaba dönmenin tek yolu bu.
-        if (result.installationId) {
-          await AsyncStorage.setItem(INSTALL_KEY, result.installationId);
+        try {
+          const user = await authApi.me();
+          set({ user, connection: 'online' });
+        } catch (error) {
+          // Saklanan oturum artık geçerli değil (yenileme jetonunun süresi
+          // dolmuş, sunucu sıfırlanmış, hesap silinmiş…). Temizleyip HEMEN
+          // yeni bir misafir oturumu açıyoruz.
+          //
+          // Eskiden sadece temizleniyordu ve "bir sonraki açılış halleder"
+          // deniyordu — ama o açılışa kadar uygulamanın oturumu hiç yoktu:
+          // kimlik isteyen her çağrı (cüzdan, envanter, hatta GİRİŞ) 401
+          // dönüyordu. Oyuncu tarafında bu "giriş yapamıyorum, Unauthorized
+          // diyor" olarak görünüyordu ve uygulamayı kapatıp açmadan
+          // düzelmiyordu.
+          if (!(error instanceof ApiError) || !error.isAuthError) throw error;
+          await setTokens(null);
+          await guestLogin();
         }
-        set({ user: result.user, connection: 'online' });
+      } else {
+        await guestLogin();
       }
       await Promise.all([get().refreshWallet(), get().refreshInventory()]);
     } catch (error) {
       if (error instanceof NetworkError) {
         set({ connection: 'offline' });
-      } else if (error instanceof ApiError && error.isAuthError) {
-        // Oturum gerçekten geçersiz: temizle ki bir sonraki açılış yeniden
-        // misafir girişi denesin.
+      } else if (error instanceof ApiError) {
+        // Oturum kurulamadı ama sunucuya ULAŞILDI. İki meşru sebep var:
+        // jeton geçersiz (401) ya da cihaz bir hesaba bağlı olduğu için
+        // misafir girişi reddedildi (409). İkisinde de yapılacak şey aynı:
+        // oturumsuz devam et ve oyuncuya giriş yapmasını söyle — çevrimdışı
+        // demek yanlış olurdu, sunucu oradaydı ve cevap verdi.
         await setTokens(null);
         set({ user: null, connection: 'online' });
       } else {
@@ -230,6 +260,11 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
 
   signInWithProvider: async (provider, devSubject) => {
     try {
+      // Oturum yoksa da çağrılabiliyor: sunucudaki giriş ucu oturumu isteğe
+      // bağlı kabul ediyor (bkz. AuthController @OptionalAuth). Burada
+      // misafir oturumu açmaya ÇALIŞMAK yanlış olurdu — cihaz bir hesaba
+      // bağlıysa sunucu misafir girişini bilerek reddediyor ve giriş
+      // denemesi daha başlamadan 409 ile ölürdü.
       const credential = await getProviderCredential(provider, devSubject ?? (await installationId()));
       const result = await authApi.signInWithProvider({
         ...credential,
