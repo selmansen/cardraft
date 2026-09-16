@@ -70,8 +70,15 @@ interface SessionState {
    * görüyor — misafiri yükseltmek, daha önce bağlanmış hesaba dönmek, ve
    * cihaz değiştiren oyuncunun hesabını geri vermek. Dönen mesaj null ise
    * başarılı; 'cancelled' ise oyuncu vazgeçti (hata gösterilmemeli).
+   *
+   * @param devSubject GEÇİCİ, yalnızca geliştirme: sahte jetonun kimliğini
+   *   sabitler, böylece her cihazda aynı test hesabına girilir. Bkz.
+   *   src/dev/adminLogin.ts — o dosyayla birlikte silinecek.
    */
-  signInWithProvider: (provider: IdentityProvider) => Promise<string | null | 'cancelled'>;
+  signInWithProvider: (
+    provider: IdentityProvider,
+    devSubject?: string,
+  ) => Promise<string | null | 'cancelled'>;
   signOut: () => Promise<void>;
 }
 
@@ -221,9 +228,9 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     }
   },
 
-  signInWithProvider: async (provider) => {
+  signInWithProvider: async (provider, devSubject) => {
     try {
-      const credential = await getProviderCredential(provider, await installationId());
+      const credential = await getProviderCredential(provider, devSubject ?? (await installationId()));
       const result = await authApi.signInWithProvider({
         ...credential,
         installationId: (await installationId()) ?? '',

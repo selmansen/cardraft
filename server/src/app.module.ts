@@ -12,6 +12,7 @@ import { AuthModule } from './modules/auth/auth.module.js';
 import { AccountRequiredGuard } from './common/guards/account-required.guard.js';
 import { RateLimitGuard } from './common/guards/rate-limit.guard.js';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard.js';
+import { DevModule } from './modules/dev/dev.module.js';
 import { DevicesModule } from './modules/devices/devices.module.js';
 import { EconomyModule } from './modules/economy/economy.module.js';
 import { InventoryModule } from './modules/inventory/inventory.module.js';
@@ -48,6 +49,9 @@ import { UsersModule } from './modules/users/users.module.js';
     NotificationsModule,
     StatsModule,
     StoreModule,
+    // GEÇİCİ geliştirme aracı: üretimde register() boş modül döndürüyor,
+    // yani denetleyici hiç kaydolmuyor. Bkz. modules/dev/dev.controller.ts.
+    DevModule.register(),
   ],
   controllers: [HealthController],
   providers: [
