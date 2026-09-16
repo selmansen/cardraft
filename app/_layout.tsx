@@ -60,8 +60,17 @@ export default function RootLayout() {
             <Stack.Screen name="pack-opening" options={{ gestureEnabled: false }} />
             {/* Giriş ekranı alt gezinmenin dışında: bir hedef, bir sekme
                 değil. Her yerden (kilitli sekme, maç sonu, kilitli kart,
-                Oyna şeridi, profil) buraya gelinip geri dönülüyor. */}
-            <Stack.Screen name="sign-in" options={{ presentation: 'modal' }} />
+                Oyna şeridi, profil) buraya gelinip geri dönülüyor.
+
+                `presentation: 'modal'` DEĞİL, aşağıdan kayan normal bir
+                ekran: native modal olarak sunulduğunda kapanışın ardından
+                uygulama donuyordu — hangi düğmeyle kapatılırsa kapatılsın
+                (Apple, Google, "misafir kal") altındaki ekran dokunuşlara
+                cevap vermiyordu ve JS tarafında hiçbir hata yoktu, yani
+                dokunuşlar JS'e hiç ulaşmıyordu. Sunum biçimi bir tercihti,
+                donma değil; görünen davranış (aşağıdan gelip aşağıya
+                kapanma) aynı kalıyor. */}
+            <Stack.Screen name="sign-in" options={{ animation: 'slide_from_bottom' }} />
           </Stack>
         ) : (
           <View style={styles.loading}>
