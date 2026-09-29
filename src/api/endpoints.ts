@@ -4,6 +4,7 @@ import type {
   IdentityProvider,
   AuthUser,
   BalanceSnapshot,
+  Currency,
   CurrencyCode,
   DeviceInfo,
   DifficultyId,
@@ -90,8 +91,8 @@ export const storeApi = {
    * kimliği çağıran ÜRETİP SAKLAMALI — her denemede yenisini üretmek
    * korumayı işlevsiz kılar (bkz. ADR 0013).
    */
-  openPack: (packId: string, requestId: string) =>
-    api.post<PackOpenResult>(`/store/packs/${packId}/open`, { requestId }),
+  openPack: (packId: string, currency: Currency, requestId: string) =>
+    api.post<PackOpenResult>(`/store/packs/${packId}/open`, { currency, requestId }),
 };
 
 export const matchApi = {

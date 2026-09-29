@@ -7,11 +7,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { storeApi } from '@/api/endpoints';
 import type { PackDto, Rarity } from '@/api/types';
 import { ChunkyButton } from '@/components/ChunkyButton';
-import { CurrencyTag, WalletPill } from '@/components/Currency';
+import { CURRENCY, CurrencyTag, WalletPill } from '@/components/Currency';
 import { BottomSheet } from '@/components/overlay/BottomSheet';
+import { FEATURES } from '@/constants/features';
 import { colors, font, NAV_CLEARANCE, radius, rarity as rarityTheme, shadow, space, text } from '@/constants/theme';
 import { useSessionStore } from '@/store/sessionStore';
 import { useWallet } from '@/store/useWallet';
+import type { Currency } from '@/types';
 
 /** Nadirliklerin gösterim sırası — oranlar nesnesinin anahtar sırasına
  *  güvenilmez, ayrıca oyuncu her pakette aynı sırayı görmeli. */
@@ -26,8 +28,18 @@ export default function StoreScreen() {
   const [failed, setFailed] = useState(false);
   /** Oranları açık olan paket; null ise modal kapalı. */
   const [oddsFor, setOddsFor] = useState<PackDto | null>(null);
-  /** Bakiyesi yetmeyen paket; null ise o sayfa kapalı. */
-  const [shortFor, setShortFor] = useState<PackDto | null>(null);
+  /** Bakiyesi yetmeyen paket ve hangi keseyle denendiği; null ise kapalı. */
+  const [shortFor, setShortFor] = useState<{ pack: PackDto; currency: Currency } | null>(null);
+
+  /**
+   * Coin bir ödeme seçeneği olarak sunulsun mu?
+   *
+   * Satın alma henüz kurulmadı (FEATURES.coinPurchase). Kapalıyken coin
+   * yalnızca ELİNDE OLAN oyuncuya gösteriliyor: 0 coin ile "55 coin" düğmesi
+   * göstermek, oyuncuyu elde etmenin yolu olmayan bir şeye yönlendirmek
+   * olurdu. Geliştirme aracıyla coin yazıldığında akışın tamamı denenebiliyor.
+   */
+  const coinOffered = FEATURES.coinPurchase || coins > 0;
 
   useEffect(() => {
     let alive = true;
@@ -47,12 +59,14 @@ export default function StoreScreen() {
    * gidip orada hata göstermemek — yani bir kullanıcı deneyimi meselesi.
    * Güvenlik değil: istemci bu kontrolü atlasa da sunucu reddediyor.
    */
-  function onBuy(pack: PackDto) {
-    if (rims < pack.price.rim) {
-      setShortFor(pack);
+  function onBuy(pack: PackDto, currency: Currency) {
+    const price = currency === 'coin' ? pack.price.coin : pack.price.rim;
+    const balance = currency === 'coin' ? coins : rims;
+    if (balance < price) {
+      setShortFor({ pack, currency });
       return;
     }
-    router.push({ pathname: '/pack-opening', params: { packId: pack.id } });
+    router.push({ pathname: '/pack-opening', params: { packId: pack.id, currency } });
   }
 
   return (
@@ -86,24 +100,31 @@ export default function StoreScreen() {
         )}
 
         {packs?.map((pack) => (
-          <PackCard key={pack.id} pack={pack} onOdds={() => setOddsFor(pack)} onBuy={() => onBuy(pack)} />
+          <PackCard
+            key={pack.id}
+            pack={pack}
+            coinOffered={coinOffered}
+            onOdds={() => setOddsFor(pack)}
+            onBuy={(currency) => onBuy(pack, currency)}
+          />
         ))}
 
         {packs && packs.length > 0 && (
           <View style={styles.refundBanner}>
             <MaterialCommunityIcons name="autorenew" size={18} color={colors.accentDark} />
             <Text style={styles.refundText}>
-              Sahip olduğun kart çıkarsa değerinin <Text style={styles.refundStrong}>%25&apos;i</Text> jant
-              olarak geri döner.
+              Sahip olduğun kart çıkarsa değerinin <Text style={styles.refundStrong}>%25&apos;i</Text>{' '}
+              ödediğin keseye geri döner.
             </Text>
           </View>
         )}
       </ScrollView>
 
-      <OddsModal pack={oddsFor} onClose={() => setOddsFor(null)} />
-      <ShortOnRimsSheet
-        pack={shortFor}
+      <OddsModal pack={oddsFor} coinOffered={coinOffered} onClose={() => setOddsFor(null)} />
+      <ShortOnFundsSheet
+        short={shortFor}
         rims={rims}
+        coins={coins}
         onClose={() => setShortFor(null)}
         onBattle={() => {
           setShortFor(null);
@@ -114,7 +135,17 @@ export default function StoreScreen() {
   );
 }
 
-function PackCard({ pack, onOdds, onBuy }: { pack: PackDto; onOdds: () => void; onBuy: () => void }) {
+function PackCard({
+  pack,
+  coinOffered,
+  onOdds,
+  onBuy,
+}: {
+  pack: PackDto;
+  coinOffered: boolean;
+  onOdds: () => void;
+  onBuy: (currency: Currency) => void;
+}) {
   // Paketin "kimliği" en yüksek çekebildiği nadirlikten geliyor: Temel gri,
   // Nadir+ mor. Sunucu yeni bir paket eklerse rengi kendiliğinden oturur.
   const top = RARITY_ORDER.filter((r) => pack.odds[r] != null).pop() ?? 'common';
@@ -157,18 +188,38 @@ function PackCard({ pack, onOdds, onBuy }: { pack: PackDto; onOdds: () => void; 
           </View>
         </Pressable>
 
-        <ChunkyButton variant="primary" onPress={onBuy}>
+        {/* Jant asıl yol, o yüzden birincil düğme. Coin ikincil ve daha
+            sessiz: aynı paketi para ödeyerek almanın yolu, tercih edilmesi
+            beklenen yol değil. İkisi de AYNI kartı veriyor — para güç değil
+            zaman satın alıyor. */}
+        <ChunkyButton variant="primary" onPress={() => onBuy('rim')}>
           <View style={styles.buyInner}>
             <CurrencyTag currency="rim" amount={pack.price.rim} size={16} color="#FFFFFF" />
             <Text style={styles.buyLabel}>jant</Text>
           </View>
         </ChunkyButton>
+
+        {coinOffered && pack.price.coin > 0 ? (
+          <Pressable style={styles.coinBuy} onPress={() => onBuy('coin')}>
+            <Text style={styles.coinBuyOr}>ya da</Text>
+            <CurrencyTag currency="coin" amount={pack.price.coin} size={15} />
+            <Text style={styles.coinBuyLabel}>coin</Text>
+          </Pressable>
+        ) : null}
       </View>
     </View>
   );
 }
 
-function OddsModal({ pack, onClose }: { pack: PackDto | null; onClose: () => void }) {
+function OddsModal({
+  pack,
+  coinOffered,
+  onClose,
+}: {
+  pack: PackDto | null;
+  coinOffered: boolean;
+  onClose: () => void;
+}) {
   return (
     <BottomSheet visible={pack !== null} onClose={onClose}>
       <>
@@ -176,8 +227,15 @@ function OddsModal({ pack, onClose }: { pack: PackDto | null; onClose: () => voi
           <>
             <View style={styles.sheetHead}>
               <Text style={styles.sheetTitle}>{pack.name}</Text>
-              <View style={styles.pricePill}>
-                <CurrencyTag currency="rim" amount={pack.price.rim} size={14} />
+              <View style={styles.priceRow}>
+                <View style={styles.pricePill}>
+                  <CurrencyTag currency="rim" amount={pack.price.rim} size={14} />
+                </View>
+                {coinOffered && pack.price.coin > 0 ? (
+                  <View style={[styles.pricePill, { backgroundColor: colors.accentSoft }]}>
+                    <CurrencyTag currency="coin" amount={pack.price.coin} size={14} />
+                  </View>
+                ) : null}
               </View>
             </View>
             <Text style={styles.sheetHelp}>
@@ -208,9 +266,9 @@ function OddsModal({ pack, onClose }: { pack: PackDto | null; onClose: () => voi
             <View style={styles.refundBanner}>
               <MaterialCommunityIcons name="autorenew" size={17} color={colors.accentDark} />
               <Text style={styles.refundText}>
-                Sahip olduğun kart çıkarsa jant değerinin{' '}
-                <Text style={styles.refundStrong}>%25&apos;i</Text> geri döner. Örnek: nadir kart 600
-                jant → 150 jant iade.
+                Sahip olduğun kart çıkarsa değerinin{' '}
+                <Text style={styles.refundStrong}>%25&apos;i</Text> ödediğin keseye geri döner.
+                Örnek: nadir kart 600 jant → 150 jant iade.
               </Text>
             </View>
 
@@ -226,41 +284,60 @@ function OddsModal({ pack, onClose }: { pack: PackDto | null; onClose: () => voi
   );
 }
 
-function ShortOnRimsSheet({
-  pack,
+/**
+ * Bakiye yetmiyor sayfası — iki kese için de aynı sayfa ama farklı çıkış yolu.
+ *
+ * Jant eksikse yapılacak şey belli: maça gir, kazan. Coin eksikse maçın
+ * faydası yok (maç jant veriyor), tek yol satın almak — ve satın alma henüz
+ * kurulmadığı için oyuncuya bunu dürüstçe söylüyoruz. Aynı sayfada iki farklı
+ * öneri vermek, oyuncuyu işe yaramayacak bir eyleme yönlendirmemenin yolu.
+ */
+function ShortOnFundsSheet({
+  short,
   rims,
+  coins,
   onClose,
   onBattle,
 }: {
-  pack: PackDto | null;
+  short: { pack: PackDto; currency: Currency } | null;
   rims: number;
+  coins: number;
   onClose: () => void;
   onBattle: () => void;
 }) {
-  const missing = pack ? pack.price.rim - rims : 0;
-  const pct = pack ? Math.min(100, Math.round((rims / pack.price.rim) * 100)) : 0;
+  const currency = short?.currency ?? 'rim';
+  const meta = CURRENCY[currency];
+  const unit = meta.label.toLowerCase();
+  const price = short ? (currency === 'coin' ? short.pack.price.coin : short.pack.price.rim) : 0;
+  const balance = currency === 'coin' ? coins : rims;
+  const missing = price - balance;
+  const pct = price > 0 ? Math.min(100, Math.round((balance / price) * 100)) : 0;
 
   return (
-    <BottomSheet visible={pack !== null} onClose={onClose}>
+    <BottomSheet visible={short !== null} onClose={onClose}>
       <>
-        {pack && (
+        {short && (
           <>
             <View style={styles.shortHead}>
               <View style={styles.shortIcon}>
-                <MaterialCommunityIcons name="tire" size={28} color={colors.accentDark} />
+                <MaterialCommunityIcons name={meta.icon} size={28} color={colors.accentDark} />
               </View>
-              <Text style={styles.shortTitle}>{missing} jant eksik</Text>
+              <Text style={styles.shortTitle}>
+                {missing} {unit} eksik
+              </Text>
               <Text style={styles.shortHelp}>
-                {pack.name} {pack.price.rim} jant. Bakiyen {rims}. Maç kazandıkça jant biriktirirsin —
-                kaybetsen de bir miktar kazanırsın.
+                {short.pack.name} {price} {unit}. Bakiyen {balance}.{' '}
+                {currency === 'rim'
+                  ? 'Maç kazandıkça jant biriktirirsin — kaybetsen de bir miktar kazanırsın.'
+                  : 'Coin maçtan kazanılmıyor, yalnızca satın alınıyor. Aynı paketi jantla da açabilirsin.'}
               </Text>
             </View>
 
             <View style={styles.progressBox}>
               <View style={styles.barHead}>
-                <Text style={styles.progressLabel}>{pack.name}&apos;e kalan</Text>
+                <Text style={styles.progressLabel}>{short.pack.name}&apos;e kalan</Text>
                 <Text style={styles.progressValue}>
-                  {rims} / {pack.price.rim}
+                  {balance} / {price}
                 </Text>
               </View>
               <View style={styles.barTrack}>
@@ -268,12 +345,27 @@ function ShortOnRimsSheet({
               </View>
             </View>
 
-            <ChunkyButton variant="accent" onPress={onBattle} style={{ marginTop: space.md }}>
-              <View style={styles.buyInner}>
-                <MaterialCommunityIcons name="play" size={18} color={colors.ink} />
-                <Text style={styles.battleLabel}>Maça gir</Text>
+            {currency === 'rim' ? (
+              <ChunkyButton variant="accent" onPress={onBattle} style={{ marginTop: space.md }}>
+                <View style={styles.buyInner}>
+                  <MaterialCommunityIcons name="play" size={18} color={colors.ink} />
+                  <Text style={styles.battleLabel}>Maça gir</Text>
+                </View>
+              </ChunkyButton>
+            ) : (
+              // Satın alma kurulmadan buraya yalnızca elinde bir miktar coin
+              // olan oyuncu düşebiliyor (bkz. coinOffered). Uydurma bir
+              // "yakında" düğmesi koymuyoruz: olmayan bir eylem sunmak yerine
+              // durumu söylüyoruz.
+              <View style={styles.soonBox}>
+                <MaterialCommunityIcons name="information-outline" size={17} color={colors.primaryInk} />
+                <Text style={styles.soonBoxText}>
+                  {FEATURES.coinPurchase
+                    ? 'Coin satın alma ekranı buradan açılacak.'
+                    : 'Coin satın alma henüz açık değil.'}
+                </Text>
               </View>
-            </ChunkyButton>
+            )}
             <ChunkyButton
               variant="secondary"
               label="Vazgeç"
@@ -370,6 +462,35 @@ const styles = StyleSheet.create({
   oddsName: { fontFamily: font.bodyBold, fontSize: text.bodySmall.fontSize, lineHeight: text.bodySmall.lineHeight },
 
   buyInner: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  /** Coin satırı bilerek sessiz: aynı kartı veren ikinci yol, tercih
+   *  edilmesi beklenen yol değil. */
+  coinBuy: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    height: 38,
+    borderRadius: radius.pill,
+    backgroundColor: colors.accentSoft,
+  },
+  coinBuyOr: { fontFamily: font.body, fontSize: text.bodySmall.fontSize, color: colors.textMuted },
+  coinBuyLabel: { fontFamily: font.bodyBold, fontSize: text.body.fontSize, color: colors.accentDark },
+  soonBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
+    marginTop: space.md,
+    padding: 12,
+    backgroundColor: colors.primarySoft,
+    borderRadius: radius.md,
+  },
+  soonBoxText: {
+    flex: 1,
+    fontFamily: font.body,
+    fontSize: text.bodySmall.fontSize,
+    lineHeight: text.bodySmall.lineHeight,
+    color: colors.ink,
+  },
   buyLabel: { fontFamily: font.bodyBlack, fontSize: text.bodyBig.fontSize, color: '#FFFFFF' },
   battleLabel: { fontFamily: font.bodyBlack, fontSize: text.bodyBig.fontSize, color: colors.ink },
 
@@ -392,6 +513,7 @@ const styles = StyleSheet.create({
 
   sheetHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   sheetTitle: { fontFamily: font.heading, fontSize: 22, lineHeight: 28, color: colors.ink },
+  priceRow: { flexDirection: 'row', gap: 6 },
   pricePill: {
     paddingHorizontal: 11,
     paddingVertical: 5,

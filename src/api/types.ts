@@ -8,6 +8,14 @@
  */
 
 export type CurrencyCode = 'RIM' | 'COIN';
+/**
+ * Kesenin tel üzerindeki yazımı — motordaki `Currency` ile birebir aynı
+ * (`src/types/index.ts`). Sunucu kart açmada büyük harfli `CurrencyCode`,
+ * paket açmada küçük harfli bunu bekliyor; ikisi ayrı ayrı yazılı olduğu
+ * için burada da ikisi ayrı duruyor. Birleştirmek sunucu DTO'larını
+ * değiştirmeyi gerektirir, o ayrı bir iş.
+ */
+export type Currency = 'rim' | 'coin';
 export type DifficultyId = 'easy' | 'normal' | 'hard';
 export type DevicePlatform = 'IOS' | 'ANDROID';
 export type IdentityProvider = 'APPLE' | 'GOOGLE';
@@ -138,10 +146,12 @@ export interface PackDto {
 export interface PackOpenResult {
   packId: string;
   card: { cardId: string; name: string; rarity: Rarity };
-  /** Kart zaten koleksiyondaysa true — o zaman kart değil jant geliyor. */
+  /** Kart zaten koleksiyondaysa true — o zaman kart değil para geliyor. */
   duplicate: boolean;
+  /** Harcanan miktar — `balance.currency` kesesinde. */
   spent: number;
-  /** Tekrar kartın iadesi; yeni kartta 0. */
+  /** Tekrar kartın iadesi (aynı kesede); yeni kartta 0. */
   refund: number;
+  /** Ödemenin yapıldığı kesenin açılış sonrası bakiyesi. */
   balance: BalanceSnapshot;
 }

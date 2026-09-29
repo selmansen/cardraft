@@ -9,12 +9,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { newRequestId } from '@/api/requestId';
 import type { PackOpenResult } from '@/api/types';
 import { ChunkyButton } from '@/components/ChunkyButton';
-import { CurrencyTag } from '@/components/Currency';
+import { CURRENCY, CurrencyTag } from '@/components/Currency';
 import { colors, font, radius, rarity as rarityTheme, shadow, space, text } from '@/constants/theme';
 import { playSfx } from '@/audio/sfx';
 import { getCard } from '@/data/cards';
 import { carImage } from '@/data/carImages';
 import { useSessionStore } from '@/store/sessionStore';
+import type { Currency } from '@/types';
 
 type Phase = 'ready' | 'opening' | 'result';
 
@@ -26,9 +27,18 @@ type Phase = 'ready' | 'opening' | 'result';
  */
 export default function PackOpeningScreen() {
   const router = useRouter();
-  const { packId } = useLocalSearchParams<{ packId: string }>();
+  const { packId, currency: currencyParam } = useLocalSearchParams<{
+    packId: string;
+    currency?: string;
+  }>();
+  /** Hangi keseyle ödendiği ekran boyunca sabit: bakiye, iade ve metinler
+   *  hep o keseden konuşuyor. Parametre gelmezse jant — mağaza her zaman
+   *  gönderiyor, bu yalnızca doğrudan bağlantıyla açılma hâli için. */
+  const currency: Currency = currencyParam === 'coin' ? 'coin' : 'rim';
   const openPack = useSessionStore((s) => s.openPack);
   const rims = useSessionStore((s) => s.rims);
+  const coins = useSessionStore((s) => s.coins);
+  const balance = currency === 'coin' ? coins : rims;
 
   const [phase, setPhase] = useState<Phase>('ready');
   const [result, setResult] = useState<PackOpenResult | null>(null);
@@ -55,7 +65,7 @@ export default function PackOpeningScreen() {
     setPhase('opening');
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
 
-    const res = await openPack(packId, requestId.current);
+    const res = await openPack(packId, currency, requestId.current);
     if ('error' in res) {
       setError(res.error);
       setPhase('ready');
@@ -67,10 +77,17 @@ export default function PackOpeningScreen() {
     Haptics.notificationAsync(
       res.duplicate ? Haptics.NotificationFeedbackType.Warning : Haptics.NotificationFeedbackType.Success,
     ).catch(() => {});
-  }, [openPack, packId, phase]);
+  }, [openPack, packId, currency, phase]);
 
   if (phase === 'result' && result) {
-    return <ResultView result={result} rims={rims} onDone={() => router.replace('/store')} />;
+    return (
+      <ResultView
+        result={result}
+        currency={currency}
+        balance={balance}
+        onDone={() => router.replace('/store')}
+      />
+    );
   }
 
   return (
@@ -115,8 +132,8 @@ export default function PackOpeningScreen() {
         </View>
 
         <View style={styles.balancePill}>
-          <CurrencyTag currency="rim" amount={rims} size={14} color="#FFFFFF" />
-          <Text style={styles.balanceText}>jant</Text>
+          <CurrencyTag currency={currency} amount={balance} size={14} color="#FFFFFF" />
+          <Text style={styles.balanceText}>{CURRENCY[currency].label.toLowerCase()}</Text>
         </View>
       </SafeAreaView>
     </View>
@@ -125,11 +142,13 @@ export default function PackOpeningScreen() {
 
 function ResultView({
   result,
-  rims,
+  currency,
+  balance,
   onDone,
 }: {
   result: PackOpenResult;
-  rims: number;
+  currency: Currency;
+  balance: number;
   onDone: () => void;
 }) {
   const card = getCard(result.card.cardId);
@@ -145,7 +164,9 @@ function ResultView({
             </Text>
           </View>
           <Text style={styles.resultTitle}>
-            {result.duplicate ? 'Jant olarak geri döndü' : 'Garajına katıldı!'}
+            {result.duplicate
+              ? `${CURRENCY[currency].label} olarak geri döndü`
+              : 'Garajına katıldı!'}
           </Text>
         </View>
 
@@ -179,10 +200,18 @@ function ResultView({
         {result.duplicate ? (
           <View style={styles.refundBox}>
             <View style={styles.refundAmount}>
-              <MaterialCommunityIcons name="tire" size={26} color={colors.successInk} />
+              <MaterialCommunityIcons
+                name={CURRENCY[currency].icon}
+                size={26}
+                color={colors.successInk}
+              />
               <Text style={styles.refundNumber}>+{result.refund}</Text>
             </View>
-            <Text style={styles.refundNote}>{card.price.rim} jant değerinin %25&apos;i</Text>
+            {/* İade ödenen keseye dönüyor — coin ile açılan paketin iadesi
+                jant olsaydı, parayla alınan coin janta çevrilebilirdi. */}
+            <Text style={styles.refundNote}>
+              {card.price[currency]} {CURRENCY[currency].label.toLowerCase()} değerinin %25&apos;i
+            </Text>
           </View>
         ) : (
           <View style={styles.abilityBox}>
@@ -193,7 +222,7 @@ function ResultView({
 
         <View style={styles.balanceRow}>
           <Text style={styles.balanceLabel}>Yeni bakiyen</Text>
-          <CurrencyTag currency="rim" amount={rims} size={17} />
+          <CurrencyTag currency={currency} amount={balance} size={17} />
         </View>
       </View>
 

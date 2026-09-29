@@ -1,6 +1,8 @@
 import {
   DUPLICATE_REFUND_RATE,
   duplicateRefund,
+  packPrice,
+  packSoldFor,
   getPack,
   PACKS,
   packPool,
@@ -109,14 +111,22 @@ describe('rarityForRoll', () => {
 describe('duplicateRefund', () => {
   it('kart değerinin dörtte biri, aşağı yuvarlanmış', () => {
     expect(DUPLICATE_REFUND_RATE).toBe(0.25);
-    expect(duplicateRefund(600)).toBe(150);
-    expect(duplicateRefund(1800)).toBe(450);
-    expect(duplicateRefund(3600)).toBe(900);
-    // Kesirli jant yok: 350/4 = 87,5 → 87.
-    expect(duplicateRefund(350)).toBe(87);
+    expect(duplicateRefund({ rim: 600, coin: 100 }, 'rim')).toBe(150);
+    expect(duplicateRefund({ rim: 1800, coin: 280 }, 'rim')).toBe(450);
+    expect(duplicateRefund({ rim: 3600, coin: 550 }, 'rim')).toBe(900);
+    // Kesirli para yok: 350/4 = 87,5 → 87.
+    expect(duplicateRefund({ rim: 350, coin: 55 }, 'rim')).toBe(87);
   });
 
-  it('paket açmak uzun vadede jant kazandırmıyor', () => {
+  it('iade ödenen keseye dönüyor', () => {
+    // Coin ile ödendiyse iade coin: jant olarak dönseydi parayla alınan coin
+    // janta çevrilebilirdi (bkz. packs.ts gerekçesi).
+    const price = { rim: 1800, coin: 280 };
+    expect(duplicateRefund(price, 'coin')).toBe(70);
+    expect(duplicateRefund(price, 'rim')).toBe(450);
+  });
+
+  it.each(['rim', 'coin'] as const)('paket açmak uzun vadede %s kazandırmıyor', (currency) => {
     /**
      * Korunan şey TEK açılış değil, BEKLENEN DEĞER.
      *
@@ -129,7 +139,7 @@ describe('duplicateRefund', () => {
      * bir jant üretme makinesine dönerdi. Bu test o kapıyı kapalı tutuyor —
      * biri oranları ya da iade yüzdesini değiştirdiğinde burada patlar.
      */
-    const priceOf = new Map(CARDS.map((c) => [c.id, c.price.rim]));
+    const priceOf = new Map(CARDS.map((c) => [c.id, c.price]));
 
     for (const pack of PACKS) {
       let expected = 0;
@@ -137,10 +147,44 @@ describe('duplicateRefund', () => {
         const pool = packPool(rarity);
         // O nadirlikteki ortalama kart değeri (havuzdan eşit olasılıkla çekiliyor).
         const avgRefund =
-          pool.reduce((sum, id) => sum + duplicateRefund(priceOf.get(id)!), 0) / pool.length;
+          pool.reduce((sum, id) => sum + duplicateRefund(priceOf.get(id)!, currency), 0) /
+          pool.length;
         expected += (chance / 100) * avgRefund;
       }
-      expect(expected, `${pack.id} beklenen iade`).toBeLessThan(pack.price.rim);
+      expect(expected, `${pack.id} beklenen iade (${currency})`).toBeLessThan(
+        packPrice(pack, currency),
+      );
+    }
+  });
+
+  it('her paket iki kesede de satılıyor ve iki kese aynı indirimi veriyor', () => {
+    /**
+     * Paket, kartın beklenen değerinden ucuz — verimli ama rastgele yol
+     * olmasını sağlayan şey bu. O indirimin İKİ KESEDE DE aynı olması
+     * gerekiyor: biri belirgin ucuz olsaydı oyuncunun seçimi "hangisiyle
+     * ödemek istiyorum" değil "hangisi kârlı" olurdu. Para ZAMAN satın
+     * alıyor, indirim değil.
+     */
+    const priceOf = new Map(CARDS.map((c) => [c.id, c.price]));
+
+    for (const pack of PACKS) {
+      const ratios = (['rim', 'coin'] as const).map((currency) => {
+        expect(packSoldFor(pack, currency), `${pack.id} ${currency} fiyatı`).toBe(true);
+        let value = 0;
+        for (const [rarity, chance] of Object.entries(pack.odds) as [Rarity, number][]) {
+          const pool = packPool(rarity);
+          const avg =
+            pool.reduce((sum, id) => {
+              const p = priceOf.get(id)!;
+              return sum + (currency === 'coin' ? p.coin : p.rim);
+            }, 0) / pool.length;
+          value += (chance / 100) * avg;
+        }
+        return packPrice(pack, currency) / value;
+      });
+
+      // İki kesenin indirim oranı birbirinden en çok 5 puan ayrılabilir.
+      expect(Math.abs(ratios[0] - ratios[1]), `${pack.id} kese farkı`).toBeLessThan(0.05);
     }
   });
 });
