@@ -2,6 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, usePathname, type Href } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { FEATURES } from '@/constants/features';
 import { colors, font, radius, shadow, text } from '@/constants/theme';
 import { useSessionStore } from '@/store/sessionStore';
 
@@ -15,6 +16,13 @@ import { useSessionStore } from '@/store/sessionStore';
  *
  * Sekme listesi ŞİMDİDEN tam: Lig henüz yok ama yeri ayrıldı. Sonradan
  * eklenirse bütün menü yeniden düzenlenir ve oyuncunun kas hafızası bozulur.
+ *
+ * "Yeri ayrıldı" ilk sürümde harfi harfine doğru: Lig `FEATURES.league`
+ * kapalı olduğu için GÖRÜNMÜYOR ama yuvası boş bir aralık olarak duruyor.
+ * Sekme tamamen çıkarılsaydı geriye üç sekme kalırdı; sekmeler `flex: 1`
+ * paylaştığı için ortadaki OYNA düğmesi (mutlak konumlu, %50'de) sağdaki
+ * sekmenin üstüne binerdi. Boş yuva hem bugünkü hizayı hem yarınki yeri
+ * koruyor.
  */
 type Key = 'garage' | 'store' | 'play' | 'league' | 'profile';
 
@@ -46,6 +54,11 @@ function activeKey(pathname: string): Key {
   return 'play';
 }
 
+/** Sekme ilk sürümde gösteriliyor mu? Kapalı olan yuvasını boş bırakıyor. */
+function visible(tab: Tab): boolean {
+  return tab.key === 'league' ? FEATURES.league : true;
+}
+
 export function BottomNav() {
   const router = useRouter();
   const pathname = usePathname();
@@ -64,15 +77,23 @@ export function BottomNav() {
 
   return (
     <View style={styles.bar}>
-      {LEFT.map((tab) => (
-        <TabButton key={tab.key} tab={tab} active={active === tab.key} locked={!!tab.needsAccount && isGuest} onPress={() => go(tab)} />
-      ))}
+      {LEFT.map((tab) =>
+        visible(tab) ? (
+          <TabButton key={tab.key} tab={tab} active={active === tab.key} locked={!!tab.needsAccount && isGuest} onPress={() => go(tab)} />
+        ) : (
+          <View key={tab.key} style={styles.tab} />
+        ),
+      )}
 
       <View style={styles.centerGap} />
 
-      {RIGHT.map((tab) => (
-        <TabButton key={tab.key} tab={tab} active={active === tab.key} locked={!!tab.needsAccount && isGuest} onPress={() => go(tab)} />
-      ))}
+      {RIGHT.map((tab) =>
+        visible(tab) ? (
+          <TabButton key={tab.key} tab={tab} active={active === tab.key} locked={!!tab.needsAccount && isGuest} onPress={() => go(tab)} />
+        ) : (
+          <View key={tab.key} style={styles.tab} />
+        ),
+      )}
 
       {/* Merkez: oyunun kendisi. */}
       <Pressable
