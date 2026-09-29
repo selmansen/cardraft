@@ -97,6 +97,15 @@ export interface GameState {
   toggleLoadout: (cardId: string) => void;
   toggleSupportLoadout: (cardId: string) => void;
   setLoadout: (ids: string[]) => void;
+  /**
+   * Araç ve destek kadrosunu TEK HAMLEDE yazar — sunucudan gelen kadro için.
+   *
+   * İkisini ayrı ayrı yazmak iki ara durum üretiyordu: yeni araçlar eski
+   * desteklerle bir an yan yana duruyor ve kadro o anda geçersiz oluyordu
+   * (toplam 8 tutmuyor). Kadro senkronu da o ara durumu bir değişiklik sanıp
+   * sunucuya geri yazmaya çalışıyordu.
+   */
+  setLoadouts: (vehicleIds: string[], supportIds: string[]) => void;
   /** Sunucudaki koleksiyonu yerel önbelleğe yazar (çevrimdışı görünüm için). */
   cacheCollections: (vehicles: string[], support: string[]) => void;
   recordBattle: (won: boolean, reward: number) => void;
@@ -163,6 +172,12 @@ export const useGameStore = create<GameState>()(
       },
 
       setLoadout: (ids) => set({ loadout: ids.slice(0, LOADOUT_TOTAL) }),
+
+      setLoadouts: (vehicleIds, supportIds) =>
+        set({
+          loadout: vehicleIds.slice(0, LOADOUT_TOTAL),
+          supportLoadout: supportIds.slice(0, MAX_SUPPORT),
+        }),
 
       /**
        * Sunucudan gelen koleksiyonun yerel kopyası.

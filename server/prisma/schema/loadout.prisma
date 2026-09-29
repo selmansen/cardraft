@@ -1,0 +1,31 @@
+/// Oyuncunun kayıtlı kadrosu — 8 yuva: en az 3 araç, en fazla 5 Pit Ekibi.
+///
+/// NEDEN SUNUCUDA: kadro cihazda tutuluyordu ve orada kalması iki şeyi
+/// bozuyordu. Birincisi cihaz değiştiren ya da uygulamayı silen oyuncu
+/// koleksiyonunu geri alıyor ama kadrosunu sıfırdan kuruyordu — hesap
+/// kurtarmanın yarısı eksikti. İkincisi kadro, koleksiyonun bir TÜREVİ:
+/// koleksiyon sunucuda, ondan seçilen sekiz kart cihazdaysa ikisi birbirinden
+/// ayrışabiliyordu (sunucuda olmayan bir kartı işaret eden kadro).
+///
+/// Ayrı tablo, User satırına iki kolon eklemek yerine: ileride birden fazla
+/// isimli kadro (deste) tutulacaksa `@@unique([userId])` kaldırılıp isim
+/// eklenmesi yeterli, veri taşımak gerekmiyor.
+///
+/// Kart kimlikleri yabancı anahtar DEĞİL: kart tanımları kodda (senkronlanan
+/// motorda), veritabanında kart tablosu yok. Sahiplik ve biçim doğrulaması
+/// yazma anında yapılıyor (bkz. LoadoutService.save).
+model Loadout {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Sıra ANLAMLI: oyuncunun kadro ekranındaki dizilimi korunuyor.
+  vehicleCardIds String[]
+  supportCardIds String[]
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@unique([userId])
+  @@map("loadouts")
+}

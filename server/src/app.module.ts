@@ -16,6 +16,7 @@ import { DevModule } from './modules/dev/dev.module.js';
 import { DevicesModule } from './modules/devices/devices.module.js';
 import { EconomyModule } from './modules/economy/economy.module.js';
 import { InventoryModule } from './modules/inventory/inventory.module.js';
+import { LoadoutModule } from './modules/loadout/loadout.module.js';
 import { MatchModule } from './modules/match/match.module.js';
 import { NotificationsModule } from './modules/notifications/notifications.module.js';
 import { StatsModule } from './modules/stats/stats.module.js';
@@ -45,6 +46,7 @@ import { UsersModule } from './modules/users/users.module.js';
     AuthModule,
     EconomyModule,
     InventoryModule,
+    LoadoutModule,
     MatchModule,
     NotificationsModule,
     StatsModule,

@@ -10,7 +10,12 @@ import { DialogProvider } from '@/components/overlay/DialogProvider';
 
 import { colors, font } from '@/constants/theme';
 import { useGameStore } from '@/store/gameStore';
+import { startLoadoutSync } from '@/store/loadoutSync';
 import { useSessionStore } from '@/store/sessionStore';
+
+/** Kadro sunucuya yalnızca bağlı hesapta yazılıyor — misafirinki cihazda
+ *  kalıyor (ADR 0016: misafir hiçbir şey biriktirmiyor). */
+const canWriteLoadout = () => useSessionStore.getState().user?.isGuest === false;
 
 export default function RootLayout() {
   const hydrated = useGameStore((s) => s.hydrated);
@@ -27,6 +32,15 @@ export default function RootLayout() {
   useEffect(() => {
     void bootstrap();
   }, [bootstrap]);
+
+  /**
+   * Kadro değişiklikleri sunucuya yazılıyor.
+   *
+   * Burada, ekranların içinde değil: kadro üç yerden değişebiliyor (garaj,
+   * ilk kurulum, sunucudan gelen kadro) ve her birine yazma çağrısı eklemek
+   * birinin atlanması demekti. Tek abone, kadronun kendisini izliyor.
+   */
+  useEffect(() => startLoadoutSync(canWriteLoadout), []);
   const [fontsLoaded, fontError] = useFonts({
     'Baloo2-Bold': require('../assets/fonts/Baloo2-Bold.ttf'),
     'Baloo2-ExtraBold': require('../assets/fonts/Baloo2-ExtraBold.ttf'),

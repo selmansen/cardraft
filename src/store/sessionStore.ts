@@ -16,6 +16,7 @@ import type {
   PackOpenResult,
 } from '@/api/types';
 import { getProviderCredential, ProviderSignInCancelled } from '@/auth/providerSignIn';
+import { pullLoadout } from './loadoutSync';
 
 const INSTALL_KEY = STORAGE_KEYS.installation;
 
@@ -168,6 +169,9 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
         await guestLogin();
       }
       await Promise.all([get().refreshWallet(), get().refreshInventory()]);
+      // Kadro koleksiyondan SONRA: sunucudan gelen kadro koleksiyonda olmayan
+      // bir kartı işaret ederse ekranlar onu çizemez. Sıra bunu garanti ediyor.
+      await pullLoadout();
     } catch (error) {
       if (error instanceof NetworkError) {
         set({ connection: 'offline' });
@@ -286,8 +290,10 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
       set({ user: result.user, connection: 'online' });
       // Hesap değişmiş olabilir (cihaz değiştiren oyuncu eski hesabına döndü),
       // bu yüzden cüzdan ve koleksiyon yeniden okunuyor — eski hesabın
-      // verisini göstermek en kötü hata olurdu.
+      // verisini göstermek en kötü hata olurdu. Kadro da aynı sebeple: giriş
+      // yapan oyuncunun kendi kadrosu geliyor, misafirinki değil.
       await Promise.all([get().refreshWallet(), get().refreshInventory()]);
+      await pullLoadout();
       return null;
     } catch (error) {
       if (error instanceof ProviderSignInCancelled) return 'cancelled';

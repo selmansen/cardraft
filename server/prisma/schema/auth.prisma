@@ -27,6 +27,7 @@ model User {
   stats         UserStats?
   ownedCards    OwnedCard[]
   packOpenings  PackOpening[]
+  loadout       Loadout?
 
   @@map("users")
 }

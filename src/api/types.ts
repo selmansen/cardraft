@@ -142,6 +142,14 @@ export interface PackDto {
   odds: Partial<Record<Rarity, number>>;
 }
 
+/** `GET /loadout` ve `PUT /loadout` yanıtı. */
+export interface LoadoutDto {
+  vehicleCardIds: string[];
+  supportCardIds: string[];
+  /** Sunucuda hiç kadro kaydı yoksa false — istemci o zaman yereldekini yazıyor. */
+  saved: boolean;
+}
+
 /** `POST /store/packs/:id/open` yanıtı. */
 export interface PackOpenResult {
   packId: string;
