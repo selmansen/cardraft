@@ -1,5 +1,5 @@
 import { CARDS } from '@/data/cards';
-import type { CardPrice, Rarity } from '@/types';
+import type { CardPrice, Currency, Rarity } from '@/types';
 
 /**
  * Paket tanımları — fiyatlar ve oranlar burada, tek kaynakta.
@@ -36,19 +36,41 @@ export const PACKS: PackDefinition[] = [
     id: 'basic',
     name: 'Temel Paket',
     blurb: 'Tek kart · koleksiyonu hızlı büyütür',
-    // Coin fiyatı henüz yok: coin'in gerçek para karşılığı belirlenmedi
-    // (ADR 0010, açık kalanlar). 0 = bu paket coin ile satılmıyor.
-    price: { rim: 350, coin: 0 },
+    price: { rim: 350, coin: 55 },
     odds: { common: 60, rare: 26, epic: 11, legendary: 3 },
   },
   {
     id: 'rare-plus',
     name: 'Nadir+ Paketi',
     blurb: 'Sıradan kart çıkmaz · güçlü kart arayana',
-    price: { rim: 800, coin: 0 },
+    price: { rim: 800, coin: 125 },
     odds: { rare: 50, epic: 33, legendary: 17 },
   },
 ];
+
+/**
+ * Paketin coin fiyatları nereden geldi: iki kesede AYNI indirim oranı.
+ *
+ * Kart fiyatları zaten iki keseli ve coin tarafı jantın kabaca altıda biri
+ * (300/50 · 600/100 · 1800/280 · 3600/550). Paket fiyatı ise kartın
+ * beklenen değerinden daha düşük — paketi verimli ama rastgele yol yapan şey
+ * bu. O indirim oranı iki kesede aynı tutuldu:
+ *
+ *   Temel     · beklenen 642 jant, fiyat 350  → 0,545
+ *               beklenen 103 coin, fiyat 55   → 0,533
+ *   Nadir+    · beklenen 1506 jant, fiyat 800 → 0,531
+ *               beklenen 236 coin, fiyat 125  → 0,530
+ *
+ * Aynı olmak zorunda: bir kese diğerinden belirgin ucuz olsaydı oyuncunun
+ * seçimi "hangisiyle ödemek istiyorum" değil "hangisi kârlı" olurdu ve para
+ * ödeyen taraf ya kazıklanmış ya avantajlı olurdu. İkisi de istemediğimiz
+ * şey — para ZAMAN satın alıyor, indirim değil.
+ */
+
+/** Paketin seçilen kesedeki fiyatı. 0 = o keseyle satılmıyor. */
+export function packPrice(pack: PackDefinition, currency: Currency): number {
+  return currency === 'coin' ? pack.price.coin : pack.price.rim;
+}
 
 /**
  * Sahip olunan kart çıktığında geri dönen oran.
@@ -59,9 +81,18 @@ export const PACKS: PackDefinition[] = [
  */
 export const DUPLICATE_REFUND_RATE = 0.25;
 
-/** Tekrar çıkan kartın iadesi — aşağı yuvarlanır, kesirli jant yok. */
-export function duplicateRefund(cardRimPrice: number): number {
-  return Math.floor(cardRimPrice * DUPLICATE_REFUND_RATE);
+/**
+ * Tekrar çıkan kartın iadesi — aşağı yuvarlanır, kesirli para yok.
+ *
+ * İade HANGİ KESEYLE ödendiyse o keseye dönüyor. Bu bir tercih değil,
+ * zorunluluk: coin ile açılan paketin iadesi jant olarak verilseydi, parayla
+ * alınan coin janta çevrilebilir hâle gelirdi. Oyuncu tekrar kart çıkması
+ * kesin olan bir paketi (koleksiyonu tamamlanmış nadirlik) döngüye alıp
+ * coin'i janta yıkardı — yani gerçek parayla oyun içi kazanç satın alınırdı.
+ */
+export function duplicateRefund(cardPrice: CardPrice, currency: Currency): number {
+  const price = currency === 'coin' ? cardPrice.coin : cardPrice.rim;
+  return Math.floor(price * DUPLICATE_REFUND_RATE);
 }
 
 /**
@@ -91,6 +122,13 @@ export function getPack(id: string): PackDefinition | undefined {
 }
 
 /**
+ * Paketin bir kesede satılıp satılmadığı. Fiyatı 0 olan kese kapalı.
+ */
+export function packSoldFor(pack: PackDefinition, currency: Currency): boolean {
+  return packPrice(pack, currency) > 0;
+}
+
+/**
  * Paketlerden çıkabilecek kartlar: ARAÇ kartları, başlangıç kartları hariç.
  *
  * Pit Ekibi paketlerde yok çünkü onların fiyatı nadirliğe değil güç
@@ -107,6 +145,9 @@ export function packPool(rarity: Rarity): string[] {
 /** Oran tablosu bozuksa uygulama açılışta patlasın, çekilişte değil. */
 export function assertPackOdds(): void {
   for (const pack of PACKS) {
+    if (pack.price.rim <= 0 && pack.price.coin <= 0) {
+      throw new Error(`${pack.id} paketinin hiçbir kesede fiyatı yok`);
+    }
     const total = Object.values(pack.odds).reduce((sum, n) => sum + n, 0);
     if (total !== 100) {
       throw new Error(`${pack.id} paketinin oranları 100 etmiyor: ${total}`);

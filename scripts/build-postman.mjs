@@ -284,7 +284,7 @@ Bakiye düşürme ve kartın yazılması **tek transaction**: biri olup diğeri 
 
 Oranlar istemcide sabit yazılmıyor, buradan geliyor. Mağaza politikaları gösterilen oranla gerçek oranın aynı olmasını zorunlu tutuyor; tek kaynak bunu yapısal olarak garanti ediyor.
 
-Bugün iki paket var: **Temel** (350 jant · %60/26/11/3) ve **Nadir+** (800 jant · %50/33/17, sıradan kart çıkmaz).`,
+Bugün iki paket var: **Temel** (350 jant / 55 coin · %60/26/11/3) ve **Nadir+** (800 jant / 125 coin · %50/33/17, sıradan kart çıkmaz).`,
           test: `const json = pm.response.json();
 pm.test('Oranlar 100 ediyor', () => {
   for (const pack of json) {
@@ -297,10 +297,14 @@ pm.test('Oranlar 100 ediyor', () => {
           name: 'Paket aç',
           method: 'POST',
           path: '/store/packs/{{packId}}/open',
-          body: { requestId: '{{$guid}}' },
+          body: { currency: 'rim', requestId: '{{$guid}}' },
           status: [200, 400, 403],
           statusLabel: 'Açıldı (200), misafir (403) ya da bakiye yetmedi (400)',
-          desc: `Paket açar: jant düşülür, kart çekilir, kart zaten koleksiyondaysa değerinin **%25'i** geri verilir. Hepsi tek transaction — biri olup diğeri olamaz.
+          desc: `Paket açar: para düşülür, kart çekilir, kart zaten koleksiyondaysa değerinin **%25'i** geri verilir. Hepsi tek transaction — biri olup diğeri olamaz.
+
+\`currency\` isteğe bağlı: \`rim\` (varsayılan) ya da \`coin\`. Fiyatı istemci **göndermiyor**, sunucu kendi tablosundan okuyor (\`game/packs.ts\`) — Temel 350 jant / 55 coin, Nadir+ 800 jant / 125 coin. İki kesenin indirim oranı eşit tutuluyor ki seçim "hangisiyle ödemek istiyorum" olsun, "hangisi kârlı" olmasın.
+
+**İade ödenen keseye döner.** Coin ile açılan paketin iadesi jant olsaydı, parayla alınan coin janta çevrilebilirdi: koleksiyonu tamamlanmış bir nadirlikte paket döngüye alınıp coin janta yıkanırdı.
 
 \`requestId\` tekrar korumasıdır ve **zorunludur**. Mobil ağda cevabı kaybolan bir istek tekrar gönderilirse, aynı kimlikle gelen ikinci istek yeni çekiliş yapmaz; ilk açılışın sonucunu döndürür. Olmasaydı oyuncudan iki kez para düşer ve iki kart çekilirdi.
 
@@ -309,6 +313,43 @@ Koleksiyonda \`{{$guid}}\` Postman'in her çalıştırmada yeni ürettiği bir U
 **Misafir hesap paket açamaz** — koleksiyonun tamamı hesaba bağlı, misafirlik yalnızca deneme. Postman'deki misafir oturumuyla bu istek **403** döner; önce \`Apple / Google ile giriş\`'i çalıştır, hoş geldin hediyesi (350 jant) tam bir pakete yetiyor.
 
 \`packId\` koleksiyon değişkeni: \`basic\` ya da \`rare-plus\`.`,
+        }),
+      ],
+    },
+    {
+      name: 'Kadro',
+      description: `Oyuncunun kayıtlı kadrosu — 8 yuva: en az 3 araç, en fazla 5 Pit Ekibi.
+
+Kadro **sunucuda** tutuluyor çünkü koleksiyonun bir türevi: koleksiyon sunucudayken seçilen sekiz kart cihazda kalırsa ikisi ayrışabiliyor ve cihaz değiştiren oyuncu kartlarını geri alıp kadrosunu sıfırdan kuruyor.`,
+      item: [
+        req({
+          name: 'Kadroyu oku',
+          method: 'GET',
+          path: '/loadout',
+          desc: `Kayıtlı kadro. Hiç kaydedilmemişse boş dizilerle \`saved: false\` döner — istemci o durumda cihazdaki kadroyu yükleyip yazıyor, yani mevcut oyuncular kadrolarını kaybetmiyor.
+
+Misafirde de okunabilir; boş cevap döner ve misafirin kadro ekranı yerel kadroyla çalışmaya devam eder.`,
+        }),
+        req({
+          name: 'Kadroyu kaydet',
+          method: 'PUT',
+          path: '/loadout',
+          body: {
+            vehicleCardIds: ['falconi-turbo', 'vipera-gt', 'sandstorm-buggy', 'nitro-nomad', 'boulder-baron'],
+            supportCardIds: ['quick-fix', 'checkpoint', 'spare-shield'],
+          },
+          status: [200, 400, 403],
+          statusLabel: 'Kaydedildi (200), kadro geçersiz (400) ya da misafir (403)',
+          desc: `Kadroyu kaydeder. **PUT, POST değil**: kaynağın tamamı değişiyor ve aynı gövdeyle tekrar göndermek aynı sonucu veriyor — bu yüzden tekrar koruması (\`requestId\`) gerekmiyor.
+
+İki doğrulama sunucuda, ikisi de maç açılışındakiyle **aynı**:
+
+- **Biçim** — toplam tam 8 kart, en az 3 araç, en fazla 5 destek, tekrar eden kart yok. Kural paylaşılan motordan (\`game/loadoutRules.ts\`) geliyor, yani arayüzün dayattığı kuralla reddetme sebebi aynı cümle.
+- **Sahiplik** — her kimlik gerçekten sahip olunan bir karta karşılık gelmeli.
+
+Doğrulama burada da yapılıyor çünkü iki uç bağımsız: kadroyu kaydetmek maç açmıyor. Atlanırsa sahip olunmayan kartlardan oluşan bir kadro veritabanına yazılır ve oyuncu her açılışta bozuk kadroya düşer.
+
+**Misafir kaydedemez** → **403**: misafirin kadrosu cihazda kalıyor. Kaydetmenin amacı cihaz değiştirince kaybetmemek; kaydedilecek bir hesap yoksa yazmanın anlamı da yok (ADR 0016).`,
         }),
       ],
     },

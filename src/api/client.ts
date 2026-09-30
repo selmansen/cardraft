@@ -2,7 +2,7 @@ import { API_BASE_URL, REQUEST_TIMEOUT_MS } from './config';
 import { ApiError, NetworkError, type ApiErrorBody } from './errors';
 import { tokenStore, type SessionTokens } from './tokens';
 
-type Method = 'GET' | 'POST' | 'DELETE';
+type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
 interface RequestOptions {
   method?: Method;
@@ -164,6 +164,11 @@ export const api = {
     request<T>(path, { ...options, method: 'GET' }),
   post: <T>(path: string, body?: unknown, options?: Omit<RequestOptions, 'method' | 'body'>) =>
     request<T>(path, { ...options, method: 'POST', body }),
+  /** PUT, POST değil: kadro kaydetmek bir kaynağın TAMAMINI değiştiriyor ve
+   *  aynı gövdeyle tekrar gönderilmesi aynı sonucu veriyor. Tekrar koruması
+   *  (requestId) gerekmemesinin sebebi de bu. */
+  put: <T>(path: string, body?: unknown, options?: Omit<RequestOptions, 'method' | 'body'>) =>
+    request<T>(path, { ...options, method: 'PUT', body }),
   /** DELETE gövde ALABİLİYOR: hesap silme, sağlayıcıdan taze bir doğrulama
    *  jetonu istiyor ve o jeton sorgu dizesine konamaz (loglara düşer). */
   del: <T>(path: string, body?: unknown, options?: Omit<RequestOptions, 'method' | 'body'>) =>

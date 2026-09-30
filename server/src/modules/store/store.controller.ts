@@ -41,6 +41,6 @@ export class StoreController {
     @Param('id') id: string,
     @Body() dto: OpenPackDto,
   ) {
-    return this.store.openPack(user.sub, id, dto.requestId);
+    return this.store.openPack(user.sub, id, dto.currency ?? 'rim', dto.requestId);
   }
 }

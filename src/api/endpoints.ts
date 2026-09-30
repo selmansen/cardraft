@@ -4,9 +4,11 @@ import type {
   IdentityProvider,
   AuthUser,
   BalanceSnapshot,
+  Currency,
   CurrencyCode,
   DeviceInfo,
   DifficultyId,
+  LoadoutDto,
   OpenMatchResponse,
   OwnedCard,
   PackDto,
@@ -90,8 +92,22 @@ export const storeApi = {
    * kimliği çağıran ÜRETİP SAKLAMALI — her denemede yenisini üretmek
    * korumayı işlevsiz kılar (bkz. ADR 0013).
    */
-  openPack: (packId: string, requestId: string) =>
-    api.post<PackOpenResult>(`/store/packs/${packId}/open`, { requestId }),
+  openPack: (packId: string, currency: Currency, requestId: string) =>
+    api.post<PackOpenResult>(`/store/packs/${packId}/open`, { currency, requestId }),
+};
+
+/**
+ * Kayıtlı kadro.
+ *
+ * Kadro sunucuda tutuluyor çünkü koleksiyonun bir TÜREVİ: koleksiyon sunucuda,
+ * ondan seçilen sekiz kart cihazdaysa ikisi ayrışabiliyor ve cihaz değiştiren
+ * oyuncu kartlarını geri alıp kadrosunu sıfırdan kuruyor.
+ */
+export const loadoutApi = {
+  get: () => api.get<LoadoutDto>('/loadout'),
+  /** Biçim ve sahiplik sunucuda doğrulanıyor; misafirde 403 döner. */
+  save: (vehicleCardIds: string[], supportCardIds: string[]) =>
+    api.put<LoadoutDto>('/loadout', { vehicleCardIds, supportCardIds }),
 };
 
 export const matchApi = {

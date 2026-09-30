@@ -1,6 +1,19 @@
-import { IsUUID } from 'class-validator';
+import { IsIn, IsOptional, IsUUID } from 'class-validator';
 
 export class OpenPackDto {
+  /**
+   * Hangi keseyle ödenecek. Verilmezse jant — coin sonradan eklendi ve eski
+   * istemciler bu alanı göndermiyor; varsayılanı jant yapmak o istemcilerin
+   * davranışını aynen koruyor.
+   *
+   * Kese İSTEMCİDEN geliyor ama fiyat gelmiyor: sunucu hangi kesede ne
+   * istendiğini kendi tablosundan okuyor (bkz. packPrice). İstemcinin
+   * söyleyebildiği tek şey "şununla ödemek istiyorum".
+   */
+  @IsOptional()
+  @IsIn(['rim', 'coin'], { message: 'currency yalnızca rim ya da coin olabilir' })
+  currency?: 'rim' | 'coin';
+
   /**
    * İstemcinin ürettiği tekrar koruması.
    *

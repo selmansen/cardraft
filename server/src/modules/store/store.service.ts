@@ -2,8 +2,15 @@ import { randomInt } from 'node:crypto';
 
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
-import { duplicateRefund, getPack, PACKS, packPool, rarityForRoll } from '../../game-engine/game/packs.js';
-import type { Rarity } from '../../game-engine/types/index.js';
+import {
+  duplicateRefund,
+  getPack,
+  PACKS,
+  packPool,
+  packPrice,
+  rarityForRoll,
+} from '../../game-engine/game/packs.js';
+import type { Currency, Rarity } from '../../game-engine/types/index.js';
 import { AcquisitionSource, CurrencyCode, LedgerReason } from '../../generated/prisma/enums.js';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service.js';
 import { EconomyService } from '../economy/economy.service.js';
@@ -14,9 +21,9 @@ export interface PackOpenResult {
   card: { cardId: string; name: string; rarity: string };
   /** Kart zaten koleksiyonda mıydı? */
   duplicate: boolean;
-  /** Harcanan jant. */
+  /** Harcanan miktar — `balance.currency` kesesinde. */
   spent: number;
-  /** Tekrar kart çıktıysa geri verilen jant, yoksa 0. */
+  /** Tekrar kart çıktıysa geri verilen miktar (aynı kesede), yoksa 0. */
   refund: number;
   balance: { currency: CurrencyCode; balance: number };
 }
@@ -57,26 +64,39 @@ export class StoreService {
    * Sıralama önemli: önce ödeme. Bakiye yetmiyorsa hiç çekiliş yapılmıyor,
    * yani oyuncu "ne çıkacaktı" bilgisini bedava öğrenemiyor.
    */
-  async openPack(userId: string, packId: string, requestId: string): Promise<PackOpenResult> {
+  async openPack(
+    userId: string,
+    packId: string,
+    currency: Currency,
+    requestId: string,
+  ): Promise<PackOpenResult> {
     const pack = getPack(packId);
     if (!pack) throw new NotFoundException('Böyle bir paket yok');
-    if (pack.price.rim <= 0) throw new BadRequestException('Bu paket satın alınamaz');
+    const price = packPrice(pack, currency);
+    if (price <= 0) throw new BadRequestException('Bu paket bu keseyle satın alınamaz');
+
+    const code = currency === 'coin' ? CurrencyCode.COIN : CurrencyCode.RIM;
 
     // Tekrar gönderim: ilk açılışın sonucu aynen döner, yeni çekiliş yok.
+    // Bakiye, ilk açılışın KENDİ kesesinden okunuyor — isteğin bu seferki
+    // `currency` alanından değil: tekrar denemede farklı bir kese gönderilse
+    // bile sonuç ilk açılışın sonucu ve bakiyesi olmalı.
     const existing = await this.prisma.packOpening.findUnique({
       where: { userId_requestId: { userId, requestId } },
     });
-    if (existing) return this.toResult(existing, await this.rimBalance(userId));
+    if (existing) {
+      return this.toResult(existing, await this.balanceOf(userId, existing.currency));
+    }
 
     return this.prisma.$transaction(async (tx) => {
       const afterSpend = await this.economy.move(
         {
           userId,
-          currency: CurrencyCode.RIM,
-          amount: -pack.price.rim,
+          currency: code,
+          amount: -price,
           reason: LedgerReason.PACK_OPEN,
           idempotencyKey: `pack:${userId}:${requestId}`,
-          metadata: { packId: pack.id },
+          metadata: { packId: pack.id, currency: code },
         },
         tx,
       );
@@ -97,16 +117,18 @@ export class StoreService {
       let balance = afterSpend;
 
       if (owned) {
-        refund = duplicateRefund(entry.price.rim);
+        // İade ödenen keseye dönüyor. Jant olarak verilseydi parayla alınan
+        // coin janta çevrilebilirdi; bkz. game/packs.ts duplicateRefund.
+        refund = duplicateRefund(entry.price, currency);
         if (refund > 0) {
           balance = await this.economy.move(
             {
               userId,
-              currency: CurrencyCode.RIM,
+              currency: code,
               amount: refund,
               reason: LedgerReason.PACK_DUPLICATE_REFUND,
               idempotencyKey: `pack-refund:${userId}:${requestId}`,
-              metadata: { packId: pack.id, cardId },
+              metadata: { packId: pack.id, cardId, currency: code },
             },
             tx,
           );
@@ -124,7 +146,8 @@ export class StoreService {
           cardId,
           rarity,
           duplicate: Boolean(owned),
-          spent: pack.price.rim,
+          currency: code,
+          spent: price,
           refund,
           requestId,
         },
@@ -152,13 +175,21 @@ export class StoreService {
     return pool[randomInt(0, pool.length)];
   }
 
-  private async rimBalance(userId: string): Promise<number> {
+  private async balanceOf(userId: string, code: CurrencyCode): Promise<number> {
     const balances = await this.economy.balances(userId);
-    return balances.find((b) => b.currency === CurrencyCode.RIM)?.balance ?? 0;
+    return balances.find((b) => b.currency === code)?.balance ?? 0;
   }
 
   private toResult(
-    opening: { packId: string; cardId: string; rarity: string; duplicate: boolean; spent: number; refund: number },
+    opening: {
+      packId: string;
+      cardId: string;
+      rarity: string;
+      duplicate: boolean;
+      currency: CurrencyCode;
+      spent: number;
+      refund: number;
+    },
     balance: number,
   ): PackOpenResult {
     const entry = cardCatalog.find(opening.cardId);
@@ -172,7 +203,7 @@ export class StoreService {
       duplicate: opening.duplicate,
       spent: opening.spent,
       refund: opening.refund,
-      balance: { currency: CurrencyCode.RIM, balance },
+      balance: { currency: opening.currency, balance },
     };
   }
 }

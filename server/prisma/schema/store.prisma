@@ -25,7 +25,12 @@ model PackOpening {
   rarity String
   /// Kart zaten koleksiyonda mıydı?
   duplicate Boolean
-  /// Harcanan jant (pozitif) ve tekrar karta verilen iade (0 ya da pozitif).
+  /// Hangi keseyle ödendi. Varsayılan RIM: bu kolon eklenmeden önceki
+  /// açılışların hepsi jantla yapıldı, yani geçmiş kayıtlar için doğru değer.
+  currency CurrencyCode @default(RIM)
+  /// Harcanan miktar (pozitif) ve tekrar karta verilen iade (0 ya da
+  /// pozitif) — ikisi de `currency` kesesinde. İade her zaman ödenen keseye
+  /// dönüyor; bkz. game/packs.ts duplicateRefund.
   spent  Int
   refund Int    @default(0)
 

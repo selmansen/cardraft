@@ -9,12 +9,14 @@ import { ApiError, errorMessage, NetworkError } from '@/api/errors';
 import { readMigrated, STORAGE_KEYS } from '@/api/storageKeys';
 import type {
   AuthUser,
+  Currency,
   CurrencyCode,
   DevicePlatform,
   IdentityProvider,
   PackOpenResult,
 } from '@/api/types';
 import { getProviderCredential, ProviderSignInCancelled } from '@/auth/providerSignIn';
+import { pullLoadout } from './loadoutSync';
 
 const INSTALL_KEY = STORAGE_KEYS.installation;
 
@@ -62,7 +64,11 @@ interface SessionState {
    * yeniden deneme aynı kimlikle gitsin. Burada üretilseydi her çağrı yeni
    * bir kimlik alır ve sunucudaki tekrar koruması işe yaramazdı.
    */
-  openPack: (packId: string, requestId: string) => Promise<PackOpenResult | { error: string }>;
+  openPack: (
+    packId: string,
+    currency: Currency,
+    requestId: string,
+  ) => Promise<PackOpenResult | { error: string }>;
   /**
    * Apple / Google ile giriş.
    *
@@ -163,6 +169,9 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
         await guestLogin();
       }
       await Promise.all([get().refreshWallet(), get().refreshInventory()]);
+      // Kadro koleksiyondan SONRA: sunucudan gelen kadro koleksiyonda olmayan
+      // bir kartı işaret ederse ekranlar onu çizemez. Sıra bunu garanti ediyor.
+      await pullLoadout();
     } catch (error) {
       if (error instanceof NetworkError) {
         set({ connection: 'offline' });
@@ -234,11 +243,16 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     }
   },
 
-  openPack: async (packId, requestId) => {
+  openPack: async (packId, currency, requestId) => {
     try {
-      const result = await storeApi.openPack(packId, requestId);
+      const result = await storeApi.openPack(packId, currency, requestId);
       set((s) => ({
-        rims: result.balance.balance,
+        // Hangi kese döndüyse o güncelleniyor. Eskiden bakiye koşulsuz
+        // `rims`'e yazılıyordu — paketler yalnızca jantla satıldığı sürece
+        // doğruydu, coin ile ödeyen oyuncunun jantını coin bakiyesiyle
+        // ezerdi.
+        rims: result.balance.currency === 'RIM' ? result.balance.balance : s.rims,
+        coins: result.balance.currency === 'COIN' ? result.balance.balance : s.coins,
         // Yeni kart geldiyse koleksiyona ekle; tekrar kartta koleksiyon
         // değişmiyor, yalnızca bakiye artıyor.
         ownedVehicles: result.duplicate
@@ -276,8 +290,10 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
       set({ user: result.user, connection: 'online' });
       // Hesap değişmiş olabilir (cihaz değiştiren oyuncu eski hesabına döndü),
       // bu yüzden cüzdan ve koleksiyon yeniden okunuyor — eski hesabın
-      // verisini göstermek en kötü hata olurdu.
+      // verisini göstermek en kötü hata olurdu. Kadro da aynı sebeple: giriş
+      // yapan oyuncunun kendi kadrosu geliyor, misafirinki değil.
       await Promise.all([get().refreshWallet(), get().refreshInventory()]);
+      await pullLoadout();
       return null;
     } catch (error) {
       if (error instanceof ProviderSignInCancelled) return 'cancelled';

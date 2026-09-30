@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { IdentityProvider } from '@/api/types';
 import { CurrencyTag } from '@/components/Currency';
 import { useDialog } from '@/components/overlay/DialogProvider';
+import { FEATURES } from '@/constants/features';
 import { colors, font, radius, shadow, space, text } from '@/constants/theme';
 // GEÇİCİ geliştirme aracı — aşağıdaki __DEV__ bloğuyla birlikte silinecek.
 import { devAdminLogin } from '@/dev/adminLogin';
@@ -25,13 +26,17 @@ import { useSessionStore } from '@/store/sessionStore';
  * Vaatler SOMUT: "araç topla" değil "35 aracın hepsi". Belirsiz bir vaat,
  * hiç vaat etmemekten kötü.
  */
-const PROMISES: {
+interface SignInPromise {
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
   tint: string;
   bg: string;
   title: string;
   sub: string;
-}[] = [
+  /** Kapalıysa vaat hiç gösterilmiyor — bkz. constants/features.ts. */
+  enabled?: boolean;
+}
+
+const PROMISES: SignInPromise[] = [
   {
     icon: 'car-sports',
     tint: colors.accentDark,
@@ -51,16 +56,29 @@ const PROMISES: {
     tint: colors.primaryInk,
     bg: colors.primarySoft,
     title: 'Lige katıl',
-    sub: 'Sıralamada yüksel · yakında',
+    sub: 'Sıralamada yüksel',
+    enabled: FEATURES.league,
   },
   {
     icon: 'account-multiple',
     tint: colors.bubble,
     bg: '#FFE4EE',
     title: 'Arkadaşlarınla oyna',
-    sub: 'Meydan oku, rövanş al · yakında',
+    sub: 'Meydan oku, rövanş al',
+    enabled: FEATURES.friends,
   },
 ];
+
+/**
+ * Gösterilecek vaatler.
+ *
+ * "· yakında" ekiyle duran iki vaat kaldırıldı: olmayan bir özelliği
+ * tanıtmak hem oyuncuya verilmemiş bir söz veriyor hem de mağaza
+ * incelemesinde reddedilme sebebi olabiliyor. Tanımları duruyor, yalnızca
+ * kapıları kapalı (constants/features.ts) — özellik geldiğinde tek satır
+ * açılıyor ve metin "yakında" eki olmadan zaten doğru.
+ */
+const SHOWN = PROMISES.filter((p) => p.enabled !== false);
 
 export default function SignInScreen() {
   const router = useRouter();
@@ -124,7 +142,7 @@ export default function SignInScreen() {
       </View>
 
       <View style={styles.promises}>
-        {PROMISES.map((p) => (
+        {SHOWN.map((p) => (
           <View key={p.title} style={styles.promise}>
             <View style={[styles.promiseIcon, { backgroundColor: p.bg }]}>
               <MaterialCommunityIcons name={p.icon} size={24} color={p.tint} />

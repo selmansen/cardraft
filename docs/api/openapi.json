@@ -401,6 +401,70 @@
         ]
       }
     },
+    "/api/loadout": {
+      "get": {
+        "operationId": "LoadoutController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Kayıtlı kadro. Hiç kaydedilmemişse boş dizilerle `saved: false` döner — istemci o durumda cihazdaki kadroyu yükleyip buraya yazıyor, yani mevcut oyuncular kadrolarını kaybetmiyor.",
+        "tags": [
+          "Kadro"
+        ],
+        "description": "Misafirde de okunabilir (@AccountRequired YOK): boş cevap dönüyor ve\nmisafirin kadro ekranı yerel kadroyla çalışmaya devam ediyor."
+      },
+      "put": {
+        "operationId": "LoadoutController_save",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveLoadoutDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Kadroyu kaydeder. Biçim ve sahiplik sunucuda doğrulanıyor.",
+        "tags": [
+          "Kadro"
+        ],
+        "description": "Hesap şart: misafirin kadrosu cihazda kalıyor. Misafir zaten hiçbir şey\nbiriktiremiyor (ADR 0016) ve kaydetmenin amacı cihaz değiştirince\nkaybetmemek — kaydedilecek bir hesap yoksa yazmanın da anlamı yok."
+      }
+    },
     "/api/matches": {
       "post": {
         "operationId": "MatchController_open",
@@ -708,6 +772,28 @@
           "currency"
         ]
       },
+      "SaveLoadoutDto": {
+        "type": "object",
+        "properties": {
+          "vehicleCardIds": {
+            "description": "Üst sınır DTO'da, asıl kural serviste.\n\nBuradaki tek iş kötü niyetli bir isteğin binlerce kimlikle gelip sahiplik\nsorgusunu şişirmesini engellemek. \"En az 3 araç, toplam 8\" kuralı\nmotordan geliyor ve serviste uygulanıyor — iki yerde yazılsaydı biri\ngeride kalırdı.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "supportCardIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "vehicleCardIds",
+          "supportCardIds"
+        ]
+      },
       "OpenMatchDto": {
         "type": "object",
         "properties": {
@@ -810,6 +896,14 @@
       "OpenPackDto": {
         "type": "object",
         "properties": {
+          "currency": {
+            "type": "string",
+            "description": "Hangi keseyle ödenecek. Verilmezse jant — coin sonradan eklendi ve eski\nistemciler bu alanı göndermiyor; varsayılanı jant yapmak o istemcilerin\ndavranışını aynen koruyor.\n\nKese İSTEMCİDEN geliyor ama fiyat gelmiyor: sunucu hangi kesede ne\nistendiğini kendi tablosundan okuyor (bkz. packPrice). İstemcinin\nsöyleyebildiği tek şey \"şununla ödemek istiyorum\".",
+            "enum": [
+              "rim",
+              "coin"
+            ]
+          },
           "requestId": {
             "type": "string",
             "description": "İstemcinin ürettiği tekrar koruması.\n\nZorunlu ve istemciden geliyor çünkü korunması gereken şey tam olarak\n\"aynı isteğin ikinci kez gönderilmesi\": mobil ağda cevap kaybolur,\nistemci tekrar dener. Sunucu kendi kimliğini üretseydi her deneme yeni\nbir açılış olurdu — oyuncudan iki kez para düşer, iki kart çekilirdi.\n\nUUID şartı bilinçli: tahmin edilemez ve çakışmaz. Sıra numarası\nolsaydı bir oyuncunun kimliği bir başkasınınkiyle çakışabilirdi\n(benzersizlik kullanıcı başına ama yine de öngörülebilirlik istemiyoruz).",
